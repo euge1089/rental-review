@@ -11,6 +11,9 @@ export const PRODUCT_POLICY = {
     maxReviewsPerUser: 10,
     leaseStartYearRule:
       "Select the calendar year when your lease at this address began.",
+    /** Shown on profile / help copy; enforced in DB @@unique([propertyId, userId, reviewYear]). */
+    oneReviewPerLeaseStartYearShort:
+      "One review per lease-start year for each address. Lived there multiple years? Add another year anytime.",
     majorityYearAttestationRule:
       "Confirm this review describes the apartment you leased starting in that year (your main residence there during that lease period).",
     liveNowUserMessage: "Your review is live.",

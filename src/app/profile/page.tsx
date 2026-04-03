@@ -8,10 +8,13 @@ import {
 import { ProfileBookmarks } from "@/app/_components/profile-bookmarks";
 import { ProfileDisplayNameCard } from "@/app/_components/profile-display-name-card";
 import { ProfileOnboardingOverlay } from "@/app/_components/profile-onboarding-overlay";
+import {
+  ProfileReviewsGrouped,
+  type ProfileReviewForList,
+} from "@/app/_components/profile-reviews-grouped";
 import { ProfileVerification } from "@/app/_components/profile-verification";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PRODUCT_POLICY } from "@/lib/policy";
 import { linkInlineClass } from "@/lib/ui-classes";
 
 type Props = {
@@ -155,81 +158,10 @@ export default async function ProfilePage({ searchParams }: Props) {
         </SurfacePanel>
       ) : null}
 
-      <SurfacePanel variant="elevated">
-        <h2 className="text-base font-semibold text-muted-blue-hover">
-          Your reviews
-        </h2>
-        <p className="mt-1 text-xs text-zinc-500">
-          {reviewTotalCount} of {PRODUCT_POLICY.reviews.maxReviewsPerUser} review
-          slots used
-          {reviewTotalCount >= PRODUCT_POLICY.reviews.maxReviewsPerUser ? (
-            <span className="font-medium text-amber-800">
-              {" "}
-              — at your limit; edit or remove a review to add a new address.
-            </span>
-          ) : null}
-          .
-        </p>
-        {reviews.length === 0 ? (
-          <p className="mt-3 text-sm text-zinc-600">
-            You haven&apos;t submitted any reviews yet.{" "}
-            <Link href="/submit" className={linkInlineClass}>
-              Share your first experience
-            </Link>
-            .
-          </p>
-        ) : (
-          <ul className="mt-4 space-y-3">
-            {reviews.map((review) => (
-              <li
-                key={review.id}
-                className="rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/30 p-4"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <Link
-                      href={`/properties/${review.propertyId}`}
-                      className="text-sm font-semibold text-muted-blue-hover underline-offset-2 hover:underline"
-                    >
-                      {review.property.addressLine1}
-                    </Link>
-                    <p className="text-xs text-zinc-600">
-                      {review.property.city}, {review.property.state}{" "}
-                      {review.property.postalCode ?? ""}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-zinc-500 ring-1 ring-zinc-200/80">
-                      {review.moderationStatus}
-                    </span>
-                    <Link
-                      href={`/profile/reviews/${review.id}/edit`}
-                      className="text-[11px] font-semibold text-muted-blue hover:underline"
-                    >
-                      Edit review
-                    </Link>
-                  </div>
-                </div>
-                <p className="mt-2 text-xs text-zinc-600">
-                  Lease start {review.reviewYear}
-                  {typeof review.monthlyRent === "number"
-                    ? ` · $${review.monthlyRent.toLocaleString()}/month`
-                    : ""}
-                </p>
-                {review.body ? (
-                  <p className="mt-2 text-xs leading-6 text-zinc-700">
-                    {review.body.length > 140
-                      ? `${review.body.slice(0, 140)}…`
-                      : review.body}
-                  </p>
-                ) : (
-                  <p className="mt-2 text-xs text-zinc-500">No written review text.</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </SurfacePanel>
+      <ProfileReviewsGrouped
+        reviews={reviews as ProfileReviewForList[]}
+        reviewTotalCount={reviewTotalCount}
+      />
     </AppPageShell>
   );
 }
