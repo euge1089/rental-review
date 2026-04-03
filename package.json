@@ -2,6 +2,9 @@
   "name": "rental-review",
   "version": "0.1.0",
   "private": true,
+  "overrides": {
+    "axios": "1.7.9"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
