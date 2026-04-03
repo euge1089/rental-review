@@ -6,6 +6,9 @@ import {
 } from "@/app/_components/app-page-shell";
 import { getSouthBostonRentBands } from "@/lib/analytics";
 
+/** Rent bands need DB; don’t prerender at build without DATABASE_URL. */
+export const dynamic = "force-dynamic";
+
 export default async function SouthBostonPage() {
   const bands = await getSouthBostonRentBands();
 
