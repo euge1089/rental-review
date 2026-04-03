@@ -163,14 +163,14 @@ export function EmailAuthPanel({
   if (flow === "pick") {
     if (signupFocus) {
       return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col items-center gap-6">
           <a
             href={googleHref}
-            className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-full bg-muted-blue px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-8px_rgb(92_107_127/0.35)] transition hover:bg-muted-blue-hover"
+            className="inline-flex w-full max-w-sm items-center justify-center whitespace-nowrap rounded-full bg-muted-blue px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-8px_rgb(92_107_127/0.35)] transition hover:bg-muted-blue-hover sm:max-w-none sm:w-auto"
           >
             Continue with Google
           </a>
-          <div className="flex items-center gap-4">
+          <div className="flex w-full items-center gap-4">
             <div className="h-px flex-1 bg-zinc-200" />
             <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
               or
@@ -179,7 +179,7 @@ export function EmailAuthPanel({
           </div>
           <button
             type="button"
-            className="w-full rounded-full border border-zinc-200 bg-white px-5 py-3 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+            className="w-full max-w-sm rounded-full border border-zinc-200 bg-white px-5 py-3 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 sm:max-w-none sm:w-auto"
             onClick={() => {
               resetError();
               setFlow("signup");
@@ -202,24 +202,24 @@ export function EmailAuthPanel({
     }
 
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col items-center gap-6">
         <a
           href={googleHref}
-          className="inline-flex min-h-11 w-full shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-muted-blue px-5 py-3 text-sm font-semibold text-white transition active:bg-muted-blue-hover/95 hover:bg-muted-blue-hover sm:w-fit"
+          className="inline-flex min-h-11 w-full max-w-sm shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-muted-blue px-5 py-3 text-sm font-semibold text-white transition active:bg-muted-blue-hover/95 hover:bg-muted-blue-hover sm:max-w-none sm:w-auto"
         >
           Continue with Google
         </a>
-        <div className="flex items-center gap-4">
+        <div className="flex w-full items-center gap-4">
           <div className="h-px flex-1 bg-zinc-200" />
           <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
             or
           </span>
           <div className="h-px flex-1 bg-zinc-200" />
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+        <div className="flex w-full flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-3">
           <button
             type="button"
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 sm:w-auto"
+            className="inline-flex min-h-11 w-full max-w-sm items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 sm:max-w-none sm:w-auto"
             onClick={() => {
               resetError();
               setFlow("signin");
@@ -229,7 +229,7 @@ export function EmailAuthPanel({
           </button>
           <button
             type="button"
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 sm:w-auto"
+            className="inline-flex min-h-11 w-full max-w-sm items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 sm:max-w-none sm:w-auto"
             onClick={() => {
               resetError();
               setFlow("signup");
