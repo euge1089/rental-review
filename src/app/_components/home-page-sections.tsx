@@ -92,10 +92,13 @@ type HomePageData = Awaited<ReturnType<typeof getHomePageData>>;
 
 type Props = {
   layout: HomePageLayout;
+  /** When false, hero “Sign up” CTA is hidden (e.g. signed-in users). */
+  showHeroSignUp?: boolean;
 } & HomePageData;
 
 export function HomePageSections({
   layout,
+  showHeroSignUp = true,
   southBostonTop,
   approvedReviewCount,
   bostonPropertyCount,
@@ -235,12 +238,14 @@ export function HomePageSections({
                       : "mt-7 flex flex-col items-center gap-2.5 sm:mt-8 sm:flex-row sm:items-center sm:gap-3.5"
                   }
                 >
-                  <HeroSignUpOverlay variant={fw ? "wide" : "narrow"} />
+                  {showHeroSignUp ? (
+                    <HeroSignUpOverlay variant={fw ? "wide" : "narrow"} />
+                  ) : null}
                   <p
                     className={
                       fw
-                        ? "max-w-xs text-center text-[13px] leading-relaxed text-zinc-500 lg:max-w-sm lg:text-left"
-                        : "max-w-sm text-center text-[10px] leading-relaxed text-zinc-500 sm:text-left sm:text-[11px]"
+                        ? `max-w-xs text-center text-[13px] leading-relaxed text-zinc-500 lg:max-w-sm ${showHeroSignUp ? "lg:text-left" : "lg:text-center"}`
+                        : `max-w-sm text-center text-[10px] leading-relaxed text-zinc-500 sm:text-[11px] ${showHeroSignUp ? "sm:text-left" : "sm:text-center"}`
                     }
                   >
                     Your landlord never sees your name. Google keeps spam and fake

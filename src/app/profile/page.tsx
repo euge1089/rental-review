@@ -88,7 +88,7 @@ export default async function ProfilePage({ searchParams }: Props) {
                 {displayName?.trim() ? displayName.trim() : email}
               </span>
               {displayName?.trim() ? (
-                <span className="text-zinc-500">({email})</span>
+                <span className="text-zinc-500"> ({email})</span>
               ) : null}
               .
             </span>
