@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ModerationStatus {
+  APPROVED
+  PENDING_REVIEW
+  REJECTED
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  displayName     String?
+  /// Set for email/password accounts; null for Google-only until linked.
+  passwordHash    String?
+  /// Required to sign in with email/password; Google sign-in sets this on upsert.
+  emailVerifiedAt DateTime?
+  phoneVerified   Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  reviews         Review[]
+  bookmarks       Bookmark[]
+  reviewReports   ReviewReport[]
+}
+
+/// One-time email verification codes (sign-up). Rows removed after success or expiry.
+model EmailVerification {
+  id        String   @id @default(cuid())
+  email     String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model Property {
+  id                String      @id @default(cuid())
+  addressLine1      String
+  city              String
+  state             String
+  postalCode        String?
+  normalizedAddress String      @unique
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  reviews           Review[]
+  bookmarks         Bookmark[]
+}
+
+model Review {
+  id                     String           @id @default(cuid())
+  propertyId             String
+  userId                 String
+  reviewYear             Int
+  /// 0 = studio, 1–4 = bedrooms, 5 = 5+; null = unknown (fall back to unit-string inference)
+  bedroomCount           Int?
+  unit                   String?
+  monthlyRent            Int?
+  bathrooms              Float?
+  body                   String?
+  hasParking             Boolean          @default(false)
+  hasCentralHeatCooling  Boolean          @default(false)
+  hasInUnitLaundry       Boolean          @default(false)
+  hasStorageSpace        Boolean          @default(false)
+  hasOutdoorSpace        Boolean          @default(false)
+  petFriendly            Boolean          @default(false)
+  overallScore           Int?
+  landlordScore          Int?
+  majorityYearAttested   Boolean
+  /// When true, public UI shows a fixed anonymous label (no masked initials).
+  displayFullyAnonymous  Boolean          @default(false)
+  moderationStatus       ModerationStatus @default(APPROVED)
+  moderationReasons      String[]
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  property               Property         @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user                   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reports                ReviewReport[]
+
+  @@unique([propertyId, userId, reviewYear])
+  @@index([reviewYear])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  propertyId String
+  createdAt DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+}
+
+model ReviewReport {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  reason    String
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+}
