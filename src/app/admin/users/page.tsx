@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
+import { AdminDeleteUserButton } from "@/app/_components/admin-delete-user-button";
 import {
   AppPageShell,
   PageHeader,
@@ -54,7 +55,8 @@ export default async function AdminUsersPage() {
           description={
             <p className="mt-1 max-w-xl text-sm text-zinc-600">
               Each account can post up to {cap} reviews site-wide. Open a user&apos;s
-              reviews to moderate, search, or remove entries.
+              reviews to moderate, search, or remove entries. Deleting an account
+              removes their reviews, bookmarks, and reports permanently.
             </p>
           }
         />
@@ -78,10 +80,12 @@ export default async function AdminUsersPage() {
         <ul className="space-y-2">
           {users.map((u) => {
             const atCap = u._count.reviews >= cap;
+            const isSelf =
+              email != null && u.email.toLowerCase() === email.toLowerCase();
             return (
               <li key={u.id}>
                 <div
-                  className={`${surfaceSubtleClass} flex flex-col gap-2 p-4 text-sm shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:flex-row sm:items-center sm:justify-between`}
+                  className={`${surfaceSubtleClass} flex flex-col gap-3 p-4 text-sm shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:flex-row sm:items-center sm:justify-between`}
                 >
                   <div className="min-w-0">
                     <p className="font-medium text-zinc-900">
@@ -97,7 +101,7 @@ export default async function AdminUsersPage() {
                       ) : null}
                     </p>
                   </div>
-                  <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                     <span
                       className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ring-1 ${
                         atCap
@@ -113,6 +117,16 @@ export default async function AdminUsersPage() {
                     >
                       View reviews
                     </Link>
+                    {isSelf ? (
+                      <span
+                        className="inline-flex min-h-10 items-center rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-xs font-medium text-zinc-500 sm:min-h-0"
+                        title="You cannot delete your own admin account from here."
+                      >
+                        Your account
+                      </span>
+                    ) : (
+                      <AdminDeleteUserButton userId={u.id} userLabel={u.email} />
+                    )}
                   </div>
                 </div>
               </li>
