@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   AppPageShell,
   PageHeader,
@@ -19,34 +20,15 @@ type PropertySummary = {
 };
 
 export default function PropertiesPage() {
+  const { status } = useSession();
+  const loggedIn =
+    status === "loading" ? null : status === "authenticated";
   const [properties, setProperties] = useState<PropertySummary[]>([]);
-  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [query, setQuery] = useState(() => {
     if (typeof window === "undefined") return "";
     const params = new URLSearchParams(window.location.search);
     return params.get("query") ?? "";
   });
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadSession() {
-      try {
-        const res = await fetch("/api/auth/session");
-        if (!res.ok) {
-          if (!cancelled) setLoggedIn(false);
-          return;
-        }
-        const data = (await res.json()) as { user?: unknown };
-        if (!cancelled) setLoggedIn(!!data.user);
-      } catch {
-        if (!cancelled) setLoggedIn(false);
-      }
-    }
-    void loadSession();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     const load = async () => {

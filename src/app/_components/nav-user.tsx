@@ -1,42 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { SignOutOverlay } from "@/app/_components/sign-out-overlay";
 
 type Props = {
   adminEmail?: string;
 };
 
-type SessionUser = {
-  name?: string | null;
-  email?: string | null;
-};
-
 export function NavUser({ adminEmail }: Props) {
-  const [user, setUser] = useState<SessionUser | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const res = await fetch("/api/auth/session");
-        if (!res.ok) return;
-        const data = (await res.json()) as { user?: SessionUser | null };
-        if (!cancelled) {
-          setUser(data.user ?? null);
-        }
-      } catch {
-        if (!cancelled) {
-          setUser(null);
-        }
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: session, status } = useSession();
+  const user = status === "authenticated" ? session?.user : null;
 
   const email = user?.email ?? null;
   const displayName = user?.name ?? email ?? null;

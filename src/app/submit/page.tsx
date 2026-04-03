@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   AppPageShell,
   PageHeader,
@@ -102,12 +103,20 @@ function ScoreScale({
 }
 
 export default function SubmitReviewPage() {
+  const { data: session, status: sessionStatus } = useSession();
+  const sessionUser = useMemo((): SessionUser | null | "loading" => {
+    if (sessionStatus === "loading") return "loading";
+    if (!session?.user) return null;
+    return {
+      email: session.user.email,
+      name: session.user.name,
+      phoneVerified: session.user.phoneVerified,
+    };
+  }, [session?.user, sessionStatus]);
+
   const formRef = useRef<HTMLFormElement | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [sessionUser, setSessionUser] = useState<SessionUser | null | "loading">(
-    "loading",
-  );
   const [showSmsNudge, setShowSmsNudge] = useState(false);
   const [overallScore, setOverallScore] = useState<number | null>(null);
   const [landlordScore, setLandlordScore] = useState<number | null>(null);
@@ -116,29 +125,6 @@ export default function SubmitReviewPage() {
   >(null);
   const [duplicateChecking, setDuplicateChecking] = useState(false);
   const [duplicateDeleting, setDuplicateDeleting] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadSession() {
-      try {
-        const res = await fetch("/api/auth/session");
-        if (!res.ok) {
-          if (!cancelled) setSessionUser(null);
-          return;
-        }
-        const data = (await res.json()) as { user?: SessionUser | null };
-        if (!cancelled) {
-          setSessionUser(data.user ?? null);
-        }
-      } catch {
-        if (!cancelled) setSessionUser(null);
-      }
-    }
-    void loadSession();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     if (sessionUser && sessionUser !== "loading" && !sessionUser.phoneVerified) {

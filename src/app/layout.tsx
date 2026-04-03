@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AppSessionProvider } from "@/app/_components/app-session-provider";
 import { NavUser } from "@/app/_components/nav-user";
 import { SiteFooter } from "@/app/_components/site-footer";
 import {
@@ -61,6 +62,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-[100dvh] min-h-screen flex-col bg-[#f5f5f6] text-zinc-900">
+        <AppSessionProvider>
         <header className="border-b border-zinc-200/80 bg-white pt-[env(safe-area-inset-top,0px)] shadow-[0_1px_0_rgb(15_23_42/0.03)]">
           <nav
             className={`mx-auto flex w-full min-w-0 ${appContentMaxWidthClass} flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2 ${appContentPaddingXClass}`}
@@ -106,6 +108,7 @@ export default function RootLayout({
           {children}
         </div>
         <SiteFooter />
+        </AppSessionProvider>
       </body>
     </html>
   );

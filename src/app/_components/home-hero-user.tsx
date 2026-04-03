@@ -1,39 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-
-type SessionUser = {
-  email?: string | null;
-};
+import { useSession } from "next-auth/react";
 
 export function HomeHeroSignIn() {
-  const [user, setUser] = useState<SessionUser | null | "loading">("loading");
+  const { status } = useSession();
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const res = await fetch("/api/auth/session");
-        if (!res.ok) {
-          if (!cancelled) setUser(null);
-          return;
-        }
-        const data = (await res.json()) as { user?: SessionUser | null };
-        if (!cancelled) {
-          setUser(data.user ?? null);
-        }
-      } catch {
-        if (!cancelled) setUser(null);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (user && user !== "loading") {
+  if (status === "authenticated") {
     // Signed in: hide the sign-in CTA
     return null;
   }
