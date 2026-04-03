@@ -7,6 +7,8 @@ export const PRODUCT_POLICY = {
     /** DB field `reviewYear` is the calendar year the lease started (lease-start year). */
     cadence: "lease-start-year",
     maxReviewsPerPropertyPerYear: 1,
+    /** Max distinct reviews one account can have site-wide (new creates only; edits allowed). */
+    maxReviewsPerUser: 10,
     leaseStartYearRule:
       "Select the calendar year when your lease at this address began.",
     majorityYearAttestationRule:

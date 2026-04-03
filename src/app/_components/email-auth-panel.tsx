@@ -112,7 +112,7 @@ export function EmailAuthPanel({
         return;
       }
       onSignedIn?.();
-      router.push(callbackUrl);
+      router.push("/profile?welcome=1");
       router.refresh();
     } finally {
       setLoading(false);

@@ -32,7 +32,8 @@ export default async function AdminDashboardPage() {
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  const [reviewStats, propertyStats, recentReviews] = await Promise.all([
+  const [userCount, reviewStats, propertyStats, recentReviews] = await Promise.all([
+    prisma.user.count(),
     prisma.review.groupBy({
       by: ["moderationStatus"],
       _count: { _all: true },
@@ -50,6 +51,7 @@ export default async function AdminDashboardPage() {
     prisma.review.findMany({
       include: {
         property: true,
+        user: { select: { id: true, email: true, displayName: true } },
       },
       orderBy: { createdAt: "desc" },
       where: {
@@ -57,7 +59,7 @@ export default async function AdminDashboardPage() {
       },
       take: 20,
     }),
-  ]);
+  ] as const);
 
   const totalReviews = reviewStats.reduce(
     (sum, r) => sum + r._count._all,
@@ -87,15 +89,27 @@ export default async function AdminDashboardPage() {
     <AppPageShell gapClass="gap-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <PageHeader eyebrow="Admin" title="Dashboard" />
-        <Link
-          href="/admin/reviews"
-          className={`${linkInlineClass} shrink-0 text-sm font-semibold`}
-        >
-          Open review queue →
-        </Link>
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold">
+          <Link href="/admin/reviews" className={linkInlineClass}>
+            All reviews →
+          </Link>
+          <Link href="/admin/users" className={linkInlineClass}>
+            Users →
+          </Link>
+        </div>
       </div>
 
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className={`${surfaceSubtleClass} p-4 text-sm shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}>
+          <p className="text-xs text-zinc-500">Registered users</p>
+          <p className="mt-1 text-2xl font-semibold text-zinc-900">{userCount}</p>
+          <Link
+            href="/admin/users"
+            className={`${linkInlineClass} mt-2 inline-block text-xs font-medium`}
+          >
+            View list
+          </Link>
+        </div>
         <div className={`${surfaceSubtleClass} p-4 text-sm shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}>
           <p className="text-xs text-zinc-500">Total reviews</p>
           <p className="mt-1 text-2xl font-semibold text-zinc-900">
@@ -223,6 +237,16 @@ export default async function AdminDashboardPage() {
                     {typeof r.monthlyRent === "number"
                       ? ` · $${r.monthlyRent.toLocaleString()}/month`
                       : ""}
+                  </p>
+                  <p className="mt-1 text-[11px] text-zinc-500">
+                    {r.user.displayName?.trim() || r.user.email}
+                    {" · "}
+                    <Link
+                      href={`/admin/reviews?userId=${encodeURIComponent(r.user.id)}`}
+                      className="font-medium text-muted-blue hover:underline"
+                    >
+                      Open in review tools
+                    </Link>
                   </p>
                 </li>
               ))}

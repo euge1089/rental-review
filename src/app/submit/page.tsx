@@ -125,6 +125,43 @@ export default function SubmitReviewPage() {
   >(null);
   const [duplicateChecking, setDuplicateChecking] = useState(false);
   const [duplicateDeleting, setDuplicateDeleting] = useState(false);
+  const [reviewQuota, setReviewQuota] = useState<{
+    count: number;
+    max: number;
+    atCap: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!sessionUser || sessionUser === "loading") {
+      setReviewQuota(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const res = await fetch("/api/reviews/my-count");
+      const data = (await res.json()) as {
+        ok?: boolean;
+        count?: number;
+        max?: number;
+        atCap?: boolean;
+      };
+      if (
+        !cancelled &&
+        data.ok &&
+        typeof data.count === "number" &&
+        typeof data.max === "number"
+      ) {
+        setReviewQuota({
+          count: data.count,
+          max: data.max,
+          atCap: Boolean(data.atCap),
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionUser]);
 
   useEffect(() => {
     if (sessionUser && sessionUser !== "loading" && !sessionUser.phoneVerified) {
@@ -493,6 +530,7 @@ export default function SubmitReviewPage() {
 
   const callbackUrl = encodeURIComponent("/submit");
   const isAuthed = sessionUser && sessionUser !== "loading";
+  const atReviewCap = reviewQuota?.atCap === true;
 
   return (
     <AppPageShell gapClass="gap-6" className="relative">
@@ -589,7 +627,22 @@ export default function SubmitReviewPage() {
         </div>
       ) : null}
 
-      <div className={!isAuthed ? "pointer-events-none opacity-40" : ""}>
+      {isAuthed && atReviewCap ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950 ring-1 ring-amber-100">
+          You&apos;ve used all {reviewQuota?.max ?? 10} review slots for your account.
+          To post a different address, edit or remove a review from your{" "}
+          <Link href="/profile" className="font-semibold text-muted-blue hover:underline">
+            profile
+          </Link>
+          .
+        </div>
+      ) : null}
+
+      <div
+        className={
+          !isAuthed || atReviewCap ? "pointer-events-none opacity-40" : ""
+        }
+      >
         <PageHeader
           eyebrow="Submit review"
           title="Share your Boston rental experience"

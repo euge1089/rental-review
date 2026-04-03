@@ -98,13 +98,32 @@ export async function POST(request: Request) {
       },
     });
 
+    const reviewCompoundKey = {
+      propertyId: property.id,
+      userId: user.id,
+      reviewYear: body.reviewYear,
+    };
+    const existingReview = await prisma.review.findUnique({
+      where: { propertyId_userId_reviewYear: reviewCompoundKey },
+    });
+    if (!existingReview) {
+      const reviewCount = await prisma.review.count({
+        where: { userId: user.id },
+      });
+      if (reviewCount >= PRODUCT_POLICY.reviews.maxReviewsPerUser) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: `You can post up to ${PRODUCT_POLICY.reviews.maxReviewsPerUser} reviews on the site. Edit or remove an existing review on your profile if you need to make a change.`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     const review = await prisma.review.upsert({
       where: {
-        propertyId_userId_reviewYear: {
-          propertyId: property.id,
-          userId: user.id,
-          reviewYear: body.reviewYear,
-        },
+        propertyId_userId_reviewYear: reviewCompoundKey,
       },
       update: {
         unit: body.unit,

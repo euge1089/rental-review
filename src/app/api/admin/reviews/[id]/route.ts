@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+import { requireAdminSession } from "@/lib/admin-auth";
 
 const schema = z.object({
   action: z.enum(["APPROVED", "REJECTED"]),
@@ -15,22 +12,8 @@ type Params = {
 };
 
 export async function POST(request: Request, { params }: Params) {
-  if (!ADMIN_EMAIL) {
-    return NextResponse.json(
-      { ok: false, error: "ADMIN_EMAIL is not configured." },
-      { status: 500 },
-    );
-  }
-
-  const session = await getServerSession(authOptions);
-  const email = session?.user?.email;
-
-  if (!email || email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-    return NextResponse.json(
-      { ok: false, error: "Not authorized." },
-      { status: 403 },
-    );
-  }
+  const auth = await requireAdminSession();
+  if (!auth.ok) return auth.response;
 
   const body = await request.json();
   const parsed = schema.safeParse(body);
@@ -52,5 +35,23 @@ export async function POST(request: Request, { params }: Params) {
   });
 
   return NextResponse.json({ ok: true, reviewId: updated.id });
+}
+
+export async function DELETE(_request: Request, { params }: Params) {
+  const auth = await requireAdminSession();
+  if (!auth.ok) return auth.response;
+
+  const { id } = await params;
+
+  try {
+    await prisma.review.delete({ where: { id } });
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "Review not found or could not be deleted." },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({ ok: true });
 }
 

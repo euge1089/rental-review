@@ -8,6 +8,8 @@ export type PublicReviewPayload = {
 
 export type AdminReviewPayload = {
   id: string;
+  propertyId: string;
+  userId: string;
   reviewYear: number;
   monthlyRent: number | null;
   bathrooms: number | null;
@@ -58,6 +60,8 @@ export function serializeReviewForPublic(input: {
  */
 export function serializeReviewForAdmin(input: {
   id: string;
+  propertyId: string;
+  userId: string;
   reviewYear: number;
   monthlyRent: number | null;
   bathrooms: number | null;
@@ -80,6 +84,8 @@ export function serializeReviewForAdmin(input: {
 }): AdminReviewPayload {
   return {
     id: input.id,
+    propertyId: input.propertyId,
+    userId: input.userId,
     reviewYear: input.reviewYear,
     monthlyRent: input.monthlyRent,
     bathrooms: input.bathrooms,

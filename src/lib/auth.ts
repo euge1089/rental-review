@@ -72,9 +72,11 @@ export const authOptions: NextAuthOptions = {
       if (session.user?.email) {
         const row = await prisma.user.findUnique({
           where: { email: session.user.email },
-          select: { phoneVerified: true },
+          select: { phoneVerified: true, displayName: true },
         });
         session.user.phoneVerified = Boolean(row?.phoneVerified);
+        const fromDb = row?.displayName?.trim();
+        session.user.name = fromDb || (session.user.name ?? null);
       }
       return session;
     },

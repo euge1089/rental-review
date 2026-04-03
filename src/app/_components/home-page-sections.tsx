@@ -252,8 +252,8 @@ export function HomePageSections({
               <div
                 className={
                   fw
-                    ? "animate-hero-drift relative mx-auto flex w-full max-w-[224px] flex-col justify-center lg:mx-0 lg:max-w-[min(100%,304px)] lg:justify-self-end"
-                    : "animate-hero-drift flex w-full max-w-[184px] shrink-0 flex-col justify-center justify-self-center pl-2 sm:max-w-[202px] lg:mx-0 lg:max-w-[min(100%,184px)] lg:justify-self-end lg:pl-6"
+                    ? "hidden animate-hero-drift relative mx-auto w-full max-w-[224px] flex-col justify-center lg:flex lg:mx-0 lg:max-w-[min(100%,304px)] lg:justify-self-end"
+                    : "hidden animate-hero-drift w-full max-w-[184px] shrink-0 flex-col justify-center justify-self-center pl-2 sm:max-w-[202px] lg:flex lg:mx-0 lg:max-w-[min(100%,184px)] lg:justify-self-end lg:pl-6"
                 }
                 aria-hidden
               >
@@ -265,15 +265,15 @@ export function HomePageSections({
                   }
                 >
                   <Image
-                    src="/design/hero-boston-neighborhoods-portrait.png"
-                    alt=""
+                    src="/design/hero-city-map.png"
+                    alt="Stylized city map"
                     fill
                     sizes={
                       fw
                         ? "(max-width: 1024px) 224px, 304px"
                         : "(max-width: 640px) 184px, 202px"
                     }
-                    className="object-cover object-center [filter:brightness(1.1)_saturate(0.95)]"
+                    className="object-cover object-[70%_center] [filter:brightness(1.08)_saturate(1.02)_contrast(1.02)]"
                     priority
                   />
                 </div>

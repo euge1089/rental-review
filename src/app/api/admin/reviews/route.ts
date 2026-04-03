@@ -1,30 +1,38 @@
+import type { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/admin-auth";
 import { serializeReviewForAdmin } from "@/lib/serialization";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+export async function GET(request: Request) {
+  const auth = await requireAdminSession();
+  if (!auth.ok) return auth.response;
 
-export async function GET() {
-  if (!ADMIN_EMAIL) {
-    return NextResponse.json(
-      { ok: false, error: "ADMIN_EMAIL is not configured." },
-      { status: 500 },
-    );
+  const { searchParams } = new URL(request.url);
+  const q = searchParams.get("q")?.trim() ?? "";
+  const userId = searchParams.get("userId")?.trim() ?? "";
+  const rawLimit = Number.parseInt(searchParams.get("limit") ?? "100", 10);
+  const limit = Number.isFinite(rawLimit)
+    ? Math.min(Math.max(rawLimit, 1), 200)
+    : 100;
+
+  const where: Prisma.ReviewWhereInput = {};
+  if (userId.length > 0) {
+    where.userId = userId;
   }
-
-  const session = await getServerSession(authOptions);
-  const email = session?.user?.email;
-
-  if (!email || email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-    return NextResponse.json(
-      { ok: false, error: "Not authorized." },
-      { status: 403 },
-    );
+  if (q.length > 0) {
+    where.OR = [
+      { body: { contains: q, mode: "insensitive" } },
+      { property: { addressLine1: { contains: q, mode: "insensitive" } } },
+      { property: { city: { contains: q, mode: "insensitive" } } },
+      { property: { postalCode: { contains: q, mode: "insensitive" } } },
+      { user: { email: { contains: q, mode: "insensitive" } } },
+      { user: { displayName: { contains: q, mode: "insensitive" } } },
+    ];
   }
 
   const rows = await prisma.review.findMany({
+    where,
     orderBy: { createdAt: "desc" },
     include: {
       property: true,
@@ -32,12 +40,14 @@ export async function GET() {
         select: { email: true, displayName: true },
       },
     },
-    take: 100,
+    take: limit,
   });
 
   const reviews = rows.map((review) =>
     serializeReviewForAdmin({
       id: review.id,
+      propertyId: review.propertyId,
+      userId: review.userId,
       reviewYear: review.reviewYear,
       monthlyRent: review.monthlyRent,
       bathrooms: review.bathrooms,
@@ -60,6 +70,5 @@ export async function GET() {
     }),
   );
 
-  return NextResponse.json({ ok: true, reviews });
+  return NextResponse.json({ ok: true, reviews, total: reviews.length });
 }
-
