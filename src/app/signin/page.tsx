@@ -20,7 +20,7 @@ export default async function SignInPage({ searchParams }: Props) {
   const encoded = encodeURIComponent(safe);
 
   return (
-    <AppPageShell width="narrow" gapClass="gap-6">
+    <AppPageShell width="narrow" gapClass="gap-6 lg:gap-10">
       <PageHeader
         title="Sign in"
         description={
