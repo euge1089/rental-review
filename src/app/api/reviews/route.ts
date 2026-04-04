@@ -6,7 +6,10 @@ import { prisma } from "@/lib/prisma";
 import { detectLikelyPersonNames } from "@/lib/moderation";
 import { PRODUCT_POLICY } from "@/lib/policy";
 import { assertReviewYearMeetsBostonFloor } from "@/lib/review-boston-floor";
-import { normalizePropertyAddress } from "@/lib/normalize-address";
+import {
+  formatAddressLine1ForDisplay,
+  normalizePropertyAddress,
+} from "@/lib/normalize-address";
 import { resolveReviewModeration } from "@/lib/review-moderation";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
@@ -98,11 +101,12 @@ export async function POST(request: Request) {
       body.city,
       body.state,
     );
+    const addressLine1 = formatAddressLine1ForDisplay(body.address);
     const property = await prisma.property.upsert({
       where: { normalizedAddress },
-      update: {},
+      update: { addressLine1 },
       create: {
-        addressLine1: body.address,
+        addressLine1,
         city: body.city,
         state: body.state,
         postalCode: body.postalCode,

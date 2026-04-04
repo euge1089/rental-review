@@ -240,41 +240,6 @@ export default async function PropertyDetailPage({ params }: Props) {
         />
       ) : null}
 
-      <section
-        className={`${surfaceElevatedClass} relative overflow-hidden border-l-4 border-l-accent-teal p-5 sm:p-6`}
-      >
-        <div className="pointer-events-none absolute -right-20 bottom-0 h-32 w-32 rounded-full bg-accent-teal-tint/50 blur-2xl" />
-        <div className="relative text-sm leading-relaxed text-zinc-700">
-          {isSignedIn ? (
-            <>
-              <p className="font-medium text-muted-blue-hover">
-                You&apos;re signed in — full detail mode
-              </p>
-              <p className="mt-2 text-zinc-600">
-                Read complete reviews, scores, and amenities below.{" "}
-                <Link href="/submit" className={linkInlineClass}>
-                  Add your own review
-                </Link>{" "}
-                to grow the signal for the next renter.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="font-medium text-muted-blue-hover">
-                Teaser view — sign in for the full picture
-              </p>
-              <p className="mt-2 text-zinc-600">
-                <Link href="/signin" className={linkInlineClass}>
-                  Sign in
-                </Link>{" "}
-                for full review text, exact rents, amenity answers, and scores from past
-                renters.
-              </p>
-            </>
-          )}
-        </div>
-      </section>
-
       {property.reviews.length === 0 ? (
         <div
           className={`${surfaceElevatedClass} flex flex-col items-center gap-4 p-10 text-center`}

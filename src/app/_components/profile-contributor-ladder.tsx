@@ -77,7 +77,7 @@ export function ProfileContributorLadder({
     TIER_BADGE_STYLE[0]!;
 
   const tierNameClass = (unlocked: boolean) =>
-    `text-sm font-semibold uppercase tracking-wide ${
+    `text-sm font-normal uppercase tracking-wide ${
       unlocked ? "text-zinc-900" : "text-zinc-400"
     }`;
 
