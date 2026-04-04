@@ -7,10 +7,13 @@ import {
   AppPageShell,
   PageHeader,
 } from "@/app/_components/app-page-shell";
+import { BostonRentingYearPickForm } from "@/app/_components/boston-renting-year-pick-form";
 import {
   BEDROOM_SUBMIT_OPTIONS,
   PRODUCT_POLICY,
   REVIEW_YEAR_OPTIONS,
+  getBostonRentingSinceYearChoices,
+  reviewYearsAllowedForUser,
 } from "@/lib/policy";
 import {
   SUBMIT_STEP1_PREFILL_KEY,
@@ -160,38 +163,60 @@ export default function SubmitReviewPage() {
   const [anotherYearPrefill, setAnotherYearPrefill] =
     useState<SubmitStepOnePrefill | null>(null);
   const [showAnotherYearCta, setShowAnotherYearCta] = useState(false);
+  const [bostonFloor, setBostonFloor] = useState<number | null | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     if (!sessionUser || sessionUser === "loading") {
       setReviewQuota(null);
+      setBostonFloor(undefined);
       return;
     }
     let cancelled = false;
     (async () => {
-      const res = await fetch("/api/reviews/my-count");
-      const data = (await res.json()) as {
+      const [countRes, profileRes] = await Promise.all([
+        fetch("/api/reviews/my-count"),
+        fetch("/api/profile"),
+      ]);
+      const countData = (await countRes.json()) as {
         ok?: boolean;
         count?: number;
         max?: number;
         atCap?: boolean;
       };
+      const profileData = (await profileRes.json()) as {
+        ok?: boolean;
+        bostonRentingSinceYear?: number | null;
+      };
+      if (cancelled) return;
       if (
-        !cancelled &&
-        data.ok &&
-        typeof data.count === "number" &&
-        typeof data.max === "number"
+        countData.ok &&
+        typeof countData.count === "number" &&
+        typeof countData.max === "number"
       ) {
         setReviewQuota({
-          count: data.count,
-          max: data.max,
-          atCap: Boolean(data.atCap),
+          count: countData.count,
+          max: countData.max,
+          atCap: Boolean(countData.atCap),
         });
+      }
+      if (profileData.ok) {
+        setBostonFloor(profileData.bostonRentingSinceYear ?? null);
+      } else {
+        setBostonFloor(null);
       }
     })();
     return () => {
       cancelled = true;
     };
   }, [sessionUser]);
+
+  const leaseYearOptions = useMemo(() => {
+    if (!sessionUser || sessionUser === "loading") return REVIEW_YEAR_OPTIONS;
+    if (bostonFloor === undefined || bostonFloor === null) return [];
+    return reviewYearsAllowedForUser(bostonFloor);
+  }, [sessionUser, bostonFloor]);
 
   useEffect(() => {
     if (sessionUser && sessionUser !== "loading" && !sessionUser.phoneVerified) {
@@ -629,6 +654,11 @@ export default function SubmitReviewPage() {
   const callbackUrl = encodeURIComponent("/submit");
   const isAuthed = sessionUser && sessionUser !== "loading";
   const atReviewCap = reviewQuota?.atCap === true;
+  const bostonGateActive =
+    Boolean(isAuthed) &&
+    (bostonFloor === undefined || bostonFloor === null);
+  const formSurfaceBlocked =
+    !isAuthed || atReviewCap || bostonGateActive;
 
   return (
     <AppPageShell gapClass="gap-6" className="relative">
@@ -736,10 +766,34 @@ export default function SubmitReviewPage() {
         </div>
       ) : null}
 
+      {isAuthed && bostonFloor === undefined ? (
+        <p className="text-sm text-zinc-500">Loading your profile…</p>
+      ) : null}
+
+      {isAuthed && bostonFloor === null ? (
+        <div className={`${surfaceElevatedClass} space-y-4 p-6 sm:p-8`}>
+          <h2 className="text-lg font-semibold text-muted-blue-hover">
+            Set your Boston renting start year
+          </h2>
+          <p className="text-sm leading-relaxed text-zinc-600">
+            Before you submit a review, tell us the first calendar year you started
+            renting an apartment in Boston. You&apos;ll only be able to choose
+            lease-start years on or after that year. You can also complete this on{" "}
+            <Link href="/profile" className="font-semibold text-muted-blue hover:underline">
+              your profile
+            </Link>
+            .
+          </p>
+          <BostonRentingYearPickForm
+            yearChoices={getBostonRentingSinceYearChoices()}
+            submitLabel="Save and continue"
+            onSaved={(y) => setBostonFloor(y)}
+          />
+        </div>
+      ) : null}
+
       <div
-        className={
-          !isAuthed || atReviewCap ? "pointer-events-none opacity-40" : ""
-        }
+        className={formSurfaceBlocked ? "pointer-events-none opacity-40" : ""}
       >
         <PageHeader
           eyebrow="Submit review"
@@ -761,7 +815,7 @@ export default function SubmitReviewPage() {
       </div>
 
       <section
-        className={`rounded-2xl border border-emerald-200/60 bg-gradient-to-b from-emerald-50/95 to-emerald-50/80 p-5 text-emerald-950 shadow-[0_1px_2px_rgb(6_78_59/0.06)] sm:p-6 ${!isAuthed ? "pointer-events-none opacity-40" : ""}`}
+        className={`rounded-2xl border border-emerald-200/60 bg-gradient-to-b from-emerald-50/95 to-emerald-50/80 p-5 text-emerald-950 shadow-[0_1px_2px_rgb(6_78_59/0.06)] sm:p-6 ${formSurfaceBlocked ? "pointer-events-none opacity-40" : ""}`}
       >
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-base font-medium tracking-tight text-emerald-950">
@@ -811,7 +865,7 @@ export default function SubmitReviewPage() {
         onChange={() => {
           persistDraft();
         }}
-        className={`${surfaceElevatedClass} space-y-7 p-6 text-base sm:space-y-8 sm:p-10 ${!isAuthed ? "pointer-events-none opacity-40" : ""}`}
+        className={`${surfaceElevatedClass} space-y-7 p-6 text-base sm:space-y-8 sm:p-10 ${formSurfaceBlocked ? "pointer-events-none opacity-40" : ""}`}
       >
         <div
           data-step-panel="1"
@@ -919,7 +973,7 @@ export default function SubmitReviewPage() {
                   className={formSelectCompactClass}
                 >
                   <option value="">Select year</option>
-                  {REVIEW_YEAR_OPTIONS.map((year) => (
+                  {leaseYearOptions.map((year) => (
                     <option key={year} value={year}>
                       {year}
                     </option>
@@ -931,6 +985,12 @@ export default function SubmitReviewPage() {
                 <p className="text-xs leading-relaxed text-zinc-500">
                   {PRODUCT_POLICY.reviews.oneReviewPerLeaseStartYearShort}
                 </p>
+                {typeof bostonFloor === "number" ? (
+                  <p className="text-xs leading-relaxed text-zinc-500">
+                    Your profile says you started renting in Boston in {bostonFloor},
+                    so only {bostonFloor} and later years appear here.
+                  </p>
+                ) : null}
               </div>
               <div className="grid gap-2.5">
                 <label

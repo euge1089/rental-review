@@ -12,9 +12,12 @@ import {
   ProfileReviewsGrouped,
   type ProfileReviewForList,
 } from "@/app/_components/profile-reviews-grouped";
+import { ProfileBostonYearGate } from "@/app/_components/profile-boston-year-gate";
+import { ProfileContributorLadder } from "@/app/_components/profile-contributor-ladder";
 import { ProfileVerification } from "@/app/_components/profile-verification";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getBostonRentingSinceYearChoices, PRODUCT_POLICY } from "@/lib/policy";
 import { linkInlineClass } from "@/lib/ui-classes";
 
 type Props = {
@@ -49,8 +52,15 @@ export default async function ProfilePage({ searchParams }: Props) {
 
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { phoneVerified: true, displayName: true },
+    select: {
+      phoneVerified: true,
+      displayName: true,
+      bostonRentingSinceYear: true,
+    },
   });
+
+  const bostonYearChoices = getBostonRentingSinceYearChoices();
+  const bostonRentingSinceYear = user?.bostonRentingSinceYear ?? null;
 
   const [reviews, reviewTotalCount] = await Promise.all([
     prisma.review.findMany({
@@ -72,10 +82,14 @@ export default async function ProfilePage({ searchParams }: Props) {
 
   return (
     <AppPageShell>
+      {bostonRentingSinceYear == null ? (
+        <ProfileBostonYearGate yearChoices={bostonYearChoices} />
+      ) : null}
       <ProfileOnboardingOverlay
         fromSignup={fromSignupWelcome}
         displayName={displayName}
         reviewCount={reviews.length}
+        bostonRentingSinceYear={bostonRentingSinceYear}
       />
       <PageHeader
         eyebrow="Profile"
@@ -101,67 +115,111 @@ export default async function ProfilePage({ searchParams }: Props) {
         }
       />
 
-      <ProfileDisplayNameCard initialDisplayName={displayName} />
-
-      <section className="grid gap-5 md:grid-cols-4">
-        <SurfacePanel variant="subtle" as="div" className="md:col-span-3">
-          <h2 className="text-base font-semibold text-muted-blue-hover">
-            Saved apartments
-          </h2>
-          <div className="mt-3">
-            <ProfileBookmarks />
-          </div>
-        </SurfacePanel>
-        <SurfacePanel
-          variant="subtle"
-          as="div"
-          id="verification"
-          className="scroll-mt-24"
+      <div
+        className={
+          bostonRentingSinceYear != null
+            ? "flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,1fr)_19.5rem]"
+            : "space-y-5"
+        }
+      >
+        <div
+          className={
+            bostonRentingSinceYear != null
+              ? "order-2 min-w-0 space-y-5 lg:order-1"
+              : "space-y-5"
+          }
         >
-          <h2 className="text-base font-semibold text-muted-blue-hover">
-            Profile verification
-          </h2>
-          <div className="mt-3">
-            <ProfileVerification initialVerified={Boolean(user?.phoneVerified)} />
-          </div>
-        </SurfacePanel>
-      </section>
+          <ProfileDisplayNameCard initialDisplayName={displayName} />
 
-      {isAdmin ? (
-        <SurfacePanel variant="muted">
-          <h2 className="text-base font-semibold text-muted-blue-hover">
-            Admin tools
-          </h2>
-          <p className="mt-2 text-sm text-zinc-600">
-            As an admin, you can review and moderate reported or flagged reviews.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link
-              href="/admin/dashboard"
-              className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
-            >
-              Open admin dashboard
-            </Link>
-            <Link
-              href="/admin/reviews"
-              className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
-            >
-              Review moderation queue
-            </Link>
-            <Link
-              href="/admin/users"
-              className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
-            >
-              Users
-            </Link>
-          </div>
-        </SurfacePanel>
-      ) : null}
+          {bostonRentingSinceYear != null ? (
+            <SurfacePanel variant="subtle" as="section">
+              <h2 className="text-base font-semibold text-muted-blue-hover">
+                Boston renting history
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                You told us you first rented in Boston in{" "}
+                <span className="font-semibold text-zinc-800">
+                  {bostonRentingSinceYear}
+                </span>
+                . Lease-start years on your reviews must be{" "}
+                <span className="font-medium text-zinc-800">
+                  {bostonRentingSinceYear}
+                </span>{" "}
+                or later. If that year is wrong, contact us — only an admin can change
+                it.
+              </p>
+            </SurfacePanel>
+          ) : null}
 
-      <ProfileReviewsGrouped
-        reviews={reviews as ProfileReviewForList[]}
-        reviewTotalCount={reviewTotalCount}
-      />
+          <section className="grid gap-5 md:grid-cols-4">
+            <SurfacePanel variant="subtle" as="div" className="md:col-span-3">
+              <h2 className="text-base font-semibold text-muted-blue-hover">
+                Saved apartments
+              </h2>
+              <div className="mt-3">
+                <ProfileBookmarks />
+              </div>
+            </SurfacePanel>
+            <SurfacePanel
+              variant="subtle"
+              as="div"
+              id="verification"
+              className="scroll-mt-24"
+            >
+              <h2 className="text-base font-semibold text-muted-blue-hover">
+                Profile verification
+              </h2>
+              <div className="mt-3">
+                <ProfileVerification initialVerified={Boolean(user?.phoneVerified)} />
+              </div>
+            </SurfacePanel>
+          </section>
+
+          {isAdmin ? (
+            <SurfacePanel variant="muted">
+              <h2 className="text-base font-semibold text-muted-blue-hover">
+                Admin tools
+              </h2>
+              <p className="mt-2 text-sm text-zinc-600">
+                As an admin, you can review and moderate reported or flagged reviews.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link
+                  href="/admin/dashboard"
+                  className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
+                >
+                  Open admin dashboard
+                </Link>
+                <Link
+                  href="/admin/reviews"
+                  className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
+                >
+                  Review moderation queue
+                </Link>
+                <Link
+                  href="/admin/users"
+                  className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
+                >
+                  Users
+                </Link>
+              </div>
+            </SurfacePanel>
+          ) : null}
+
+          <ProfileReviewsGrouped
+            reviews={reviews as ProfileReviewForList[]}
+            reviewTotalCount={reviewTotalCount}
+          />
+        </div>
+
+        {bostonRentingSinceYear != null ? (
+          <ProfileContributorLadder
+            className="order-1 lg:sticky lg:top-28 lg:order-2 lg:self-start"
+            reviewCount={reviewTotalCount}
+            maxReviews={PRODUCT_POLICY.reviews.maxReviewsPerUser}
+          />
+        ) : null}
+      </div>
     </AppPageShell>
   );
 }

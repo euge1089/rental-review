@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { normalizePropertyAddress } from "@/lib/normalize-address";
 import { prisma } from "@/lib/prisma";
 import { PRODUCT_POLICY } from "@/lib/policy";
+import { assertReviewYearMeetsBostonFloor } from "@/lib/review-boston-floor";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 const bodySchema = z.object({
@@ -51,6 +52,17 @@ export async function POST(request: Request) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return NextResponse.json({ ok: true, exists: false });
+    }
+
+    const floorCheck = assertReviewYearMeetsBostonFloor(
+      body.reviewYear,
+      user.bostonRentingSinceYear,
+    );
+    if (!floorCheck.ok) {
+      return NextResponse.json(
+        { ok: false, error: floorCheck.error },
+        { status: 400 },
+      );
     }
 
     const normalizedAddress = normalizePropertyAddress(

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { AdminDeleteUserButton } from "@/app/_components/admin-delete-user-button";
+import { AdminUserBostonYearEditor } from "@/app/_components/admin-user-boston-year-editor";
 import {
   AppPageShell,
   PageHeader,
@@ -40,6 +41,7 @@ export default async function AdminUsersPage() {
       displayName: true,
       createdAt: true,
       phoneVerified: true,
+      bostonRentingSinceYear: true,
       _count: { select: { reviews: true } },
     },
   });
@@ -101,7 +103,11 @@ export default async function AdminUsersPage() {
                       ) : null}
                     </p>
                   </div>
-                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                  <div className="flex shrink-0 flex-col flex-wrap items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+                    <AdminUserBostonYearEditor
+                      userId={u.id}
+                      current={u.bostonRentingSinceYear}
+                    />
                     <span
                       className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ring-1 ${
                         atCap

@@ -22,6 +22,8 @@ model User {
   id              String    @id @default(cuid())
   email           String    @unique
   displayName     String?
+  /// First calendar year user started renting in Boston; set once on profile. Caps minimum lease-start year on reviews.
+  bostonRentingSinceYear Int?
   /// Set for email/password accounts; null for Google-only until linked.
   passwordHash    String?
   /// Required to sign in with email/password; Google sign-in sets this on upsert.

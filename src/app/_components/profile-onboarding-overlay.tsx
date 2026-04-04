@@ -13,12 +13,15 @@ type Props = {
   /** Current display name from the server (empty means not set). */
   displayName: string | null;
   reviewCount: number;
+  /** Welcome tips wait until Boston renting year is set. */
+  bostonRentingSinceYear: number | null;
 };
 
 export function ProfileOnboardingOverlay({
   fromSignup,
   displayName,
   reviewCount,
+  bostonRentingSinceYear,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -34,6 +37,10 @@ export function ProfileOnboardingOverlay({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (bostonRentingSinceYear == null) {
+      setOpen(false);
+      return;
+    }
     const dismissed = window.localStorage.getItem(STORAGE_KEY) === "1";
     const missingName = !displayName?.trim();
     if (!fromSignup && !missingName) {
@@ -45,7 +52,7 @@ export function ProfileOnboardingOverlay({
     } else {
       setOpen(false);
     }
-  }, [fromSignup, displayName]);
+  }, [fromSignup, displayName, bostonRentingSinceYear]);
 
   useEffect(() => {
     if (!open) return;

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
+import { normalizeEmail } from "@/lib/normalize-email";
 import { prisma } from "@/lib/prisma";
 import { summarizeRents, effectiveBedroomBand } from "@/lib/analytics";
 
@@ -41,6 +42,24 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { ok: false, error: "Please sign in to explore rent analytics." },
       { status: 401 },
+    );
+  }
+
+  const normalizedEmail = normalizeEmail(email);
+  const userRow = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+    select: { _count: { select: { reviews: true } } },
+  });
+  const userReviewCount = userRow?._count.reviews ?? 0;
+  if (userReviewCount < 1) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          "Submit at least one lease-year review to use Rent Explorer.",
+        code: "EXPLORER_REQUIRES_REVIEW",
+      },
+      { status: 403 },
     );
   }
 

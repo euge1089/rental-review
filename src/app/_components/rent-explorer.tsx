@@ -49,6 +49,7 @@ type Item = {
 type ApiResponse = {
   ok: boolean;
   error?: string;
+  code?: string;
   snapshot?: Snapshot;
   items?: Item[];
   hasMore?: boolean;
@@ -138,7 +139,13 @@ function RentRangeBand({
   );
 }
 
-export function RentExplorer() {
+type RentExplorerProps = {
+  /** Server-supplied count; explorer stays locked until the user has ≥1 review. */
+  userReviewCount: number;
+};
+
+export function RentExplorer({ userReviewCount }: RentExplorerProps) {
+  const explorerLocked = userReviewCount < 1;
   const [zip, setZip] = useState<string>("any");
   const [minBedroomBand, setMinBedroomBand] =
     useState<ExplorerBedroomBand>("Any");
@@ -237,9 +244,10 @@ export function RentExplorer() {
   }
 
   useEffect(() => {
+    if (explorerLocked) return;
     void fetchPage(0, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [explorerLocked]);
 
   const lowData = snapshot && snapshot.n > 0 && snapshot.n < 5;
 
@@ -301,11 +309,11 @@ export function RentExplorer() {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* Filters — elevated slab like hero / sign-in panels */}
+      {/* Intro — always readable */}
       <section
-        className={`${surfaceElevatedClass} space-y-5 p-4 sm:space-y-6 sm:p-6 md:p-8`}
+        className={`${surfaceElevatedClass} p-4 sm:p-6 md:p-8`}
       >
-        <div className="flex flex-col gap-4 border-b border-zinc-100 pb-6 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-blue">
               Your search
@@ -319,7 +327,17 @@ export function RentExplorer() {
             </p>
           </div>
         </div>
+      </section>
 
+      <div className="relative flex flex-col gap-10">
+        <div
+          className={`flex flex-col gap-10 ${explorerLocked ? "pointer-events-none select-none blur-md" : ""}`}
+          aria-hidden={explorerLocked}
+        >
+      {/* Filters — elevated slab like hero / sign-in panels */}
+      <section
+        className={`${surfaceElevatedClass} space-y-5 p-4 sm:space-y-6 sm:p-6 md:p-8`}
+      >
         <div className="space-y-5">
           <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
             <div className="grid gap-1.5">
@@ -781,6 +799,43 @@ export function RentExplorer() {
           </Link>
         </div>
       </section>
+        </div>
+
+        {explorerLocked ? (
+          <div
+            className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center p-6 sm:p-10"
+            role="presentation"
+          >
+            <div
+              className={`${surfaceElevatedClass} pointer-events-auto max-w-md space-y-4 border-2 border-accent-teal/30 p-6 text-center shadow-elevated sm:p-8`}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="rent-explorer-gate-title"
+              aria-describedby="rent-explorer-gate-desc"
+            >
+              <p
+                id="rent-explorer-gate-title"
+                className="text-base font-semibold text-muted-blue-hover"
+              >
+                Unlock Rent Explorer
+              </p>
+              <p
+                id="rent-explorer-gate-desc"
+                className="text-sm leading-relaxed text-zinc-600"
+              >
+                Share your first lease-year review to see market summaries and matching
+                reviews. It keeps the tool grounded in real renter contributions.
+              </p>
+              <Link
+                href="/submit"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-muted-blue px-6 py-2.5 text-sm font-semibold text-white shadow-[0_10px_28px_-8px_rgb(21_42_69/0.35)] transition motion-safe:hover:bg-muted-blue-hover"
+              >
+                Leave your first review
+              </Link>
+            </div>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

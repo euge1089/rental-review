@@ -15,6 +15,7 @@ export async function GET() {
       displayName: true,
       createdAt: true,
       phoneVerified: true,
+      bostonRentingSinceYear: true,
       _count: { select: { reviews: true } },
     },
   });

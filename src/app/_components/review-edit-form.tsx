@@ -1,12 +1,12 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   BEDROOM_SUBMIT_OPTIONS,
   PRODUCT_POLICY,
-  REVIEW_YEAR_OPTIONS,
+  reviewYearsAllowedForUser,
 } from "@/lib/policy";
 import {
   formInputCompactClass,
@@ -17,6 +17,8 @@ import {
 
 type Props = {
   reviewId: string;
+  /** Minimum lease-start year from profile; null = not set (should not happen for editors). */
+  minLeaseStartYear: number | null;
   initial: {
     propertyAddress: string;
     propertyCity: string;
@@ -40,7 +42,15 @@ type Props = {
   };
 };
 
-export function ReviewEditForm({ reviewId, initial }: Props) {
+export function ReviewEditForm({ reviewId, minLeaseStartYear, initial }: Props) {
+  const yearOptions = useMemo(() => {
+    if (minLeaseStartYear == null) return [];
+    const allowed = reviewYearsAllowedForUser(minLeaseStartYear);
+    if (!allowed.includes(initial.reviewYear)) {
+      return [...allowed, initial.reviewYear].sort((a, b) => b - a);
+    }
+    return allowed;
+  }, [minLeaseStartYear, initial.reviewYear]);
   const router = useRouter();
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
@@ -107,6 +117,15 @@ export function ReviewEditForm({ reviewId, initial }: Props) {
       onSubmit={handleSubmit}
       className={`${surfaceElevatedClass} space-y-5 p-6 sm:p-8`}
     >
+      {minLeaseStartYear == null ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          Set the first year you rented in Boston on{" "}
+          <Link href="/profile" className="font-semibold text-muted-blue hover:underline">
+            your profile
+          </Link>{" "}
+          before editing this review.
+        </div>
+      ) : null}
       <div>
         <p className="text-sm font-medium text-zinc-900">
           {initial.propertyAddress}
@@ -139,8 +158,9 @@ export function ReviewEditForm({ reviewId, initial }: Props) {
             name="year"
             defaultValue={String(initial.reviewYear)}
             className={formSelectCompactClass}
+            disabled={yearOptions.length === 0}
           >
-            {REVIEW_YEAR_OPTIONS.map((year) => (
+            {yearOptions.map((year) => (
               <option key={year} value={year}>
                 {year}
               </option>
@@ -149,6 +169,11 @@ export function ReviewEditForm({ reviewId, initial }: Props) {
           <p className="text-xs text-zinc-500">
             {PRODUCT_POLICY.reviews.leaseStartYearRule}
           </p>
+          {minLeaseStartYear != null ? (
+            <p className="text-xs text-zinc-500">
+              Choices start at {minLeaseStartYear} based on your profile.
+            </p>
+          ) : null}
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { detectLikelyPersonNames } from "@/lib/moderation";
 import { resolveReviewModeration } from "@/lib/review-moderation";
+import { assertReviewYearMeetsBostonFloor } from "@/lib/review-boston-floor";
 
 const schema = z.object({
   reviewYear: z.number().int().min(2017),
@@ -51,7 +52,11 @@ export async function PATCH(request: Request, { params }: Params) {
     where: { id },
     include: {
       user: {
-        select: { email: true, phoneVerified: true },
+        select: {
+          email: true,
+          phoneVerified: true,
+          bostonRentingSinceYear: true,
+        },
       },
     },
   });
@@ -66,6 +71,17 @@ export async function PATCH(request: Request, { params }: Params) {
   try {
     const rawBody = await request.json();
     const body = schema.parse(rawBody);
+
+    const floorCheck = assertReviewYearMeetsBostonFloor(
+      body.reviewYear,
+      existing.user.bostonRentingSinceYear,
+    );
+    if (!floorCheck.ok) {
+      return NextResponse.json(
+        { ok: false, error: floorCheck.error },
+        { status: 400 },
+      );
+    }
 
     const names = detectLikelyPersonNames(body.reviewText ?? "");
     const { moderationStatus, moderationReasons, userMessage } =

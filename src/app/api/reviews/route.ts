@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { detectLikelyPersonNames } from "@/lib/moderation";
 import { PRODUCT_POLICY } from "@/lib/policy";
+import { assertReviewYearMeetsBostonFloor } from "@/lib/review-boston-floor";
 import { normalizePropertyAddress } from "@/lib/normalize-address";
 import { resolveReviewModeration } from "@/lib/review-moderation";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
@@ -77,6 +78,17 @@ export async function POST(request: Request) {
       update: {},
       create: { email, displayName: session.user?.name ?? null },
     });
+
+    const floorCheck = assertReviewYearMeetsBostonFloor(
+      body.reviewYear,
+      user.bostonRentingSinceYear,
+    );
+    if (!floorCheck.ok) {
+      return NextResponse.json(
+        { ok: false, error: floorCheck.error },
+        { status: 400 },
+      );
+    }
 
     const { moderationStatus, moderationReasons, userMessage } =
       resolveReviewModeration(names, Boolean(user.phoneVerified));

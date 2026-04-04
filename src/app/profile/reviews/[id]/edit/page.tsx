@@ -38,7 +38,7 @@ export default async function EditReviewPage({ params }: Props) {
     include: {
       property: true,
       user: {
-        select: { email: true },
+        select: { email: true, bostonRentingSinceYear: true },
       },
     },
   });
@@ -56,6 +56,7 @@ export default async function EditReviewPage({ params }: Props) {
       />
       <ReviewEditForm
         reviewId={review.id}
+        minLeaseStartYear={review.user.bostonRentingSinceYear}
         initial={{
           propertyAddress: review.property.addressLine1,
           propertyCity: review.property.city,

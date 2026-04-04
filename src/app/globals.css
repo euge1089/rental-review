@@ -105,3 +105,19 @@ body {
     animation: home-keyword-marquee 52s linear infinite;
   }
 }
+
+@keyframes ladder-next {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(219 120 55 / 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgb(219 120 55 / 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-ladder-next {
+    animation: ladder-next 2.2s ease-in-out infinite;
+  }
+}

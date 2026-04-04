@@ -50,6 +50,27 @@ export const REVIEW_YEAR_OPTIONS = [
   2017,
 ];
 
+/** Ten calendar years ending in the current year (for “first year renting in Boston”). */
+export function getBostonRentingSinceYearChoices(now = new Date()): number[] {
+  const y = now.getFullYear();
+  return Array.from({ length: 10 }, (_, i) => y - i);
+}
+
+export function isValidBostonRentingSinceYear(
+  year: number,
+  now = new Date(),
+): boolean {
+  return getBostonRentingSinceYearChoices(now).includes(year);
+}
+
+/** Lease-start years allowed on forms given profile floor (intersect global list). */
+export function reviewYearsAllowedForUser(
+  bostonRentingSinceYear: number | null,
+): number[] {
+  if (bostonRentingSinceYear == null) return [];
+  return REVIEW_YEAR_OPTIONS.filter((y) => y >= bostonRentingSinceYear);
+}
+
 export const SOUTH_BOSTON_ZIP_CODES = ["02127", "02210"];
 
 /** Step 1 bedroom values: 0 studio, 1–4 exact beds, 5 = 5 or more */

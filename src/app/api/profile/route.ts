@@ -4,11 +4,41 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { normalizeEmail } from "@/lib/normalize-email";
+import { isValidBostonRentingSinceYear } from "@/lib/policy";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
-const patchSchema = z.object({
-  displayName: z.string().max(120),
-});
+const patchSchema = z
+  .object({
+    displayName: z.string().max(120).optional(),
+    bostonRentingSinceYear: z.number().int().optional(),
+  })
+  .refine((d) => d.displayName !== undefined || d.bostonRentingSinceYear !== undefined, {
+    message: "No updates.",
+  });
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  const emailRaw = session?.user?.email;
+  if (!emailRaw) {
+    return NextResponse.json({ ok: false, error: "Not signed in." }, { status: 401 });
+  }
+  const email = normalizeEmail(emailRaw);
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      displayName: true,
+      bostonRentingSinceYear: true,
+      phoneVerified: true,
+    },
+  });
+
+  if (!user) {
+    return NextResponse.json({ ok: false, error: "User not found." }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true, ...user });
+}
 
 export async function PATCH(request: Request) {
   const session = await getServerSession(authOptions);
@@ -37,13 +67,51 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ ok: false, error: "Invalid input." }, { status: 400 });
   }
 
-  const trimmed = parsed.displayName.trim();
-  const displayName = trimmed.length === 0 ? null : trimmed;
-
-  await prisma.user.update({
+  const existing = await prisma.user.findUnique({
     where: { email },
-    data: { displayName },
+    select: { bostonRentingSinceYear: true },
   });
 
-  return NextResponse.json({ ok: true, displayName });
+  if (!existing) {
+    return NextResponse.json({ ok: false, error: "User not found." }, { status: 404 });
+  }
+
+  const data: { displayName?: string | null; bostonRentingSinceYear?: number } = {};
+
+  if (parsed.displayName !== undefined) {
+    const trimmed = parsed.displayName.trim();
+    data.displayName = trimmed.length === 0 ? null : trimmed;
+  }
+
+  if (parsed.bostonRentingSinceYear !== undefined) {
+    if (existing.bostonRentingSinceYear != null) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Your first Boston renting year is already set. Contact us if it needs to be corrected.",
+        },
+        { status: 400 },
+      );
+    }
+    if (!isValidBostonRentingSinceYear(parsed.bostonRentingSinceYear)) {
+      return NextResponse.json(
+        { ok: false, error: "Pick one of the listed years." },
+        { status: 400 },
+      );
+    }
+    data.bostonRentingSinceYear = parsed.bostonRentingSinceYear;
+  }
+
+  const updated = await prisma.user.update({
+    where: { email },
+    data,
+    select: { displayName: true, bostonRentingSinceYear: true },
+  });
+
+  return NextResponse.json({
+    ok: true,
+    displayName: updated.displayName,
+    bostonRentingSinceYear: updated.bostonRentingSinceYear,
+  });
 }
