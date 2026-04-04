@@ -80,7 +80,7 @@ export function PropertyDetailHero({
         <p className="mt-6 text-center text-xs text-zinc-500 lg:text-left">
           Numbers come from renter submissions — use them as a sanity check, not a
           guarantee.{" "}
-          <Link href="/how-it-works" className={linkInlineClass}>
+          <Link href="/#how-it-works" className={linkInlineClass}>
             How it works
           </Link>
         </p>
