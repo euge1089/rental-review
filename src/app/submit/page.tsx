@@ -912,6 +912,7 @@ export default function SubmitReviewPage() {
 
       <form
         ref={formRef}
+        noValidate
         onSubmit={handleSubmit}
         onChange={() => {
           persistDraft();
