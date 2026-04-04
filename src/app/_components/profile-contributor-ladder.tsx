@@ -18,32 +18,17 @@ const RUNGS: Rung[] = [
   { need: 5, title: "Veteran Contributor", minReviewsLabel: "5+ reviews" },
 ];
 
-/** Rank 1 = top (Veteran): strongest pop orange. Rank 6 = bottom: clearest / almost neutral. */
+/**
+ * Rank 1 = top (Veteran): full theme pop. Rank 6 = bottom: solid pop-tint.
+ * Each badge is a single flat color (no gradient inside the square).
+ */
 const RANK_BADGE_CLASS: { box: string; num: string }[] = [
-  {
-    box: "bg-gradient-to-br from-pop via-[#e8894a] to-pop-hover shadow-md shadow-pop/25 ring-1 ring-white/25",
-    num: "text-white drop-shadow-sm",
-  },
-  {
-    box: "bg-gradient-to-br from-pop-tint to-pop/95 ring-1 ring-pop/20",
-    num: "text-white drop-shadow-sm",
-  },
-  {
-    box: "bg-gradient-to-br from-pop-tint to-pop/70 ring-1 ring-pop/15",
-    num: "text-white",
-  },
-  {
-    box: "bg-gradient-to-br from-white to-pop/45 ring-1 ring-zinc-200/80",
-    num: "text-muted-blue-hover",
-  },
-  {
-    box: "bg-gradient-to-br from-white to-pop/22 ring-1 ring-zinc-200/70",
-    num: "text-muted-blue-hover",
-  },
-  {
-    box: "bg-gradient-to-br from-zinc-50 via-white to-pop/[0.07] ring-1 ring-zinc-200/90",
-    num: "text-muted-blue-hover",
-  },
+  { box: "bg-pop-hover ring-1 ring-black/10", num: "text-white" },
+  { box: "bg-pop ring-1 ring-black/10", num: "text-white" },
+  { box: "bg-[#e07d42] ring-1 ring-black/5", num: "text-white" },
+  { box: "bg-[#ea965e] ring-1 ring-black/5", num: "text-white" },
+  { box: "bg-[#f2b88a] ring-1 ring-zinc-300/60", num: "text-muted-blue-hover" },
+  { box: "bg-pop-tint ring-1 ring-zinc-200/80", num: "text-muted-blue-hover" },
 ];
 
 function reviewsRequiredLine(rung: Rung): string {
