@@ -218,6 +218,26 @@ export default function SubmitReviewPage() {
     return reviewYearsAllowedForUser(bostonFloor);
   }, [sessionUser, bostonFloor]);
 
+  /** Draft or hydration can leave the lease year select with a value not in the allowed list once profile loads. */
+  useEffect(() => {
+    if (typeof window === "undefined" || !formRef.current) return;
+    if (bostonFloor === undefined || bostonFloor === null) return;
+    if (leaseYearOptions.length === 0) return;
+    const yearEl = formRef.current.elements.namedItem("year") as
+      | HTMLSelectElement
+      | null;
+    if (!yearEl) return;
+    const current = yearEl.value;
+    if (!current) return;
+    const y = Number(current);
+    if (!leaseYearOptions.includes(y)) {
+      yearEl.value = "";
+      setStatusMessage(
+        `That lease year isn’t available with your profile (you started renting in Boston in ${bostonFloor}). Pick a year from the list.`,
+      );
+    }
+  }, [bostonFloor, leaseYearOptions]);
+
   useEffect(() => {
     if (sessionUser && sessionUser !== "loading" && !sessionUser.phoneVerified) {
       if (typeof window === "undefined") return;
@@ -439,6 +459,11 @@ export default function SubmitReviewPage() {
       const required = [...group].some((r) => r.required);
       const checked = [...group].some((r) => r.checked);
       if (required && !checked) {
+        setStatusMessage("Please choose how many bedrooms.");
+        document.getElementById("bedroom-count-label")?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
         group[0]?.reportValidity();
         return false;
       }
@@ -528,7 +553,12 @@ export default function SubmitReviewPage() {
         const address = String(fd.get("address") ?? "").trim();
         const yearRaw = fd.get("year");
         const reviewYear = Number(yearRaw);
-        if (!yearRaw || Number.isNaN(reviewYear)) {
+        if (
+          yearRaw == null ||
+          String(yearRaw).trim() === "" ||
+          Number.isNaN(reviewYear)
+        ) {
+          setStatusMessage("Please choose a lease start year.");
           return;
         }
         setStatusMessage("");
@@ -544,20 +574,41 @@ export default function SubmitReviewPage() {
               reviewYear,
             }),
           });
-          const data = (await res.json()) as {
+          let data: {
             ok: boolean;
             exists?: boolean;
             reviewId?: string | null;
             error?: string;
           };
+          try {
+            data = (await res.json()) as typeof data;
+          } catch {
+            setStatusMessage(
+              "We couldn’t read the server response. Please try Continue again.",
+            );
+            return;
+          }
           if (!data.ok) {
             setStatusMessage(data.error ?? "Could not check for an existing review.");
             return;
           }
-          if (data.exists && data.reviewId) {
-            setDuplicateModalReviewId(data.reviewId);
+          if (data.exists) {
+            if (data.reviewId) {
+              setDuplicateModalReviewId(data.reviewId);
+            } else {
+              setStatusMessage(
+                "You already have a review for this address and lease year. Check your profile to edit or remove it.",
+              );
+            }
             return;
           }
+        } catch (err) {
+          setStatusMessage(
+            err instanceof Error
+              ? err.message
+              : "Network error while checking your review. Please try again.",
+          );
+          return;
         } finally {
           setDuplicateChecking(false);
         }
@@ -879,6 +930,17 @@ export default function SubmitReviewPage() {
               <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
                 Where did you live?
               </h2>
+              <div className="max-w-2xl space-y-2 pt-0.5">
+                <p className="text-sm leading-relaxed text-zinc-600">
+                  {PRODUCT_POLICY.reviews.oneReviewPerLeaseStartYearShort}
+                </p>
+                {typeof bostonFloor === "number" ? (
+                  <p className="text-sm leading-relaxed text-zinc-600">
+                    Your profile says you started renting in Boston in {bostonFloor},
+                    so only {bostonFloor} and later years appear here.
+                  </p>
+                ) : null}
+              </div>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />
 
@@ -982,15 +1044,6 @@ export default function SubmitReviewPage() {
                 <p className="text-sm leading-relaxed text-zinc-500">
                   {PRODUCT_POLICY.reviews.leaseStartYearRule}
                 </p>
-                <p className="text-xs leading-relaxed text-zinc-500">
-                  {PRODUCT_POLICY.reviews.oneReviewPerLeaseStartYearShort}
-                </p>
-                {typeof bostonFloor === "number" ? (
-                  <p className="text-xs leading-relaxed text-zinc-500">
-                    Your profile says you started renting in Boston in {bostonFloor},
-                    so only {bostonFloor} and later years appear here.
-                  </p>
-                ) : null}
               </div>
               <div className="grid gap-2.5">
                 <label
