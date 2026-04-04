@@ -31,9 +31,6 @@ export function HeroSignUpOverlay({
     };
   }, [open]);
 
-  const encoded = encodeURIComponent(callbackUrl);
-  const googleHref = `/api/auth/signin/google?callbackUrl=${encoded}`;
-
   const buttonClass =
     variant === "wide"
       ? "inline-flex min-h-11 w-full shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-muted-blue px-8 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-8px_rgb(92_107_127/0.35)] transition active:bg-muted-blue-hover/95 hover:bg-muted-blue-hover lg:w-auto"
@@ -106,7 +103,6 @@ export function HeroSignUpOverlay({
               <EmailAuthPanel
                 key={panelKey}
                 callbackUrl={callbackUrl}
-                googleHref={googleHref}
                 signupFocus
                 onSignedIn={() => setOpen(false)}
               />

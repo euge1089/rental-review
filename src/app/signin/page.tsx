@@ -18,6 +18,9 @@ function firstParam(
   return Array.isArray(value) ? value[0] : value;
 }
 
+/** NextAuth sets `error` to the URL segment when `?error=` is absent (e.g. `/signin/google` → `google`). Not a real failure. */
+const NEXTAUTH_FALSE_POSITIVE_ERRORS = new Set(["google", "credentials"]);
+
 function signInErrorGuidance(code: string): { title: string; body: string } {
   switch (code) {
     case "OAuthCallback":
@@ -57,13 +60,15 @@ function signInErrorGuidance(code: string): { title: string; body: string } {
 export default async function SignInPage({ searchParams }: Props) {
   const params = await searchParams;
   const { callbackUrl } = params;
-  const errorCode = firstParam(params.error);
+  const rawError = firstParam(params.error);
+  const errorCode =
+    rawError && !NEXTAUTH_FALSE_POSITIVE_ERRORS.has(rawError)
+      ? rawError
+      : undefined;
   const safe =
     callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")
       ? callbackUrl
       : "/";
-  const encoded = encodeURIComponent(safe);
-
   const errorGuide = errorCode ? signInErrorGuidance(errorCode) : null;
 
   return (
@@ -93,10 +98,7 @@ export default async function SignInPage({ searchParams }: Props) {
         </div>
       ) : null}
       <SurfacePanel className="my-[20px]">
-        <EmailAuthPanel
-          callbackUrl={safe}
-          googleHref={`/api/auth/signin/google?callbackUrl=${encoded}`}
-        />
+        <EmailAuthPanel callbackUrl={safe} />
       </SurfacePanel>
       <p className="text-center text-xs text-zinc-500">
         Continued use of the site is subject to the draft{" "}

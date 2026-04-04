@@ -33,7 +33,6 @@ function AuthLegalNote() {
 
 type Props = {
   callbackUrl: string;
-  googleHref: string;
   /** Hero modal: Google + single “create account” CTA and a sign-in link. */
   signupFocus?: boolean;
   /** Called after successful credentials sign-in (e.g. close a dialog). */
@@ -42,7 +41,6 @@ type Props = {
 
 export function EmailAuthPanel({
   callbackUrl,
-  googleHref,
   signupFocus = false,
   onSignedIn,
 }: Props) {
@@ -160,16 +158,22 @@ export function EmailAuthPanel({
     }
   }
 
+  function handleGoogleSignIn() {
+    resetError();
+    void signIn("google", { callbackUrl });
+  }
+
   if (flow === "pick") {
     if (signupFocus) {
       return (
         <div className="flex flex-col items-center gap-6">
-          <a
-            href={googleHref}
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
             className="inline-flex w-full max-w-sm items-center justify-center whitespace-nowrap rounded-full bg-muted-blue px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-8px_rgb(92_107_127/0.35)] transition hover:bg-muted-blue-hover sm:max-w-none sm:w-auto"
           >
             Continue with Google
-          </a>
+          </button>
           <div className="flex w-full items-center gap-4">
             <div className="h-px flex-1 bg-zinc-200" />
             <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
@@ -203,12 +207,13 @@ export function EmailAuthPanel({
 
     return (
       <div className="flex flex-col items-center gap-6">
-        <a
-          href={googleHref}
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
           className="inline-flex min-h-11 w-full max-w-sm shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-muted-blue px-5 py-3 text-sm font-semibold text-white transition active:bg-muted-blue-hover/95 hover:bg-muted-blue-hover sm:max-w-none sm:w-auto"
         >
           Continue with Google
-        </a>
+        </button>
         <div className="flex w-full items-center gap-4">
           <div className="h-px flex-1 bg-zinc-200" />
           <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
