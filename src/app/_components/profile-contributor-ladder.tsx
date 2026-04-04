@@ -6,17 +6,19 @@ import { surfaceElevatedClass } from "@/lib/ui-classes";
 type Rung = {
   need: number;
   title: string;
-  /** Shown inside the tier badge (single line / tight wrap). */
-  badgeLabel: string;
+  /** Inside the orange badge — no "reviews" (e.g. `0`, `1+`, `5+`). */
+  bubbleLabel: string;
+  /** Subtitle under the tier name. */
+  subtitle: string;
 };
 
 const RUNGS: Rung[] = [
-  { need: 0, title: "Getting Started", badgeLabel: "0 reviews" },
-  { need: 1, title: "Contributor", badgeLabel: "1+ reviews" },
-  { need: 2, title: "Verified", badgeLabel: "2+ reviews" },
-  { need: 3, title: "Established", badgeLabel: "3+ reviews" },
-  { need: 4, title: "Insider", badgeLabel: "4+ reviews" },
-  { need: 5, title: "Veteran Contributor", badgeLabel: "5+ Reviews" },
+  { need: 0, title: "Getting Started", bubbleLabel: "0", subtitle: "0 reviews" },
+  { need: 1, title: "Contributor", bubbleLabel: "1+", subtitle: "1+ reviews" },
+  { need: 2, title: "Verified", bubbleLabel: "2+", subtitle: "2+ reviews" },
+  { need: 3, title: "Established", bubbleLabel: "3+", subtitle: "3+ reviews" },
+  { need: 4, title: "Insider", bubbleLabel: "4+", subtitle: "4+ reviews" },
+  { need: 5, title: "Veteran Contributor", bubbleLabel: "5+", subtitle: "5+ reviews" },
 ];
 
 /**
@@ -74,6 +76,11 @@ export function ProfileContributorLadder({
     TIER_BADGE_STYLE[tierStyleIndexFromRungIndex(topUnlockedIndex)] ??
     TIER_BADGE_STYLE[0]!;
 
+  const tierNameClass = (unlocked: boolean) =>
+    `text-sm font-semibold uppercase tracking-wide ${
+      unlocked ? "text-zinc-900" : "text-zinc-400"
+    }`;
+
   return (
     <aside
       className={`${surfaceElevatedClass} border border-zinc-200/90 p-5 sm:p-6 ${className}`}
@@ -96,16 +103,19 @@ export function ProfileContributorLadder({
         role="status"
       >
         <div
-          className={`flex min-h-[3rem] min-w-[4.25rem] max-w-[5.5rem] shrink-0 items-center justify-center rounded-lg px-1.5 py-1.5 text-center text-[10px] font-bold leading-tight tracking-tight sm:min-h-[3.25rem] sm:min-w-[4.75rem] sm:text-[11px] ${currentStyle.box} ${currentStyle.text}`}
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-base font-bold tabular-nums sm:h-12 sm:w-12 sm:text-lg ${currentStyle.box} ${currentStyle.text}`}
         >
-          {currentRung.badgeLabel}
+          {currentRung.bubbleLabel}
         </div>
         <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
             Current rank
           </p>
-          <p className="mt-0.5 text-sm font-semibold tracking-tight text-zinc-900">
+          <p className={`mt-0.5 ${tierNameClass(true)}`}>
             {currentRung.title}
+          </p>
+          <p className="mt-0.5 text-xs tabular-nums text-zinc-500">
+            {currentRung.subtitle}
           </p>
         </div>
       </div>
@@ -122,23 +132,26 @@ export function ProfileContributorLadder({
           return (
             <li
               key={rung.need}
-              className="flex items-center gap-3 sm:gap-4"
+              className="flex items-start gap-3 sm:gap-4"
               aria-current={isCurrentRung ? "step" : undefined}
             >
               <div
-                className={`flex min-h-[3rem] min-w-[4.25rem] max-w-[5.5rem] shrink-0 items-center justify-center rounded-lg px-1.5 py-1.5 text-center text-[10px] font-bold leading-tight tracking-tight sm:min-h-[3.25rem] sm:min-w-[4.75rem] sm:text-[11px] ${badge.box} ${badge.text} ${
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-base font-bold tabular-nums sm:h-12 sm:w-12 sm:text-lg ${badge.box} ${badge.text} ${
                   isNextGoal && !unlocked ? "motion-safe:animate-ladder-next" : ""
                 }`}
               >
-                {rung.badgeLabel}
+                {rung.bubbleLabel}
               </div>
-              <p
-                className={`min-w-0 text-sm font-semibold tracking-tight ${
-                  unlocked ? "text-zinc-900" : "text-zinc-400"
-                }`}
-              >
-                {rung.title}
-              </p>
+              <div className="min-w-0 pt-0.5">
+                <p className={tierNameClass(unlocked)}>{rung.title}</p>
+                <p
+                  className={`mt-0.5 text-xs tabular-nums ${
+                    unlocked ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
+                  {rung.subtitle}
+                </p>
+              </div>
             </li>
           );
         })}
