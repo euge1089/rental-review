@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import Link from "next/link";
+import { AdminPropertyDeleteButton } from "@/app/_components/admin-property-delete-button";
 import {
   AppPageShell,
   PageHeader,
@@ -32,34 +33,46 @@ export default async function AdminDashboardPage() {
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  const [userCount, reviewStats, propertyStats, recentReviews] = await Promise.all([
-    prisma.user.count(),
-    prisma.review.groupBy({
-      by: ["moderationStatus"],
-      _count: { _all: true },
-    }),
-    prisma.property.findMany({
-      include: {
-        _count: { select: { reviews: true } },
-        reviews: {
-          select: { moderationStatus: true, moderationReasons: true },
+  const [userCount, reviewStats, propertyStats, recentReviews, emptyProperties] =
+    await Promise.all([
+      prisma.user.count(),
+      prisma.review.groupBy({
+        by: ["moderationStatus"],
+        _count: { _all: true },
+      }),
+      prisma.property.findMany({
+        include: {
+          _count: { select: { reviews: true } },
+          reviews: {
+            select: { moderationStatus: true, moderationReasons: true },
+          },
         },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
-    prisma.review.findMany({
-      include: {
-        property: true,
-        user: { select: { id: true, email: true, displayName: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      where: {
-        createdAt: { gte: oneWeekAgo },
-      },
-      take: 20,
-    }),
-  ] as const);
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+      prisma.review.findMany({
+        include: {
+          property: true,
+          user: { select: { id: true, email: true, displayName: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        where: {
+          createdAt: { gte: oneWeekAgo },
+        },
+        take: 20,
+      }),
+      prisma.property.findMany({
+        where: { reviews: { none: {} } },
+        select: {
+          id: true,
+          addressLine1: true,
+          city: true,
+          state: true,
+          postalCode: true,
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+    ] as const);
 
   const totalReviews = reviewStats.reduce(
     (sum, r) => sum + r._count._all,
@@ -135,6 +148,38 @@ export default async function AdminDashboardPage() {
           </p>
         </div>
       </section>
+
+      {emptyProperties.length > 0 ? (
+        <section className={`${surfaceSubtleClass} p-5 text-sm shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}>
+          <h2 className="text-base font-semibold text-muted-blue-hover">
+            Properties with no reviews
+          </h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            Leftover rows after all reviews were removed (e.g. admin delete).
+            Deleting also removes any bookmarks for that address.
+          </p>
+          <ul className="mt-3 space-y-2 text-xs">
+            {emptyProperties.map((p) => (
+              <li
+                key={p.id}
+                className="flex items-start justify-between gap-3 rounded-xl border border-zinc-200/70 bg-white/80 px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="font-semibold text-muted-blue-hover">{p.addressLine1}</p>
+                  <p className="text-[11px] text-zinc-600">
+                    {p.city}, {p.state} {p.postalCode ?? ""}
+                  </p>
+                  <p className="mt-1 font-mono text-[10px] text-zinc-400">{p.id}</p>
+                </div>
+                <AdminPropertyDeleteButton
+                  propertyId={p.id}
+                  addressLine={p.addressLine1}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="grid gap-6 md:grid-cols-2">
         <div className={`${surfaceSubtleClass} p-5 text-sm shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}>
