@@ -7,6 +7,9 @@ import { normalizeEmail } from "@/lib/normalize-email";
 import { verifyPassword } from "@/lib/password";
 
 export const authOptions: NextAuthOptions = {
+  pages: {
+    signIn: "/signin",
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "google-client-id-placeholder",
