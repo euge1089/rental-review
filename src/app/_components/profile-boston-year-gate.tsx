@@ -26,11 +26,7 @@ export function ProfileBostonYearGate({ yearChoices }: Props) {
           When did you first rent in Boston?
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-zinc-600">
-          We ask every renter for the first calendar year they started leasing an
-          apartment in Boston. You can only submit reviews for lease years{" "}
-          <span className="font-medium text-zinc-800">on or after</span> the year you
-          pick — it keeps the map honest. You can&apos;t change this yourself later;
-          contact us if it was wrong.
+          You can only submit reviews for lease years on or after the year you select.
         </p>
         <div className="mt-6">
           <BostonRentingYearPickForm yearChoices={yearChoices} />

@@ -50,15 +50,13 @@ export function BostonRentingYearPickForm({
   return (
     <form className="space-y-4" onSubmit={onSubmit}>
       <div>
-        <label htmlFor="boston-first-year" className="text-sm font-semibold text-zinc-800">
-          First year I rented in Boston
-        </label>
         <select
           id="boston-first-year"
+          aria-label="Year you first rented in Boston"
           value={year}
           onChange={(ev) => setYear(ev.target.value)}
           required
-          className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none ring-muted-blue/20 focus:ring-2"
+          className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none ring-muted-blue/20 focus:ring-2"
         >
           <option value="">Select year</option>
           {yearChoices.map((y) => (
