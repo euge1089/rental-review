@@ -41,7 +41,7 @@ function signInErrorGuidance(code: string): { title: string; body: string } {
     case "Callback":
       return {
         title: "Sign-in failed after Google",
-        body: "Google returned successfully but the app couldn’t finish creating your session. If you run the site, check server logs for database or callback errors.",
+        body: "Google succeeded, but creating your session failed—usually a database issue on the server. Check host logs for “[auth] Google sign-in” or Prisma errors. Confirm DATABASE_URL works from production (SSL, pooled URL if your host requires it), and that prisma migrate has been applied.",
       };
     case "Configuration":
     case "configuration":

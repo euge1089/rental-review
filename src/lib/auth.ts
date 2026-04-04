@@ -45,21 +45,36 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account, profile }) {
       if (account?.provider === "google" && profile && isGoogleProfile(profile)) {
         const email = normalizeEmail(profile.email);
-        const row = await prisma.user.upsert({
-          where: { email },
-          update: {
-            emailVerifiedAt: new Date(),
-            ...(profile.name ? { displayName: profile.name } : {}),
-          },
-          create: {
+        if (!email) {
+          throw new Error("Google sign-in did not return an email address.");
+        }
+        try {
+          const row = await prisma.user.upsert({
+            where: { email },
+            update: {
+              emailVerifiedAt: new Date(),
+              ...(profile.name ? { displayName: profile.name } : {}),
+            },
+            create: {
+              email,
+              displayName: profile.name ?? null,
+              emailVerifiedAt: new Date(),
+            },
+          });
+          token.sub = row.id;
+          token.email = row.email;
+          token.name = row.displayName ?? profile.name ?? undefined;
+        } catch (err) {
+          console.error("[auth] Google sign-in: failed to upsert User", {
             email,
-            displayName: profile.name ?? null,
-            emailVerifiedAt: new Date(),
-          },
-        });
-        token.sub = row.id;
-        token.email = row.email;
-        token.name = row.displayName ?? profile.name ?? undefined;
+            prisma:
+              err && typeof err === "object" && "code" in err
+                ? (err as { code?: string; meta?: unknown }).code
+                : undefined,
+            message: err instanceof Error ? err.message : String(err),
+          });
+          throw err;
+        }
       } else if (account?.provider === "credentials" && user) {
         token.sub = user.id;
         token.email = user.email;
