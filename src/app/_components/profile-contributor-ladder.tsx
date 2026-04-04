@@ -18,45 +18,39 @@ const RUNGS: Rung[] = [
   { need: 5, title: "Veteran Contributor", minReviewsLabel: "5+ reviews" },
 ];
 
-/** Per-tier accent: stripe + soft fill + ring hint (gamified but flat). */
-const TIER_STYLE = [
+/** Rank 1 = top (Veteran): strongest pop orange. Rank 6 = bottom: clearest / almost neutral. */
+const RANK_BADGE_CLASS: { box: string; num: string }[] = [
   {
-    stripe: "bg-stone-400",
-    soft: "bg-stone-50",
-    border: "border-stone-200/90",
-    ring: "ring-stone-300/50",
+    box: "bg-gradient-to-br from-pop via-[#e8894a] to-pop-hover shadow-md shadow-pop/25 ring-1 ring-white/25",
+    num: "text-white drop-shadow-sm",
   },
   {
-    stripe: "bg-sky-500",
-    soft: "bg-sky-50",
-    border: "border-sky-200/80",
-    ring: "ring-sky-400/45",
+    box: "bg-gradient-to-br from-pop-tint to-pop/95 ring-1 ring-pop/20",
+    num: "text-white drop-shadow-sm",
   },
   {
-    stripe: "bg-teal-500",
-    soft: "bg-teal-50",
-    border: "border-teal-200/80",
-    ring: "ring-teal-400/45",
+    box: "bg-gradient-to-br from-pop-tint to-pop/70 ring-1 ring-pop/15",
+    num: "text-white",
   },
   {
-    stripe: "bg-indigo-500",
-    soft: "bg-indigo-50",
-    border: "border-indigo-200/80",
-    ring: "ring-indigo-400/45",
+    box: "bg-gradient-to-br from-white to-pop/45 ring-1 ring-zinc-200/80",
+    num: "text-muted-blue-hover",
   },
   {
-    stripe: "bg-violet-500",
-    soft: "bg-violet-50",
-    border: "border-violet-200/80",
-    ring: "ring-violet-400/45",
+    box: "bg-gradient-to-br from-white to-pop/22 ring-1 ring-zinc-200/70",
+    num: "text-muted-blue-hover",
   },
   {
-    stripe: "bg-amber-500",
-    soft: "bg-amber-50",
-    border: "border-amber-200/80",
-    ring: "ring-amber-400/50",
+    box: "bg-gradient-to-br from-zinc-50 via-white to-pop/[0.07] ring-1 ring-zinc-200/90",
+    num: "text-muted-blue-hover",
   },
-] as const;
+];
+
+function reviewsRequiredLine(rung: Rung): string {
+  if (rung.need === 0) return "Starting rank";
+  const label = rung.minReviewsLabel ?? `${rung.need}+ reviews`;
+  return `Requires ${label}`;
+}
 
 type Props = {
   reviewCount: number;
@@ -79,19 +73,23 @@ export function ProfileContributorLadder({
     return top;
   }, [reviewCount]);
 
-  const { nextRungNeed, currentTitle, currentTierStyle } = useMemo(() => {
+  const { nextRungNeed, currentTitle, currentRank } = useMemo(() => {
     const top = RUNGS[topUnlockedIndex] ?? RUNGS[0]!;
     const next = RUNGS.find((r) => r.need > reviewCount);
+    const rank = RUNGS.length - topUnlockedIndex;
     return {
       nextRungNeed: next?.need ?? null,
       currentTitle: top.title,
-      currentTierStyle: TIER_STYLE[topUnlockedIndex] ?? TIER_STYLE[0]!,
+      currentRank: rank,
     };
   }, [reviewCount, topUnlockedIndex]);
 
   const displayRungs = useMemo(() => {
     return RUNGS.map((rung, index) => ({ rung, index })).reverse();
   }, []);
+
+  const currentBadge =
+    RANK_BADGE_CLASS[currentRank - 1] ?? RANK_BADGE_CLASS[0]!;
 
   return (
     <aside
@@ -111,52 +109,47 @@ export function ProfileContributorLadder({
       </p>
 
       <div
-        className={`mt-5 rounded-xl border px-3 py-3 sm:px-4 sm:py-3.5 ${currentTierStyle.border} ${currentTierStyle.soft}`}
+        className="mt-5 flex items-center gap-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50 px-3 py-3 sm:gap-4 sm:px-4 sm:py-3.5"
         role="status"
       >
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
-          Current rank
-        </p>
-        <div className="mt-1 flex items-center gap-2">
-          <span
-            className={`h-2 w-2 shrink-0 rounded-full ${currentTierStyle.stripe}`}
-            aria-hidden
-          />
-          <p className="text-sm font-semibold tracking-tight text-zinc-900">
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-lg font-bold tabular-nums sm:h-14 sm:w-14 sm:text-xl ${currentBadge.box} ${currentBadge.num}`}
+          aria-hidden
+        >
+          {currentRank}
+        </div>
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+            Current rank
+          </p>
+          <p className="mt-0.5 text-sm font-semibold tracking-tight text-zinc-900">
             {currentTitle}
           </p>
         </div>
       </div>
 
-      <ol className="mt-5 flex flex-col gap-2">
+      <ol className="mt-5 flex flex-col gap-3 sm:gap-3.5">
         {displayRungs.map(({ rung, index }) => {
           const unlocked = reviewCount >= rung.need;
           const isNextGoal = nextRungNeed === rung.need;
           const isCurrentRung = index === topUnlockedIndex;
-          const style = TIER_STYLE[index] ?? TIER_STYLE[0]!;
+          const displayRank = RUNGS.length - index;
+          const badge =
+            RANK_BADGE_CLASS[displayRank - 1] ?? RANK_BADGE_CLASS[0]!;
 
           return (
             <li
               key={rung.need}
-              className={`relative flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors ${
-                unlocked
-                  ? `${style.soft} ${style.border}`
-                  : "border-zinc-100 bg-zinc-50/80"
-              } ${
-                isCurrentRung && unlocked
-                  ? `ring-2 ring-offset-2 ring-offset-white ${style.ring}`
-                  : ""
-              } ${
-                isNextGoal && !unlocked ? "motion-safe:animate-ladder-next" : ""
-              }`}
+              className="flex items-center gap-3 sm:gap-4"
               aria-current={isCurrentRung ? "step" : undefined}
             >
-              <span
-                className={`h-9 w-1 shrink-0 rounded-full ${
-                  unlocked ? style.stripe : "bg-zinc-200"
+              <div
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-base font-bold tabular-nums sm:h-12 sm:w-12 sm:text-lg ${badge.box} ${badge.num} ${
+                  isNextGoal && !unlocked ? "motion-safe:animate-ladder-next" : ""
                 }`}
-                aria-hidden
-              />
+              >
+                {displayRank}
+              </div>
               <div className="min-w-0 flex-1">
                 <p
                   className={`text-sm font-semibold tracking-tight ${
@@ -165,16 +158,14 @@ export function ProfileContributorLadder({
                 >
                   {rung.title}
                 </p>
+                <p
+                  className={`mt-0.5 text-xs tabular-nums ${
+                    unlocked ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
+                  {reviewsRequiredLine(rung)}
+                </p>
               </div>
-              <span
-                className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-bold tabular-nums uppercase tracking-wide ${
-                  unlocked
-                    ? "bg-white/80 text-zinc-700 ring-1 ring-zinc-200/80"
-                    : "bg-zinc-100 text-zinc-400"
-                }`}
-              >
-                {rung.minReviewsLabel ?? `${rung.need}+ reviews`}
-              </span>
             </li>
           );
         })}
