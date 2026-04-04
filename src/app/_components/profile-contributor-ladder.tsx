@@ -6,35 +6,34 @@ import { surfaceElevatedClass } from "@/lib/ui-classes";
 type Rung = {
   need: number;
   title: string;
-  minReviewsLabel?: string;
+  /** Shown inside the tier badge (single line / tight wrap). */
+  badgeLabel: string;
 };
 
 const RUNGS: Rung[] = [
-  { need: 0, title: "Getting Started", minReviewsLabel: "0 reviews" },
-  { need: 1, title: "Contributor" },
-  { need: 2, title: "Verified" },
-  { need: 3, title: "Established" },
-  { need: 4, title: "Insider" },
-  { need: 5, title: "Veteran Contributor", minReviewsLabel: "5+ reviews" },
+  { need: 0, title: "Getting Started", badgeLabel: "0 reviews" },
+  { need: 1, title: "Contributor", badgeLabel: "1+ reviews" },
+  { need: 2, title: "Verified", badgeLabel: "2+ reviews" },
+  { need: 3, title: "Established", badgeLabel: "3+ reviews" },
+  { need: 4, title: "Insider", badgeLabel: "4+ reviews" },
+  { need: 5, title: "Veteran Contributor", badgeLabel: "5+ Reviews" },
 ];
 
 /**
- * Rank 1 = top (Veteran): full theme pop. Rank 6 = bottom: solid pop-tint.
- * Each badge is a single flat color (no gradient inside the square).
+ * Top row (Veteran): strongest pop. Bottom row (Getting Started): pop-tint.
+ * Index 0 = top of list, 5 = bottom.
  */
-const RANK_BADGE_CLASS: { box: string; num: string }[] = [
-  { box: "bg-pop-hover ring-1 ring-black/10", num: "text-white" },
-  { box: "bg-pop ring-1 ring-black/10", num: "text-white" },
-  { box: "bg-[#e07d42] ring-1 ring-black/5", num: "text-white" },
-  { box: "bg-[#ea965e] ring-1 ring-black/5", num: "text-white" },
-  { box: "bg-[#f2b88a] ring-1 ring-zinc-300/60", num: "text-muted-blue-hover" },
-  { box: "bg-pop-tint ring-1 ring-zinc-200/80", num: "text-muted-blue-hover" },
+const TIER_BADGE_STYLE: { box: string; text: string }[] = [
+  { box: "bg-pop-hover ring-1 ring-black/10", text: "text-white" },
+  { box: "bg-pop ring-1 ring-black/10", text: "text-white" },
+  { box: "bg-[#e07d42] ring-1 ring-black/5", text: "text-white" },
+  { box: "bg-[#ea965e] ring-1 ring-black/5", text: "text-white" },
+  { box: "bg-[#f2b88a] ring-1 ring-zinc-300/60", text: "text-muted-blue-hover" },
+  { box: "bg-pop-tint ring-1 ring-zinc-200/80", text: "text-muted-blue-hover" },
 ];
 
-function reviewsRequiredLine(rung: Rung): string {
-  if (rung.need === 0) return "Starting rank";
-  const label = rung.minReviewsLabel ?? `${rung.need}+ reviews`;
-  return `Requires ${label}`;
+function tierStyleIndexFromRungIndex(rungIndex: number): number {
+  return RUNGS.length - 1 - rungIndex;
 }
 
 type Props = {
@@ -58,14 +57,12 @@ export function ProfileContributorLadder({
     return top;
   }, [reviewCount]);
 
-  const { nextRungNeed, currentTitle, currentRank } = useMemo(() => {
+  const { nextRungNeed, currentRung } = useMemo(() => {
     const top = RUNGS[topUnlockedIndex] ?? RUNGS[0]!;
     const next = RUNGS.find((r) => r.need > reviewCount);
-    const rank = RUNGS.length - topUnlockedIndex;
     return {
       nextRungNeed: next?.need ?? null,
-      currentTitle: top.title,
-      currentRank: rank,
+      currentRung: top,
     };
   }, [reviewCount, topUnlockedIndex]);
 
@@ -73,8 +70,9 @@ export function ProfileContributorLadder({
     return RUNGS.map((rung, index) => ({ rung, index })).reverse();
   }, []);
 
-  const currentBadge =
-    RANK_BADGE_CLASS[currentRank - 1] ?? RANK_BADGE_CLASS[0]!;
+  const currentStyle =
+    TIER_BADGE_STYLE[tierStyleIndexFromRungIndex(topUnlockedIndex)] ??
+    TIER_BADGE_STYLE[0]!;
 
   return (
     <aside
@@ -98,17 +96,16 @@ export function ProfileContributorLadder({
         role="status"
       >
         <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-lg font-bold tabular-nums sm:h-14 sm:w-14 sm:text-xl ${currentBadge.box} ${currentBadge.num}`}
-          aria-hidden
+          className={`flex min-h-[3rem] min-w-[4.25rem] max-w-[5.5rem] shrink-0 items-center justify-center rounded-lg px-1.5 py-1.5 text-center text-[10px] font-bold leading-tight tracking-tight sm:min-h-[3.25rem] sm:min-w-[4.75rem] sm:text-[11px] ${currentStyle.box} ${currentStyle.text}`}
         >
-          {currentRank}
+          {currentRung.badgeLabel}
         </div>
         <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
             Current rank
           </p>
           <p className="mt-0.5 text-sm font-semibold tracking-tight text-zinc-900">
-            {currentTitle}
+            {currentRung.title}
           </p>
         </div>
       </div>
@@ -118,9 +115,9 @@ export function ProfileContributorLadder({
           const unlocked = reviewCount >= rung.need;
           const isNextGoal = nextRungNeed === rung.need;
           const isCurrentRung = index === topUnlockedIndex;
-          const displayRank = RUNGS.length - index;
+          const styleIdx = tierStyleIndexFromRungIndex(index);
           const badge =
-            RANK_BADGE_CLASS[displayRank - 1] ?? RANK_BADGE_CLASS[0]!;
+            TIER_BADGE_STYLE[styleIdx] ?? TIER_BADGE_STYLE[0]!;
 
           return (
             <li
@@ -129,28 +126,19 @@ export function ProfileContributorLadder({
               aria-current={isCurrentRung ? "step" : undefined}
             >
               <div
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-base font-bold tabular-nums sm:h-12 sm:w-12 sm:text-lg ${badge.box} ${badge.num} ${
+                className={`flex min-h-[3rem] min-w-[4.25rem] max-w-[5.5rem] shrink-0 items-center justify-center rounded-lg px-1.5 py-1.5 text-center text-[10px] font-bold leading-tight tracking-tight sm:min-h-[3.25rem] sm:min-w-[4.75rem] sm:text-[11px] ${badge.box} ${badge.text} ${
                   isNextGoal && !unlocked ? "motion-safe:animate-ladder-next" : ""
                 }`}
               >
-                {displayRank}
+                {rung.badgeLabel}
               </div>
-              <div className="min-w-0 flex-1">
-                <p
-                  className={`text-sm font-semibold tracking-tight ${
-                    unlocked ? "text-zinc-900" : "text-zinc-400"
-                  }`}
-                >
-                  {rung.title}
-                </p>
-                <p
-                  className={`mt-0.5 text-xs tabular-nums ${
-                    unlocked ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
-                  {reviewsRequiredLine(rung)}
-                </p>
-              </div>
+              <p
+                className={`min-w-0 text-sm font-semibold tracking-tight ${
+                  unlocked ? "text-zinc-900" : "text-zinc-400"
+                }`}
+              >
+                {rung.title}
+              </p>
             </li>
           );
         })}
