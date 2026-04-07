@@ -8,12 +8,20 @@ import { PRODUCT_POLICY } from "@/lib/policy";
 import { assertReviewYearMeetsBostonFloor } from "@/lib/review-boston-floor";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
-const bodySchema = z.object({
-  address: z.string().min(5),
-  city: z.string().default("Boston"),
-  state: z.string().default("MA"),
-  reviewYear: z.number().int().min(2017),
-});
+const bodySchema = z
+  .object({
+    address: z.string().min(5),
+    city: z.string().default("Boston"),
+    state: z.string().default("MA"),
+    reviewYear: z.number().int().min(2017).optional(),
+    reviewYears: z.array(z.number().int().min(2017)).min(1).max(20).optional(),
+  })
+  .refine(
+    (d) =>
+      d.reviewYear != null ||
+      (Array.isArray(d.reviewYears) && d.reviewYears.length > 0),
+    { message: "Provide reviewYear or a non-empty reviewYears array." },
+  );
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -43,6 +51,9 @@ export async function POST(request: Request) {
     const body = bodySchema.parse(raw);
 
     if (body.city.toLowerCase() !== PRODUCT_POLICY.geography.city.toLowerCase()) {
+      if (body.reviewYears && body.reviewYears.length > 0) {
+        return NextResponse.json({ ok: true, duplicates: [] });
+      }
       return NextResponse.json({
         ok: true,
         exists: false,
@@ -51,18 +62,10 @@ export async function POST(request: Request) {
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
+      if (body.reviewYears && body.reviewYears.length > 0) {
+        return NextResponse.json({ ok: true, duplicates: [] });
+      }
       return NextResponse.json({ ok: true, exists: false });
-    }
-
-    const floorCheck = assertReviewYearMeetsBostonFloor(
-      body.reviewYear,
-      user.bostonRentingSinceYear,
-    );
-    if (!floorCheck.ok) {
-      return NextResponse.json(
-        { ok: false, error: floorCheck.error },
-        { status: 400 },
-      );
     }
 
     const normalizedAddress = normalizePropertyAddress(
@@ -76,7 +79,63 @@ export async function POST(request: Request) {
     });
 
     if (!property) {
+      if (body.reviewYears && body.reviewYears.length > 0) {
+        return NextResponse.json({ ok: true, duplicates: [] });
+      }
       return NextResponse.json({ ok: true, exists: false });
+    }
+
+    if (body.reviewYears && body.reviewYears.length > 0) {
+      const uniqueYears = [...new Set(body.reviewYears)];
+      for (const y of uniqueYears) {
+        const floorCheck = assertReviewYearMeetsBostonFloor(
+          y,
+          user.bostonRentingSinceYear,
+        );
+        if (!floorCheck.ok) {
+          return NextResponse.json(
+            { ok: false, error: floorCheck.error },
+            { status: 400 },
+          );
+        }
+      }
+
+      const reviews = await prisma.review.findMany({
+        where: {
+          propertyId: property.id,
+          userId: user.id,
+          reviewYear: { in: uniqueYears },
+        },
+        select: { id: true, reviewYear: true },
+      });
+
+      const duplicates = reviews.map((r) => ({
+        reviewYear: r.reviewYear,
+        reviewId: r.id,
+      }));
+
+      return NextResponse.json({
+        ok: true,
+        duplicates,
+      });
+    }
+
+    const singleYear = body.reviewYear;
+    if (singleYear == null) {
+      return NextResponse.json(
+        { ok: false, error: "Provide reviewYear or reviewYears." },
+        { status: 400 },
+      );
+    }
+    const floorCheck = assertReviewYearMeetsBostonFloor(
+      singleYear,
+      user.bostonRentingSinceYear,
+    );
+    if (!floorCheck.ok) {
+      return NextResponse.json(
+        { ok: false, error: floorCheck.error },
+        { status: 400 },
+      );
     }
 
     const review = await prisma.review.findUnique({
@@ -84,7 +143,7 @@ export async function POST(request: Request) {
         propertyId_userId_reviewYear: {
           propertyId: property.id,
           userId: user.id,
-          reviewYear: body.reviewYear,
+          reviewYear: singleYear,
         },
       },
       select: { id: true },

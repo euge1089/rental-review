@@ -23,7 +23,6 @@ import {
 } from "@/lib/submit-prefill";
 import {
   formInputCompactClass,
-  formSelectCompactClass,
   formTextareaClass,
   modalBackdropClass,
   modalDialogClass,
@@ -33,15 +32,39 @@ import {
 const DRAFT_KEY = "rental-review-draft-v1";
 const SMS_PROMPT_KEY = "sms-prompt-dismissed";
 
+/**
+ * Server-side Review rows are unchanged by the multi-year submit flow. This only
+ * normalizes the client draft: legacy `reviewYear` + `monthlyRent` become `leaseYears`,
+ * and old keys are dropped so new saves stay consistent.
+ */
+function migrateSubmitDraft(d: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...d };
+  if (!Array.isArray(out.leaseYears)) {
+    const yRaw = out.reviewYear;
+    if (yRaw != null && String(yRaw).trim() !== "") {
+      const y = Number(yRaw);
+      out.leaseYears = Number.isNaN(y)
+        ? []
+        : [{ year: y, rent: String(out.monthlyRent ?? "") }];
+    } else {
+      out.leaseYears = [];
+    }
+  }
+  delete out.reviewYear;
+  delete out.monthlyRent;
+  return out;
+}
+
+/** Shown when Continue is tapped without both 1–10 scores; also used for scroll/focus UX. */
+const SUBMIT_STEP2_SCORES_PROMPT =
+  "Please tap a score from 1–10 for both questions.";
+
 function resetYearSpecificFields(
   form: HTMLFormElement,
   setOverall: (n: number | null) => void,
   setLandlord: (n: number | null) => void,
+  clearLeaseYears?: () => void,
 ) {
-  const year = form.elements.namedItem("year") as HTMLSelectElement | null;
-  if (year) year.value = "";
-  const rent = form.elements.namedItem("monthlyRent") as HTMLInputElement | null;
-  if (rent) rent.value = "";
   const text = form.elements.namedItem("reviewText") as HTMLTextAreaElement | null;
   if (text) text.value = "";
   const majority = form.elements.namedItem(
@@ -50,6 +73,7 @@ function resetYearSpecificFields(
   if (majority) majority.checked = false;
   setOverall(null);
   setLandlord(null);
+  clearLeaseYears?.();
 }
 
 const STEP1_AMENITY_CARDS: {
@@ -144,17 +168,49 @@ export default function SubmitReviewPage() {
 
   const formRef = useRef<HTMLFormElement | null>(null);
   const submitButtonRef = useRef<HTMLButtonElement | null>(null);
+  const statusBannerRef = useRef<HTMLDivElement | null>(null);
   const successPrimaryActionRef = useRef<HTMLButtonElement | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [showSmsNudge, setShowSmsNudge] = useState(false);
   const [overallScore, setOverallScore] = useState<number | null>(null);
   const [landlordScore, setLandlordScore] = useState<number | null>(null);
-  const [duplicateModalReviewId, setDuplicateModalReviewId] = useState<
-    string | null
+  const [duplicateModalDupes, setDuplicateModalDupes] = useState<
+    { reviewYear: number; reviewId: string }[] | null
   >(null);
   const [duplicateChecking, setDuplicateChecking] = useState(false);
   const [duplicateDeleting, setDuplicateDeleting] = useState(false);
+  const [finalSubmitting, setFinalSubmitting] = useState(false);
+  const [selectedLeaseYears, setSelectedLeaseYears] = useState<number[]>([]);
+  const [rentByYear, setRentByYear] = useState<Record<number, string>>({});
+  const [lastSubmittedBatchCount, setLastSubmittedBatchCount] = useState(1);
+  const leaseUserTouchedRef = useRef(false);
+
+  const clearLeaseYearsState = useCallback(() => {
+    leaseUserTouchedRef.current = false;
+    setSelectedLeaseYears([]);
+    setRentByYear({});
+  }, []);
+
+  const toggleLeaseYear = useCallback((year: number) => {
+    leaseUserTouchedRef.current = true;
+    setSelectedLeaseYears((prev) => {
+      if (prev.includes(year)) {
+        setRentByYear((r) => {
+          const next = { ...r };
+          delete next[year];
+          return next;
+        });
+        return prev.filter((y) => y !== year).sort((a, b) => b - a);
+      }
+      return [...prev, year].sort((a, b) => b - a);
+    });
+  }, []);
+
+  const setRentForYear = useCallback((year: number, value: string) => {
+    leaseUserTouchedRef.current = true;
+    setRentByYear((r) => ({ ...r, [year]: value }));
+  }, []);
   const [reviewQuota, setReviewQuota] = useState<{
     count: number;
     max: number;
@@ -219,24 +275,21 @@ export default function SubmitReviewPage() {
     return reviewYearsAllowedForUser(bostonFloor);
   }, [sessionUser, bostonFloor]);
 
-  /** Draft or hydration can leave the lease year select with a value not in the allowed list once profile loads. */
+  /** Drop lease years that fall outside the profile floor once options are known. */
   useEffect(() => {
-    if (typeof window === "undefined" || !formRef.current) return;
     if (bostonFloor === undefined || bostonFloor === null) return;
     if (leaseYearOptions.length === 0) return;
-    const yearEl = formRef.current.elements.namedItem("year") as
-      | HTMLSelectElement
-      | null;
-    if (!yearEl) return;
-    const current = yearEl.value;
-    if (!current) return;
-    const y = Number(current);
-    if (!leaseYearOptions.includes(y)) {
-      yearEl.value = "";
-      setStatusMessage(
-        `That lease year isn’t available with your profile (you started renting in Boston in ${bostonFloor}). Pick a year from the list.`,
-      );
-    }
+    setSelectedLeaseYears((prev) =>
+      prev.filter((y) => leaseYearOptions.includes(y)),
+    );
+    setRentByYear((prev) => {
+      const next = { ...prev };
+      for (const k of Object.keys(next)) {
+        const y = Number(k);
+        if (!leaseYearOptions.includes(y)) delete next[y];
+      }
+      return next;
+    });
   }, [bostonFloor, leaseYearOptions]);
 
   useEffect(() => {
@@ -261,10 +314,11 @@ export default function SubmitReviewPage() {
             formRef.current,
             setOverallScore,
             setLandlordScore,
+            clearLeaseYearsState,
           );
           window.history.replaceState(null, "", "/submit");
           setStatusMessage(
-            "We filled in your building from last time — choose a different lease year and update rent if it changed.",
+            "We filled in your building from last time — pick your lease-start year(s) and rent for each.",
           );
           setStep(1);
           setTimeout(() => {
@@ -282,7 +336,12 @@ export default function SubmitReviewPage() {
     const raw = window.localStorage.getItem(DRAFT_KEY);
     if (!raw) return;
     try {
-      const draft = JSON.parse(raw) as Record<string, unknown>;
+      const draft = migrateSubmitDraft(JSON.parse(raw) as Record<string, unknown>);
+      try {
+        window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      } catch {
+        // ignore quota / private mode
+      }
       const form = formRef.current;
       const setIfPresent = (name: string, value: unknown) => {
         const field = form.elements.namedItem(name) as
@@ -306,8 +365,6 @@ export default function SubmitReviewPage() {
       setIfPresent("address", draft.address);
       setIfPresent("unit", draft.unit);
       setIfPresent("postalCode", draft.postalCode);
-      setIfPresent("year", draft.reviewYear);
-      setIfPresent("monthlyRent", draft.monthlyRent);
       setIfPresent("bathrooms", draft.bathrooms);
       setIfPresent("reviewText", draft.reviewText);
       setIfPresent("hasParking", draft.hasParking);
@@ -335,39 +392,65 @@ export default function SubmitReviewPage() {
       if (typeof ls === "number" || (typeof ls === "string" && ls !== "")) {
         setLandlordScore(Number(ls));
       }
+
+      const loadedYears: number[] = [];
+      const loadedRents: Record<number, string> = {};
+      for (const row of (draft.leaseYears ?? []) as {
+        year?: unknown;
+        rent?: unknown;
+      }[]) {
+        if (row && typeof row.year === "number") {
+          loadedYears.push(row.year);
+          if (row.rent != null && String(row.rent).trim() !== "") {
+            loadedRents[row.year] = String(row.rent);
+          }
+        }
+      }
+      setSelectedLeaseYears(loadedYears.sort((a, b) => b - a));
+      setRentByYear(loadedRents);
     } catch {
       // ignore
     }
   }, []);
 
-  function persistDraft(scores?: { overall: number | null; landlord: number | null }) {
-    if (typeof window === "undefined" || !formRef.current) return;
-    const form = formRef.current;
-    const data = new FormData(form);
-    const br = data.get("bedroomCount");
-    const os = scores ? scores.overall : overallScore;
-    const ls = scores ? scores.landlord : landlordScore;
-    const draft = {
-      address: data.get("address") ?? "",
-      unit: data.get("unit") ?? "",
-      postalCode: data.get("postalCode") ?? "",
-      reviewYear: data.get("year") ?? "",
-      bedroomCount: br != null && br !== "" ? Number(br) : "",
-      monthlyRent: data.get("monthlyRent") ?? "",
-      bathrooms: data.get("bathrooms") ?? "",
-      hasParking: data.get("hasParking") === "on",
-      hasCentralHeatCooling: data.get("hasCentralHeatCooling") === "on",
-      hasInUnitLaundry: data.get("hasInUnitLaundry") === "on",
-      hasStorageSpace: data.get("hasStorageSpace") === "on",
-      hasOutdoorSpace: data.get("hasOutdoorSpace") === "on",
-      petFriendly: data.get("petFriendly") === "on",
-      overallScore: os ?? "",
-      landlordScore: ls ?? "",
-      reviewText: data.get("reviewText") ?? "",
-      majorityYearAttestation: data.get("majorityYearAttestation") === "on",
-    };
-    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-  }
+  const persistDraft = useCallback(
+    (scores?: { overall: number | null; landlord: number | null }) => {
+      if (typeof window === "undefined" || !formRef.current) return;
+      const form = formRef.current;
+      const data = new FormData(form);
+      const br = data.get("bedroomCount");
+      const os = scores ? scores.overall : overallScore;
+      const ls = scores ? scores.landlord : landlordScore;
+      const draft = {
+        address: data.get("address") ?? "",
+        unit: data.get("unit") ?? "",
+        postalCode: data.get("postalCode") ?? "",
+        leaseYears: selectedLeaseYears.map((y) => ({
+          year: y,
+          rent: rentByYear[y] ?? "",
+        })),
+        bedroomCount: br != null && br !== "" ? Number(br) : "",
+        bathrooms: data.get("bathrooms") ?? "",
+        hasParking: data.get("hasParking") === "on",
+        hasCentralHeatCooling: data.get("hasCentralHeatCooling") === "on",
+        hasInUnitLaundry: data.get("hasInUnitLaundry") === "on",
+        hasStorageSpace: data.get("hasStorageSpace") === "on",
+        hasOutdoorSpace: data.get("hasOutdoorSpace") === "on",
+        petFriendly: data.get("petFriendly") === "on",
+        overallScore: os ?? "",
+        landlordScore: ls ?? "",
+        reviewText: data.get("reviewText") ?? "",
+        majorityYearAttestation: data.get("majorityYearAttestation") === "on",
+      };
+      window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    },
+    [overallScore, landlordScore, selectedLeaseYears, rentByYear],
+  );
+
+  useEffect(() => {
+    if (!leaseUserTouchedRef.current) return;
+    persistDraft();
+  }, [selectedLeaseYears, rentByYear, persistDraft]);
 
   function handleAddAnotherLeaseYear() {
     if (!formRef.current || !anotherYearPrefill) return;
@@ -381,16 +464,17 @@ export default function SubmitReviewPage() {
       formRef.current,
       setOverallScore,
       setLandlordScore,
+      clearLeaseYearsState,
     );
     setShowAnotherYearCta(false);
     setAnotherYearPrefill(null);
     setStep(1);
     setStatusMessage(
-      "We kept your place details — pick another lease year and update rent if it changed.",
+      "We kept your place details — pick lease-start year(s) and rent for each.",
     );
     setTimeout(() => persistDraft({ overall: null, landlord: null }), 0);
     requestAnimationFrame(() => {
-      document.getElementById("year")?.focus();
+      document.getElementById("lease-years-region")?.focus();
     });
   }
 
@@ -490,7 +574,7 @@ export default function SubmitReviewPage() {
   }
 
   const closeDuplicateModal = useCallback(() => {
-    setDuplicateModalReviewId(null);
+    setDuplicateModalDupes(null);
   }, []);
 
   const closeSubmitSuccessModal = useCallback(() => {
@@ -501,7 +585,7 @@ export default function SubmitReviewPage() {
   }, []);
 
   useEffect(() => {
-    if (!duplicateModalReviewId) return;
+    if (!duplicateModalDupes || duplicateModalDupes.length === 0) return;
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") closeDuplicateModal();
     }
@@ -512,7 +596,7 @@ export default function SubmitReviewPage() {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = prevOverflow;
     };
-  }, [duplicateModalReviewId, closeDuplicateModal]);
+  }, [duplicateModalDupes, closeDuplicateModal]);
 
   useEffect(() => {
     if (!showSubmitSuccessModal) return;
@@ -531,6 +615,15 @@ export default function SubmitReviewPage() {
     };
   }, [showSubmitSuccessModal, closeSubmitSuccessModal]);
 
+  useEffect(() => {
+    if (statusMessage !== SUBMIT_STEP2_SCORES_PROMPT) return;
+    const el = statusBannerRef.current;
+    if (!el) return;
+    requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, [statusMessage]);
+
   function handleLeaveAnotherReview() {
     if (anotherYearPrefill && formRef.current) {
       handleAddAnotherLeaseYear();
@@ -538,6 +631,7 @@ export default function SubmitReviewPage() {
       formRef.current.reset();
       setOverallScore(null);
       setLandlordScore(null);
+      clearLeaseYearsState();
       setStep(1);
       setStatusMessage("Ready for your next review.");
       if (typeof window !== "undefined") {
@@ -551,7 +645,9 @@ export default function SubmitReviewPage() {
   }
 
   async function handleDuplicateDelete() {
-    if (!duplicateModalReviewId) return;
+    const dup = duplicateModalDupes;
+    if (!dup || dup.length !== 1) return;
+    const reviewId = dup[0].reviewId;
     if (
       !window.confirm(
         "Delete this review permanently? You can submit a new one for this address and year afterward.",
@@ -561,7 +657,7 @@ export default function SubmitReviewPage() {
     }
     setDuplicateDeleting(true);
     try {
-      const res = await fetch(`/api/reviews/${duplicateModalReviewId}`, {
+      const res = await fetch(`/api/reviews/${reviewId}`, {
         method: "DELETE",
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
@@ -593,15 +689,33 @@ export default function SubmitReviewPage() {
         }
         const fd = new FormData(formRef.current);
         const address = String(fd.get("address") ?? "").trim();
-        const yearRaw = fd.get("year");
-        const reviewYear = Number(yearRaw);
-        if (
-          yearRaw == null ||
-          String(yearRaw).trim() === "" ||
-          Number.isNaN(reviewYear)
-        ) {
-          setStatusMessage("Please choose a lease start year.");
+        const sortedYears = [...selectedLeaseYears].sort((a, b) => b - a);
+        if (sortedYears.length === 0) {
+          setStatusMessage("Select at least one lease-start year.");
+          document.getElementById("lease-years-region")?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
           return;
+        }
+        for (const y of sortedYears) {
+          const raw = (rentByYear[y] ?? "").trim();
+          const rent = Number(raw);
+          if (
+            raw === "" ||
+            Number.isNaN(rent) ||
+            rent < 0 ||
+            !Number.isInteger(rent)
+          ) {
+            setStatusMessage(
+              `Enter a whole-dollar monthly rent for ${y} (use 0 if rent-free).`,
+            );
+            document.getElementById(`lease-rent-${y}`)?.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+            return;
+          }
         }
         setStatusMessage("");
         setDuplicateChecking(true);
@@ -613,13 +727,12 @@ export default function SubmitReviewPage() {
               address,
               city: "Boston",
               state: "MA",
-              reviewYear,
+              reviewYears: sortedYears,
             }),
           });
           let data: {
             ok: boolean;
-            exists?: boolean;
-            reviewId?: string | null;
+            duplicates?: { reviewYear: number; reviewId: string }[];
             error?: string;
           };
           try {
@@ -631,17 +744,14 @@ export default function SubmitReviewPage() {
             return;
           }
           if (!data.ok) {
-            setStatusMessage(data.error ?? "Could not check for an existing review.");
+            setStatusMessage(
+              data.error ?? "Could not check for existing reviews.",
+            );
             return;
           }
-          if (data.exists) {
-            if (data.reviewId) {
-              setDuplicateModalReviewId(data.reviewId);
-            } else {
-              setStatusMessage(
-                "You already have a review for this address and lease year. Check your profile to edit or remove it.",
-              );
-            }
+          const dups = data.duplicates ?? [];
+          if (dups.length > 0) {
+            setDuplicateModalDupes(dups);
             return;
           }
         } catch (err) {
@@ -659,7 +769,7 @@ export default function SubmitReviewPage() {
       }
       if (step === 2) {
         if (overallScore == null || landlordScore == null) {
-          setStatusMessage("Please tap a score from 1–10 for both questions.");
+          setStatusMessage(SUBMIT_STEP2_SCORES_PROMPT);
           return;
         }
         setStatusMessage("");
@@ -679,22 +789,45 @@ export default function SubmitReviewPage() {
       }
     }
     if (overallScore == null || landlordScore == null) {
-      setStatusMessage("Please tap a score from 1–10 for both questions.");
+      setStatusMessage(SUBMIT_STEP2_SCORES_PROMPT);
       setStep(2);
       return;
     }
 
+    const sortedYears = [...selectedLeaseYears].sort((a, b) => b - a);
+    if (sortedYears.length === 0) {
+      setStatusMessage("Select at least one lease-start year.");
+      setStep(1);
+      return;
+    }
+    for (const y of sortedYears) {
+      const raw = (rentByYear[y] ?? "").trim();
+      const rent = Number(raw);
+      if (
+        raw === "" ||
+        Number.isNaN(rent) ||
+        rent < 0 ||
+        !Number.isInteger(rent)
+      ) {
+        setStatusMessage(`Enter a valid monthly rent for ${y}.`);
+        setStep(1);
+        return;
+      }
+    }
+    const yearEntries = sortedYears.map((y) => ({
+      reviewYear: y,
+      monthlyRent: Number(rentByYear[y]),
+    }));
+
     const form = new FormData(formElement);
 
-    const payload = {
+    const batchPayload = {
       address: String(form.get("address") ?? ""),
       unit: String(form.get("unit") ?? "").trim() || undefined,
       city: "Boston",
       state: "MA",
       postalCode: String(form.get("postalCode") ?? ""),
-      reviewYear: Number(form.get("year")),
       bedroomCount: Number(form.get("bedroomCount")),
-      monthlyRent: Number(form.get("monthlyRent")),
       bathrooms: Number(form.get("bathrooms")),
       reviewText: String(form.get("reviewText") ?? ""),
       hasParking: form.get("hasParking") === "on",
@@ -706,42 +839,64 @@ export default function SubmitReviewPage() {
       overallScore: overallScore ?? undefined,
       landlordScore: landlordScore ?? undefined,
       majorityYearAttestation: form.get("majorityYearAttestation") === "on",
+      yearEntries,
     };
 
-    const response = await fetch("/api/reviews", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const result = (await response.json()) as {
-      ok: boolean;
-      error?: string;
-      moderationStatus?: string;
-      userMessage?: string;
-    };
+    setFinalSubmitting(true);
+    try {
+      const response = await fetch("/api/reviews/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(batchPayload),
+      });
+      const result = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+        moderationStatus?: string;
+        userMessage?: string;
+        count?: number;
+      };
 
-    if (!result.ok) {
-      setStatusMessage(result.error ?? "Could not submit review.");
-      return;
-    }
+      if (!result.ok) {
+        setStatusMessage(result.error ?? "Could not submit review.");
+        return;
+      }
 
-    setStatusMessage(
-      result.userMessage ??
-        (result.moderationStatus === "PENDING_REVIEW"
-          ? "Submitted — your review is being reviewed."
-          : "Submitted successfully."),
-    );
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem(DRAFT_KEY);
-      const prefill = buildPrefillFromSubmitPayload(payload);
-      window.localStorage.setItem(
-        SUBMIT_STEP1_PREFILL_KEY,
-        JSON.stringify(prefill),
+      setStatusMessage(
+        result.userMessage ??
+          (result.moderationStatus === "PENDING_REVIEW"
+            ? "Submitted — your review is being reviewed."
+            : "Submitted successfully."),
       );
-      setAnotherYearPrefill(prefill);
-      setShowAnotherYearCta(true);
+      setLastSubmittedBatchCount(
+        Math.max(1, result.count ?? yearEntries.length),
+      );
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(DRAFT_KEY);
+        const prefill = buildPrefillFromSubmitPayload({
+          address: batchPayload.address,
+          unit: batchPayload.unit,
+          postalCode: batchPayload.postalCode,
+          bedroomCount: batchPayload.bedroomCount,
+          bathrooms: batchPayload.bathrooms,
+          hasParking: batchPayload.hasParking,
+          hasCentralHeatCooling: batchPayload.hasCentralHeatCooling,
+          hasInUnitLaundry: batchPayload.hasInUnitLaundry,
+          hasStorageSpace: batchPayload.hasStorageSpace,
+          hasOutdoorSpace: batchPayload.hasOutdoorSpace,
+          petFriendly: batchPayload.petFriendly,
+        });
+        window.localStorage.setItem(
+          SUBMIT_STEP1_PREFILL_KEY,
+          JSON.stringify(prefill),
+        );
+        setAnotherYearPrefill(prefill);
+        setShowAnotherYearCta(true);
+      }
+      setShowSubmitSuccessModal(true);
+    } finally {
+      setFinalSubmitting(false);
     }
-    setShowSubmitSuccessModal(true);
   }
 
   const callbackUrl = encodeURIComponent("/submit");
@@ -975,7 +1130,9 @@ export default function SubmitReviewPage() {
               </h2>
               <div className="max-w-2xl space-y-2 pt-0.5">
                 <p className="text-sm leading-relaxed text-zinc-600">
-                  {PRODUCT_POLICY.reviews.oneReviewPerLeaseStartYearShort}
+                  {PRODUCT_POLICY.reviews.oneReviewPerLeaseStartYearShort} Lived at the
+                  same address multiple years in a row? Select every lease-start year
+                  you want — your ratings and write-up in step 2 apply to each year.
                 </p>
                 <p className="text-sm leading-relaxed text-zinc-600">
                   Public reviews are <span className="font-semibold">fully anonymous</span>.
@@ -1071,28 +1228,79 @@ export default function SubmitReviewPage() {
               </div>
             </div>
 
-            <div className="grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-              <div className="grid gap-2.5">
-                <label htmlFor="year" className="text-sm font-semibold text-zinc-800">
-                  Lease start year
-                </label>
-                <select
-                  id="year"
-                  name="year"
-                  required
-                  className={formSelectCompactClass}
-                >
-                  <option value="">Select year</option>
-                  {leaseYearOptions.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-sm leading-relaxed text-zinc-500">
-                  {PRODUCT_POLICY.reviews.leaseStartYearRule}
-                </p>
-                <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/80 p-3">
+            <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,16rem)] lg:gap-10">
+              <div
+                id="lease-years-region"
+                tabIndex={-1}
+                className="grid gap-3 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-4 outline-none ring-muted-blue/40 focus-visible:ring-2 sm:p-5"
+              >
+                <div>
+                  <p className="text-sm font-semibold text-zinc-800">
+                    Lease start year(s)
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-zinc-500">
+                    {PRODUCT_POLICY.reviews.leaseStartYearRule} Choose every year you
+                    want a review for — rent can differ each year.
+                  </p>
+                </div>
+                {leaseYearOptions.length === 0 ? (
+                  <p className="text-sm text-zinc-600">
+                    Set your Boston renting start year above to see eligible years.
+                  </p>
+                ) : (
+                  <ul className="grid gap-2" role="list">
+                    {leaseYearOptions.map((year) => {
+                      const checked = selectedLeaseYears.includes(year);
+                      return (
+                        <li key={year}>
+                          <div
+                            className={`rounded-xl border bg-white transition ${
+                              checked
+                                ? "border-muted-blue-hover shadow-[0_1px_0_rgb(15_23_42/0.04)]"
+                                : "border-zinc-200/90"
+                            }`}
+                          >
+                            <label className="flex cursor-pointer items-center gap-3 px-3 py-3 sm:px-4">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleLeaseYear(year)}
+                                className="size-4 shrink-0 rounded border-zinc-300 text-muted-blue focus:ring-muted-blue/30"
+                              />
+                              <span className="text-base font-semibold tabular-nums text-zinc-900">
+                                {year}
+                              </span>
+                            </label>
+                            {checked ? (
+                              <div className="border-t border-zinc-100 px-3 pb-3 pt-1 sm:px-4 sm:pb-4">
+                                <label
+                                  htmlFor={`lease-rent-${year}`}
+                                  className="text-xs font-semibold uppercase tracking-wide text-zinc-600"
+                                >
+                                  Monthly rent for {year}
+                                </label>
+                                <input
+                                  id={`lease-rent-${year}`}
+                                  type="number"
+                                  min={0}
+                                  step={1}
+                                  inputMode="numeric"
+                                  placeholder="e.g. 3200"
+                                  value={rentByYear[year] ?? ""}
+                                  onChange={(e) =>
+                                    setRentForYear(year, e.target.value)
+                                  }
+                                  className={`mt-1.5 ${formInputCompactClass}`}
+                                />
+                              </div>
+                            ) : null}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                <div className="rounded-xl border border-zinc-200/80 bg-white/80 p-3">
                   <p className="text-xs font-semibold uppercase tracking-wide text-zinc-700">
                     Privacy mapping shown publicly
                   </p>
@@ -1115,23 +1323,6 @@ export default function SubmitReviewPage() {
                     but only show the bucket publicly.
                   </p>
                 </div>
-              </div>
-              <div className="grid gap-2.5">
-                <label
-                  htmlFor="monthlyRent"
-                  className="text-sm font-semibold text-zinc-800"
-                >
-                  Monthly rent
-                </label>
-                <input
-                  id="monthlyRent"
-                  name="monthlyRent"
-                  type="number"
-                  min={0}
-                  placeholder="e.g. 3200"
-                  required
-                  className={formInputCompactClass}
-                />
               </div>
               <div className="grid gap-2.5">
                 <label
@@ -1207,7 +1398,9 @@ export default function SubmitReviewPage() {
               </h2>
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
                 Two quick number ratings, then a written part only if you want — even a
-                few sentences help the next renter a lot.
+                few sentences help the next renter a lot. If you picked multiple
+                lease-start years in step 1, these answers count for every year you
+                selected.
               </p>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />
@@ -1240,6 +1433,16 @@ export default function SubmitReviewPage() {
                 }}
               />
             </div>
+
+            {overallScore == null || landlordScore == null ? (
+              <p
+                id="step2-scores-hint"
+                className="rounded-xl border border-muted-blue/30 bg-muted-blue-tint/50 px-4 py-3.5 text-sm font-medium leading-snug text-muted-blue-hover sm:text-[0.9375rem]"
+              >
+                Tap a number (1–10) for <strong>both</strong> questions above — then
+                Continue below will work.
+              </p>
+            ) : null}
 
             <div className="grid gap-3">
               <label htmlFor="reviewText" className="text-base font-semibold text-zinc-800">
@@ -1274,9 +1477,11 @@ export default function SubmitReviewPage() {
                 One last look
               </h2>
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
-                Please read the two items below and check the boxes if they fit. Phone
-                verification is optional — you can add it anytime on your profile for a
-                verified badge and usually quicker approval.
+                Read the anonymity note below, then check the box to confirm your lease
+                attestation. If you chose more than one lease-start year in step 1, that
+                confirmation applies to each year. Phone verification is optional — you
+                can add it anytime on your profile for a verified badge and usually
+                quicker approval.
               </p>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />
@@ -1297,6 +1502,29 @@ export default function SubmitReviewPage() {
             </p>
         </div>
 
+        {statusMessage ? (
+          <div
+            ref={statusBannerRef}
+            role="status"
+            aria-live="polite"
+            className={`scroll-mt-6 mb-5 rounded-xl border px-4 py-3.5 sm:px-5 ${
+              statusMessage === SUBMIT_STEP2_SCORES_PROMPT
+                ? "border-amber-400/80 bg-amber-50 text-amber-950 shadow-sm"
+                : "border-zinc-200/90 bg-zinc-50 text-zinc-800"
+            }`}
+          >
+            <p
+              className={`text-sm leading-relaxed sm:text-base ${
+                statusMessage === SUBMIT_STEP2_SCORES_PROMPT
+                  ? "font-semibold"
+                  : ""
+              }`}
+            >
+              {statusMessage}
+            </p>
+          </div>
+        ) : null}
+
         <div className="flex flex-col gap-5 border-t border-zinc-100 pt-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
           <div className="flex flex-wrap gap-3">
             {step > 1 && (
@@ -1311,23 +1539,33 @@ export default function SubmitReviewPage() {
             <button
               type="submit"
               ref={submitButtonRef}
-              disabled={duplicateChecking}
+              disabled={
+                duplicateChecking ||
+                finalSubmitting ||
+                (step === 2 &&
+                  (overallScore == null || landlordScore == null))
+              }
+              aria-describedby={
+                step === 2 &&
+                (overallScore == null || landlordScore == null)
+                  ? "step2-scores-hint"
+                  : undefined
+              }
               className="rounded-full bg-muted-blue px-6 py-2.5 text-sm font-semibold text-white shadow-[0_8px_22px_-8px_rgb(92_107_127/0.4)] transition hover:bg-muted-blue-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {duplicateChecking
                 ? "Checking…"
-                : step < 3
-                  ? "Continue"
-                  : "Submit review"}
+                : finalSubmitting
+                  ? "Submitting…"
+                  : step < 3
+                    ? "Continue"
+                    : "Submit review"}
             </button>
           </div>
           <p className="max-w-md text-sm leading-relaxed text-zinc-500">
             Need a break? Your answers stay on this device until you send the review.
           </p>
         </div>
-        {statusMessage ? (
-          <p className="text-base leading-relaxed text-zinc-700">{statusMessage}</p>
-        ) : null}
 
         {showAnotherYearCta && anotherYearPrefill ? (
           <div
@@ -1345,8 +1583,7 @@ export default function SubmitReviewPage() {
               </p>
               <p className="mt-2 text-sm leading-relaxed text-zinc-600">
                 We&apos;ll keep your address, unit, ZIP, bedrooms, bathrooms, and
-                amenity taps — you only update lease year, rent, and anything that
-                changed year to year.
+                amenity taps — pick lease-start year(s) and rent for each.
               </p>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <button
@@ -1374,7 +1611,7 @@ export default function SubmitReviewPage() {
         ) : null}
       </form>
 
-      {duplicateModalReviewId ? (
+      {duplicateModalDupes && duplicateModalDupes.length > 0 ? (
         <div className={`${modalBackdropClass} z-[60]`}>
           <button
             type="button"
@@ -1417,35 +1654,48 @@ export default function SubmitReviewPage() {
               id="dup-review-title"
               className="pr-10 text-xl font-semibold tracking-tight text-muted-blue-hover"
             >
-              You already reviewed this place for that year
+              {duplicateModalDupes.length === 1
+                ? "You already reviewed this place for that year"
+                : "Some years already have reviews"}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-zinc-600 sm:text-base sm:leading-relaxed">
-              Each address and lease year can only have one review from your account.
-              Update the existing one, or delete it if you&apos;d like to start over on
-              this form.
+              Each address and lease-start year can only have one review from your
+              account. Deselect those years above and tap Continue again, or open an
+              existing review to edit it.
             </p>
+            <ul className="mt-4 space-y-2 border-t border-zinc-100 pt-4">
+              {duplicateModalDupes
+                .slice()
+                .sort((a, b) => b.reviewYear - a.reviewYear)
+                .map((d) => (
+                  <li key={d.reviewId}>
+                    <Link
+                      href={`/profile/reviews/${d.reviewId}/edit`}
+                      className="inline-flex text-sm font-semibold text-muted-blue hover:underline"
+                      onClick={closeDuplicateModal}
+                    >
+                      Edit {d.reviewYear} review
+                    </Link>
+                  </li>
+                ))}
+            </ul>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Link
-                href={`/profile/reviews/${duplicateModalReviewId}/edit`}
-                className="inline-flex items-center justify-center rounded-full bg-muted-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-muted-blue-hover"
-                onClick={closeDuplicateModal}
-              >
-                Edit my review
-              </Link>
-              <button
-                type="button"
-                disabled={duplicateDeleting}
-                onClick={() => void handleDuplicateDelete()}
-                className="inline-flex items-center justify-center rounded-full border border-red-200 bg-white px-5 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50"
-              >
-                {duplicateDeleting ? "Deleting…" : "Delete review"}
-              </button>
+              {duplicateModalDupes.length === 1 ? (
+                <button
+                  type="button"
+                  disabled={duplicateDeleting}
+                  onClick={() => void handleDuplicateDelete()}
+                  className="inline-flex items-center justify-center rounded-full border border-red-200 bg-white px-5 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50"
+                >
+                  {duplicateDeleting ? "Deleting…" : "Delete review"}
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={closeDuplicateModal}
                 className="inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
               >
-                Close
+                Back to form
               </button>
             </div>
           </div>
@@ -1500,8 +1750,18 @@ export default function SubmitReviewPage() {
               id="submit-success-desc"
               className="mt-3 text-sm leading-relaxed text-zinc-600"
             >
-              Thanks for sharing that. You just made the next Boston renter way harder to
-              rip off.
+              {lastSubmittedBatchCount > 1 ? (
+                <>
+                  All {lastSubmittedBatchCount} reviews are in — same ratings and story
+                  for each lease year you picked. You just made the next Boston renter
+                  way harder to rip off.
+                </>
+              ) : (
+                <>
+                  Thanks for sharing that. You just made the next Boston renter way
+                  harder to rip off.
+                </>
+              )}
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <button
