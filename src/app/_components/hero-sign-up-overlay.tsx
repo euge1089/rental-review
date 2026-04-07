@@ -99,6 +99,10 @@ export function HeroSignUpOverlay({
               Continue with Google or create an account with email. New accounts
               receive a short verification code before you can sign in.
             </p>
+            <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+              Your public review is anonymous. We never show your name on review cards,
+              and your account information stays private.
+            </p>
             <div className="mt-6">
               <EmailAuthPanel
                 key={panelKey}

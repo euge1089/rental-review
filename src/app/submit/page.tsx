@@ -145,6 +145,8 @@ export default function SubmitReviewPage() {
   }, [session?.user, sessionStatus]);
 
   const formRef = useRef<HTMLFormElement | null>(null);
+  const submitButtonRef = useRef<HTMLButtonElement | null>(null);
+  const successPrimaryActionRef = useRef<HTMLButtonElement | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [showSmsNudge, setShowSmsNudge] = useState(false);
@@ -163,6 +165,7 @@ export default function SubmitReviewPage() {
   const [anotherYearPrefill, setAnotherYearPrefill] =
     useState<SubmitStepOnePrefill | null>(null);
   const [showAnotherYearCta, setShowAnotherYearCta] = useState(false);
+  const [showSubmitSuccessModal, setShowSubmitSuccessModal] = useState(false);
   const [bostonFloor, setBostonFloor] = useState<number | null | undefined>(
     undefined,
   );
@@ -494,6 +497,13 @@ export default function SubmitReviewPage() {
     setDuplicateModalReviewId(null);
   }, []);
 
+  const closeSubmitSuccessModal = useCallback(() => {
+    setShowSubmitSuccessModal(false);
+    requestAnimationFrame(() => {
+      submitButtonRef.current?.focus();
+    });
+  }, []);
+
   useEffect(() => {
     if (!duplicateModalReviewId) return;
     function onKeyDown(e: KeyboardEvent) {
@@ -507,6 +517,42 @@ export default function SubmitReviewPage() {
       document.body.style.overflow = prevOverflow;
     };
   }, [duplicateModalReviewId, closeDuplicateModal]);
+
+  useEffect(() => {
+    if (!showSubmitSuccessModal) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") closeSubmitSuccessModal();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    requestAnimationFrame(() => {
+      successPrimaryActionRef.current?.focus();
+    });
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showSubmitSuccessModal, closeSubmitSuccessModal]);
+
+  function handleLeaveAnotherReview() {
+    if (anotherYearPrefill && formRef.current) {
+      handleAddAnotherLeaseYear();
+    } else if (formRef.current) {
+      formRef.current.reset();
+      setOverallScore(null);
+      setLandlordScore(null);
+      setStep(1);
+      setStatusMessage("Ready for your next review.");
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(DRAFT_KEY);
+      }
+      requestAnimationFrame(() => {
+        document.getElementById("address")?.focus();
+      });
+    }
+    setShowSubmitSuccessModal(false);
+  }
 
   async function handleDuplicateDelete() {
     if (!duplicateModalReviewId) return;
@@ -700,6 +746,7 @@ export default function SubmitReviewPage() {
       setAnotherYearPrefill(prefill);
       setShowAnotherYearCta(true);
     }
+    setShowSubmitSuccessModal(true);
   }
 
   const callbackUrl = encodeURIComponent("/submit");
@@ -1250,6 +1297,7 @@ export default function SubmitReviewPage() {
             )}
             <button
               type="submit"
+              ref={submitButtonRef}
               disabled={duplicateChecking}
               className="rounded-full bg-muted-blue px-6 py-2.5 text-sm font-semibold text-white shadow-[0_8px_22px_-8px_rgb(92_107_127/0.4)] transition hover:bg-muted-blue-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -1386,6 +1434,78 @@ export default function SubmitReviewPage() {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {showSubmitSuccessModal ? (
+        <div className={`${modalBackdropClass} z-[65]`}>
+          <button
+            type="button"
+            className="absolute inset-0"
+            aria-label="Close dialog"
+            onClick={closeSubmitSuccessModal}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="submit-success-title"
+            aria-describedby="submit-success-desc"
+            className={`${modalDialogClass} relative z-10 max-w-md`}
+          >
+            <button
+              type="button"
+              className="absolute right-3 top-3 rounded-full p-2 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700"
+              aria-label="Close"
+              onClick={closeSubmitSuccessModal}
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-blue">
+              Review submitted
+            </p>
+            <h2
+              id="submit-success-title"
+              className="mt-2 pr-10 text-xl font-semibold tracking-tight text-muted-blue-hover"
+            >
+              Big win - your renter intel is live.
+            </h2>
+            <p
+              id="submit-success-desc"
+              className="mt-3 text-sm leading-relaxed text-zinc-600"
+            >
+              Thanks for sharing that. You just made the next Boston renter way harder to
+              rip off.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <button
+                type="button"
+                ref={successPrimaryActionRef}
+                onClick={handleLeaveAnotherReview}
+                className="inline-flex items-center justify-center rounded-full bg-muted-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-muted-blue-hover"
+              >
+                Leave another review
+              </button>
+              <Link
+                href="/analytics"
+                onClick={closeSubmitSuccessModal}
+                className="inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+              >
+                See Rent Explorer
+              </Link>
             </div>
           </div>
         </div>

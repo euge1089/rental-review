@@ -297,7 +297,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
   let friendlyLine: string | null = null;
   if (snapshot && typeof snapshot.median === "number") {
-    friendlyLine = `If you're seeing a lot of listings well above $${snapshot.median.toLocaleString()}, that's probably on the high side for what you searched.`;
+    friendlyLine = `If listings are coming in far above $${snapshot.median.toLocaleString()}, that can be a sign the asking price is high for this slice of the market.`;
   }
 
   const noMatches = hasSearched && items.length === 0;
@@ -824,7 +824,8 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 className="text-sm leading-relaxed text-zinc-600"
               >
                 Share your first lease-year review to see market summaries and matching
-                reviews. It keeps the tool grounded in real renter contributions.
+                reviews. Historical rent helps you spot unusual increases and negotiate
+                from real renter comps.
               </p>
               <Link
                 href="/submit"

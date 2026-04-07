@@ -248,8 +248,8 @@ export function HomePageSections({
                         : `max-w-sm text-center text-[10px] leading-relaxed text-zinc-500 sm:text-[11px] ${showHeroSignUp ? "sm:text-left" : "sm:text-center"}`
                     }
                   >
-                    Your landlord never sees your name. Google keeps spam and fake
-                    reviews out.
+                    Your review is 100% anonymous in public. We never show your name, and
+                    your account details stay private.
                   </p>
                 </div>
               </div>
@@ -431,7 +431,7 @@ export function HomePageSections({
                   eyebrow: "Real rent",
                   lead: "See what people",
                   leadAccent: "actually paid",
-                  rest: "Rent bands from real leases — not whatever the listing wants you to believe.",
+                  rest: "See historical rent ranges to spot unusual increases and walk into lease talks with leverage.",
                 },
                 {
                   eyebrow: "Real life",
@@ -443,7 +443,7 @@ export function HomePageSections({
                   eyebrow: "Real privacy",
                   lead: "Your landlord",
                   leadAccent: "never sees this",
-                  rest: "Google sign-in and optional SMS help other renters trust you — without putting your name on blast.",
+                  rest: "Your public review is anonymous. Your name and account details are never shown on review cards.",
                 },
               ].map((item, index) => (
                 <article
@@ -554,7 +554,7 @@ export function HomePageSections({
                 {
                   n: "3",
                   title: "Use Rent Explorer",
-                  body: "Search Boston by ZIP, how many bedrooms you want, and what you can afford to pay. Then see what other renters actually paid on similar places.",
+                  body: "Search Boston by ZIP, bedroom count, and budget. Compare historical rents from real renters so you can spot unusually steep increases.",
                   foot: (
                     <Link
                       href="/analytics"

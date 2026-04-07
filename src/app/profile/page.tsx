@@ -114,6 +114,24 @@ export default async function ProfilePage({ searchParams }: Props) {
           </div>
         }
       />
+      <SurfacePanel variant="muted" as="section">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-muted-blue-hover">
+              Ready to help the next renter?
+            </h2>
+            <p className="mt-1 text-sm leading-relaxed text-zinc-600">
+              Phone verified and profile set? You&apos;re ready to share a review.
+            </p>
+          </div>
+          <Link
+            href="/submit"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-6 py-2.5 text-sm font-semibold text-white shadow-[0_10px_28px_-8px_rgb(21_42_69/0.35)] transition hover:bg-muted-blue-hover"
+          >
+            Write a review
+          </Link>
+        </div>
+      </SurfacePanel>
 
       <div
         className={

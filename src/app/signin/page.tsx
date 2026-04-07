@@ -99,6 +99,10 @@ export default async function SignInPage({ searchParams }: Props) {
       ) : null}
       <SurfacePanel className="my-[20px]">
         <EmailAuthPanel callbackUrl={safe} />
+        <p className="mt-4 text-xs leading-relaxed text-zinc-500">
+          Your public review is 100% anonymous. Your name and account details stay
+          private.
+        </p>
       </SurfacePanel>
       <p className="text-center text-xs text-zinc-500">
         Continued use of the site is subject to the draft{" "}
