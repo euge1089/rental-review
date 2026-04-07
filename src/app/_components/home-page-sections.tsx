@@ -190,7 +190,7 @@ export function HomePageSections({
                       aria-hidden
                     />
                   ) : null}
-                  Boston renters · South Boston first
+                  Boston renters · Citywide intelligence
                 </p>
                 <h1
                   className={
@@ -217,8 +217,9 @@ export function HomePageSections({
                       : "mx-auto mt-4 max-w-2xl text-pretty text-[0.875rem] leading-relaxed text-zinc-600 sm:mx-0 sm:mt-5 sm:text-[0.975rem] sm:leading-relaxed"
                   }
                 >
-                  What prior tenants wish you knew — historical rent increases,
-                  transparent reviews, <strong>fully anonymous</strong>.
+                  See what landlords don&apos;t tell you — real rent increases, honest
+                  tenant reviews, and hidden red flags, all{" "}
+                  <strong>fully anonymous</strong>.
                 </p>
 
                 <div
