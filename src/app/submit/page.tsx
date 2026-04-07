@@ -48,8 +48,6 @@ function resetYearSpecificFields(
     "majorityYearAttestation",
   ) as HTMLInputElement | null;
   if (majority) majority.checked = false;
-  const anon = form.elements.namedItem("displayFullyAnonymous") as HTMLInputElement | null;
-  if (anon) anon.checked = false;
   setOverall(null);
   setLandlord(null);
 }
@@ -319,7 +317,6 @@ export default function SubmitReviewPage() {
       setIfPresent("hasOutdoorSpace", draft.hasOutdoorSpace);
       setIfPresent("petFriendly", draft.petFriendly);
       setIfPresent("majorityYearAttestation", draft.majorityYearAttestation);
-      setIfPresent("displayFullyAnonymous", draft.displayFullyAnonymous);
 
       if (draft.bedroomCount != null) {
         const radios = form.querySelectorAll<HTMLInputElement>(
@@ -368,7 +365,6 @@ export default function SubmitReviewPage() {
       landlordScore: ls ?? "",
       reviewText: data.get("reviewText") ?? "",
       majorityYearAttestation: data.get("majorityYearAttestation") === "on",
-      displayFullyAnonymous: data.get("displayFullyAnonymous") === "on",
     };
     window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   }
@@ -710,7 +706,6 @@ export default function SubmitReviewPage() {
       overallScore: overallScore ?? undefined,
       landlordScore: landlordScore ?? undefined,
       majorityYearAttestation: form.get("majorityYearAttestation") === "on",
-      displayFullyAnonymous: form.get("displayFullyAnonymous") === "on",
     };
 
     const response = await fetch("/api/reviews", {
@@ -982,6 +977,11 @@ export default function SubmitReviewPage() {
                 <p className="text-sm leading-relaxed text-zinc-600">
                   {PRODUCT_POLICY.reviews.oneReviewPerLeaseStartYearShort}
                 </p>
+                <p className="text-sm leading-relaxed text-zinc-600">
+                  Public reviews are <span className="font-semibold">fully anonymous</span>.
+                  We never show your name, and we do not publish your exact lease-start
+                  year.
+                </p>
                 {typeof bostonFloor === "number" ? (
                   <p className="text-sm leading-relaxed text-zinc-600">
                     Your profile says you started renting in Boston in {bostonFloor},
@@ -1092,6 +1092,29 @@ export default function SubmitReviewPage() {
                 <p className="text-sm leading-relaxed text-zinc-500">
                   {PRODUCT_POLICY.reviews.leaseStartYearRule}
                 </p>
+                <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/80 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-zinc-700">
+                    Privacy mapping shown publicly
+                  </p>
+                  <div className="mt-2 grid gap-2 text-xs text-zinc-600">
+                    <p>
+                      <span className="font-medium text-zinc-800">Recent years</span> ->{" "}
+                      Recent (within ~2 years)
+                    </p>
+                    <p>
+                      <span className="font-medium text-zinc-800">Mid-range years</span> ->{" "}
+                      A few years ago (2-5 years)
+                    </p>
+                    <p>
+                      <span className="font-medium text-zinc-800">Older years</span> ->{" "}
+                      Older experience (5+ years)
+                    </p>
+                  </div>
+                  <p className="mt-2 text-xs text-zinc-500">
+                    We store the exact year internally for quality checks and anti-spam,
+                    but only show the bucket publicly.
+                  </p>
+                </div>
               </div>
               <div className="grid gap-2.5">
                 <label
@@ -1268,20 +1291,10 @@ export default function SubmitReviewPage() {
               <span>{PRODUCT_POLICY.reviews.majorityYearAttestationRule}</span>
             </label>
 
-            <label className="flex cursor-pointer items-start gap-4 rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/30 p-4 text-base leading-relaxed text-zinc-700 sm:p-5">
-              <input
-                type="checkbox"
-                name="displayFullyAnonymous"
-                className="mt-1.5 size-4 shrink-0 rounded border-zinc-300"
-              />
-              <span>
-                <span className="font-semibold text-zinc-800">
-                  List me as fully anonymous.
-                </span>{" "}
-                Your review will show as &quot;Anonymous renter&quot; with no initials.
-                We still tie it to your account behind the scenes for moderation only.
-              </span>
-            </label>
+            <p className="rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/30 p-4 text-sm leading-relaxed text-zinc-700 sm:p-5">
+              Your public review is fully anonymous by default. We never show your name
+              on review cards.
+            </p>
         </div>
 
         <div className="flex flex-col gap-5 border-t border-zinc-100 pt-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">

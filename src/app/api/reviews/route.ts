@@ -33,7 +33,7 @@ const schema = z.object({
   overallScore: z.number().int().min(1).max(10).optional(),
   landlordScore: z.number().int().min(1).max(10).optional(),
   majorityYearAttestation: z.literal(true),
-  displayFullyAnonymous: z.boolean().optional().default(false),
+  displayFullyAnonymous: z.boolean().optional(),
 });
 
 export async function POST(request: Request) {
@@ -156,7 +156,7 @@ export async function POST(request: Request) {
         overallScore: body.overallScore,
         landlordScore: body.landlordScore,
         majorityYearAttested: body.majorityYearAttestation,
-        displayFullyAnonymous: body.displayFullyAnonymous,
+        displayFullyAnonymous: true,
         moderationStatus,
         moderationReasons,
       },
@@ -178,7 +178,7 @@ export async function POST(request: Request) {
         overallScore: body.overallScore,
         landlordScore: body.landlordScore,
         majorityYearAttested: body.majorityYearAttestation,
-        displayFullyAnonymous: body.displayFullyAnonymous,
+        displayFullyAnonymous: true,
         moderationStatus,
         moderationReasons,
       },

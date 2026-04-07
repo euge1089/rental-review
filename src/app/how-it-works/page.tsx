@@ -52,11 +52,10 @@ export default function HowItWorksPage() {
           3. Name and safety
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-zinc-700">
-          Your Google account is used for trust and rate limiting, but your{" "}
-          <span className="font-medium text-zinc-800">displayed name is anonymized</span>
-          . Reviews show a masked version like{" "}
-          <span className="font-mono text-zinc-800">J*** S.</span> instead of a full name
-          or email address.
+          Your Google account is used for trust and rate limiting, but public reviews
+          always show as{" "}
+          <span className="font-medium text-zinc-800">Anonymous renter</span> instead of
+          your name or email address.
         </p>
         <p className="mt-2 text-sm leading-relaxed text-zinc-700">
           Reviews are still subject to moderation and basic content rules (no harassment,

@@ -109,8 +109,7 @@ export async function PATCH(request: Request, { params }: Params) {
         overallScore: body.overallScore,
         landlordScore: body.landlordScore,
         majorityYearAttested: body.majorityYearAttestation,
-        displayFullyAnonymous:
-          body.displayFullyAnonymous ?? existing.displayFullyAnonymous,
+        displayFullyAnonymous: true,
         moderationStatus,
         moderationReasons,
       },

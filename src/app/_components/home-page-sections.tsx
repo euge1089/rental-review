@@ -217,8 +217,8 @@ export function HomePageSections({
                       : "mx-auto mt-4 max-w-2xl text-pretty text-[0.875rem] leading-relaxed text-zinc-600 sm:mx-0 sm:mt-5 sm:text-[0.975rem] sm:leading-relaxed"
                   }
                 >
-                  Real rent numbers, honest write-ups, and red flags — from people who
-                  actually lived there.
+                  What prior tenants wish you knew — historical rent increases,
+                  transparent reviews, <strong>fully anonymous</strong>.
                 </p>
 
                 <div
@@ -737,6 +737,11 @@ export function HomePageSections({
                   }
                 >
                   “Quiet unit, solid heat, landlord actually fixes things…”
+                </p>
+                <p className="mt-3 text-xs leading-relaxed text-zinc-600">
+                  Published privacy: every review shows as{" "}
+                  <span className="font-semibold text-zinc-700">Anonymous renter</span>,
+                  and exact lease years are displayed as broad time buckets.
                 </p>
               </div>
             </div>

@@ -286,6 +286,14 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
     return parts.join(", ");
   }
 
+  function reviewYearToPrivacyBucket(reviewYear: number): string {
+    const nowYear = new Date().getFullYear();
+    const yearsAgo = Math.max(0, nowYear - reviewYear);
+    if (yearsAgo <= 2) return "Recent (within ~2 years)";
+    if (yearsAgo <= 5) return "A few years ago (2-5 years)";
+    return "Older experience (5+ years)";
+  }
+
   const rangeLine =
     snapshot &&
     typeof snapshot.min === "number" &&
@@ -742,7 +750,8 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                           </p>
                         ) : null}
                         <p className="text-[11px] text-zinc-500 sm:text-xs">
-                          {monthsAgoLabel(item.createdAt)} · {item.reviewYear}
+                          {monthsAgoLabel(item.createdAt)} ·{" "}
+                          {reviewYearToPrivacyBucket(item.reviewYear)}
                         </p>
                       </Link>
                     </li>

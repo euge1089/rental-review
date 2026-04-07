@@ -1,7 +1,7 @@
 /** Logged-out / public API: no rent, scores, unit, or full body — aligns with teaser-only positioning. */
 export type PublicReviewPayload = {
   id: string;
-  reviewYear: number;
+  reviewTimeBucket: string;
   majorityYearAttested: boolean;
   teaser: string | null;
 };
@@ -37,6 +37,14 @@ function buildTeaser(body: string | null | undefined, maxLength = 140): string |
   return `${body.slice(0, maxLength)}…`;
 }
 
+function toReviewTimeBucket(reviewYear: number): string {
+  const nowYear = new Date().getFullYear();
+  const yearsAgo = Math.max(0, nowYear - reviewYear);
+  if (yearsAgo <= 2) return "Recent (within ~2 years)";
+  if (yearsAgo <= 5) return "A few years ago (2-5 years)";
+  return "Older experience (5+ years)";
+}
+
 /**
  * Default-safe serializer for exposing reviews in public or member APIs.
  * Never includes reviewer email or full body text.
@@ -49,7 +57,7 @@ export function serializeReviewForPublic(input: {
 }): PublicReviewPayload {
   return {
     id: input.id,
-    reviewYear: input.reviewYear,
+    reviewTimeBucket: toReviewTimeBucket(input.reviewYear),
     majorityYearAttested: input.majorityYearAttested,
     teaser: buildTeaser(input.body),
   };

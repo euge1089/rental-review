@@ -17,29 +17,18 @@ import {
   surfaceElevatedClass,
 } from "@/lib/ui-classes";
 
-function maskReviewerName(displayName: string | null, email: string | null): string {
-  const source = displayName?.trim() || email?.split("@")[0] || "";
-  if (!source) return "Renter";
-
-  const parts = source.split(/\s+/).filter(Boolean);
-  const first = parts[0] ?? "";
-  const last = parts[1] ?? "";
-
-  if (!first && !last) return "Renter";
-
-  const firstInitial = first[0]?.toUpperCase() ?? "";
-  const lastInitial = last[0]?.toUpperCase() ?? "";
-
-  if (!lastInitial) {
-    return `${firstInitial}***`;
-  }
-
-  return `${firstInitial}*** ${lastInitial}.`;
-}
-
 type Props = {
   params: Promise<{ id: string }>;
 };
+
+function reviewYearToPrivacyBucket(reviewYear: number | null): string {
+  if (typeof reviewYear !== "number") return "Older experience (5+ years)";
+  const nowYear = new Date().getFullYear();
+  const yearsAgo = Math.max(0, nowYear - reviewYear);
+  if (yearsAgo <= 2) return "Recent (within ~2 years)";
+  if (yearsAgo <= 5) return "A few years ago (2-5 years)";
+  return "Older experience (5+ years)";
+}
 
 export default async function PropertyDetailPage({ params }: Props) {
   const { id } = await params;
@@ -270,7 +259,7 @@ export default async function PropertyDetailPage({ params }: Props) {
           {isSignedIn ? (
             <ul className="space-y-5 pt-2">
               {property.reviews.map((review) => {
-                const yearLabel = review.reviewYear ?? "Year not set";
+                const privacyYearBucket = reviewYearToPrivacyBucket(review.reviewYear);
 
                 const amenities = [
                   {
@@ -308,12 +297,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                 const fullText = review.body ?? "";
                 const textToShow = fullText || "No written review.";
 
-                const maskedName = review.displayFullyAnonymous
-                  ? "Anonymous renter"
-                  : maskReviewerName(
-                      review.user.displayName,
-                      review.user.email,
-                    );
+                const maskedName = "Anonymous renter";
 
                 return (
                   <li
@@ -337,7 +321,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                           ) : null}
                         </p>
                         <p className="text-xs text-zinc-600">
-                          Lease year {yearLabel}
+                          Time period {privacyYearBucket}
                           {typeof review.monthlyRent === "number"
                             ? ` · $${review.monthlyRent.toLocaleString()}/mo`
                             : " · Rent not shared"}
@@ -427,13 +411,8 @@ export default async function PropertyDetailPage({ params }: Props) {
                 aria-hidden
               >
                 {property.reviews.map((review) => {
-                  const yearLabel = review.reviewYear ?? "Year not set";
-                  const maskedName = review.displayFullyAnonymous
-                    ? "Anonymous renter"
-                    : maskReviewerName(
-                        review.user.displayName,
-                        review.user.email,
-                      );
+                  const privacyYearBucket = reviewYearToPrivacyBucket(review.reviewYear);
+                  const maskedName = "Anonymous renter";
                   const amenityLabels = [
                     "Parking",
                     "Central HVAC",
@@ -465,7 +444,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                             ) : null}
                           </p>
                           <p className="text-xs text-zinc-600">
-                            Lease year {yearLabel}
+                            Time period {privacyYearBucket}
                             {review.bedroomCount != null
                               ? ` · ${bedroomCountToBand(review.bedroomCount)}`
                               : ""}
