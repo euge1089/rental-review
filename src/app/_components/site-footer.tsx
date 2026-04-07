@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { HowItWorksNavLink } from "@/app/_components/how-it-works-nav-link";
 import {
   appContentMaxWidthClass,
   appContentPaddingXClass,
@@ -20,9 +19,6 @@ export function SiteFooter() {
           className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 sm:justify-end"
           aria-label="Footer"
         >
-          <HowItWorksNavLink className="inline-flex min-h-11 items-center font-medium text-muted-blue transition active:opacity-80 hover:text-muted-blue-hover">
-            How it works
-          </HowItWorksNavLink>
           <Link
             href="/properties"
             className="inline-flex min-h-11 items-center font-medium text-muted-blue transition active:opacity-80 hover:text-muted-blue-hover"
