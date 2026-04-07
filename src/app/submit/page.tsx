@@ -1098,16 +1098,16 @@ export default function SubmitReviewPage() {
                   </p>
                   <div className="mt-2 grid gap-2 text-xs text-zinc-600">
                     <p>
-                      <span className="font-medium text-zinc-800">Recent years</span> ->{" "}
-                      Recent (within ~2 years)
+                      <span className="font-medium text-zinc-800">Recent years</span>{" "}
+                      -&gt; Recent (within ~2 years)
                     </p>
                     <p>
-                      <span className="font-medium text-zinc-800">Mid-range years</span> ->{" "}
-                      A few years ago (2-5 years)
+                      <span className="font-medium text-zinc-800">Mid-range years</span>{" "}
+                      -&gt; A few years ago (2-5 years)
                     </p>
                     <p>
-                      <span className="font-medium text-zinc-800">Older years</span> ->{" "}
-                      Older experience (5+ years)
+                      <span className="font-medium text-zinc-800">Older years</span>{" "}
+                      -&gt; Older experience (5+ years)
                     </p>
                   </div>
                   <p className="mt-2 text-xs text-zinc-500">
