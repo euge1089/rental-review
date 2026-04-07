@@ -4,9 +4,11 @@ import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  BATHROOM_SUBMIT_OPTIONS,
   BEDROOM_SUBMIT_OPTIONS,
   PRODUCT_POLICY,
   reviewYearsAllowedForUser,
+  snapBathroomsToAllowedDbValue,
 } from "@/lib/policy";
 import {
   formInputCompactClass,
@@ -51,6 +53,10 @@ export function ReviewEditForm({ reviewId, minLeaseStartYear, initial }: Props) 
     }
     return allowed;
   }, [minLeaseStartYear, initial.reviewYear]);
+  const initialBathsSnapped = useMemo(
+    () => snapBathroomsToAllowedDbValue(initial.bathrooms),
+    [initial.bathrooms],
+  );
   const router = useRouter();
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
@@ -68,7 +74,12 @@ export function ReviewEditForm({ reviewId, minLeaseStartYear, initial }: Props) 
       bedroomCount: Number(form.get("bedroomCount")),
       unit: String(form.get("unit") ?? "").trim() || undefined,
       monthlyRent: Number(form.get("monthlyRent")) || undefined,
-      bathrooms: Number(form.get("bathrooms")) || undefined,
+      bathrooms: (() => {
+        const raw = form.get("bathrooms");
+        if (raw == null || raw === "") return undefined;
+        const n = Number(raw);
+        return Number.isNaN(n) ? undefined : n;
+      })(),
       hasParking: form.get("hasParking") === "on",
       hasCentralHeatCooling: form.get("hasCentralHeatCooling") === "on",
       hasInUnitLaundry: form.get("hasInUnitLaundry") === "on",
@@ -215,23 +226,30 @@ export function ReviewEditForm({ reviewId, minLeaseStartYear, initial }: Props) 
       </div>
 
       <div className="grid gap-2">
-        <label htmlFor="bathrooms" className="text-sm font-medium">
-          Number of bathrooms
-        </label>
-        <input
-          id="bathrooms"
-          name="bathrooms"
-          type="number"
-          min={0.5}
-          max={10}
-          step={0.5}
-          defaultValue={initial.bathrooms ?? ""}
-          placeholder="e.g. 1, 1.5, or 2"
-          className={formInputCompactClass}
-        />
+        <p className="text-sm font-medium">Bathrooms</p>
+        <div className="flex flex-wrap gap-2">
+          {BATHROOM_SUBMIT_OPTIONS.map(({ value, label }, i) => (
+            <label
+              key={value}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-700 has-[:checked]:border-muted-blue-hover has-[:checked]:bg-muted-blue-hover has-[:checked]:text-white"
+            >
+              <input
+                type="radio"
+                name="bathrooms"
+                value={value}
+                defaultChecked={
+                  initialBathsSnapped != null &&
+                  Math.abs(initialBathsSnapped - value) < 1e-6
+                }
+                required={i === 0 && initialBathsSnapped == null}
+                className="sr-only"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
         <p className="text-xs text-zinc-500">
-          Use <span className="font-mono">.5</span> for half baths (e.g.{" "}
-          <span className="font-mono">1.5</span> for one and a half baths).
+          <span className="font-medium">4+</span> means four or more bathrooms combined.
         </p>
       </div>
 

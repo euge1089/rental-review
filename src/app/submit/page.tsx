@@ -9,11 +9,13 @@ import {
 } from "@/app/_components/app-page-shell";
 import { BostonRentingYearPickForm } from "@/app/_components/boston-renting-year-pick-form";
 import {
+  BATHROOM_SUBMIT_OPTIONS,
   BEDROOM_SUBMIT_OPTIONS,
   PRODUCT_POLICY,
   REVIEW_YEAR_OPTIONS,
   getBostonRentingSinceYearChoices,
   reviewYearsAllowedForUser,
+  snapBathroomsToAllowedDbValue,
 } from "@/lib/policy";
 import {
   SUBMIT_STEP1_PREFILL_KEY,
@@ -365,7 +367,6 @@ export default function SubmitReviewPage() {
       setIfPresent("address", draft.address);
       setIfPresent("unit", draft.unit);
       setIfPresent("postalCode", draft.postalCode);
-      setIfPresent("bathrooms", draft.bathrooms);
       setIfPresent("reviewText", draft.reviewText);
       setIfPresent("hasParking", draft.hasParking);
       setIfPresent("hasCentralHeatCooling", draft.hasCentralHeatCooling);
@@ -382,6 +383,19 @@ export default function SubmitReviewPage() {
         radios.forEach((r) => {
           r.checked = String(r.value) === String(draft.bedroomCount);
         });
+      }
+
+      const bathRaw = draft.bathrooms;
+      if (bathRaw != null && String(bathRaw).trim() !== "") {
+        const snapped = snapBathroomsToAllowedDbValue(Number(bathRaw));
+        if (snapped != null) {
+          const bathRadios = form.querySelectorAll<HTMLInputElement>(
+            'input[name="bathrooms"]',
+          );
+          bathRadios.forEach((r) => {
+            r.checked = Math.abs(Number(r.value) - snapped) < 1e-6;
+          });
+        }
       }
 
       const os = draft.overallScore;
@@ -542,11 +556,19 @@ export default function SubmitReviewPage() {
       const required = [...group].some((r) => r.required);
       const checked = [...group].some((r) => r.checked);
       if (required && !checked) {
-        setStatusMessage("Please choose how many bedrooms.");
-        document.getElementById("bedroom-count-label")?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
+        if (name === "bedroomCount") {
+          setStatusMessage("Please choose how many bedrooms.");
+          document.getElementById("bedroom-count-label")?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        } else if (name === "bathrooms") {
+          setStatusMessage("Please choose how many bathrooms.");
+          document.getElementById("bathroom-count-label")?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
         group[0]?.reportValidity();
         return false;
       }
@@ -1228,12 +1250,46 @@ export default function SubmitReviewPage() {
               </div>
             </div>
 
-            <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,16rem)] lg:gap-10">
-              <div
-                id="lease-years-region"
-                tabIndex={-1}
-                className="grid gap-3 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-4 outline-none ring-muted-blue/40 focus-visible:ring-2 sm:p-5"
+            <div className="grid min-w-0 gap-2">
+              <span
+                className="text-sm font-semibold leading-5 text-zinc-800"
+                id="bathroom-count-label"
               >
+                Bathrooms
+              </span>
+              <div
+                className="flex w-full min-w-0 flex-wrap gap-1.5 sm:gap-2"
+                role="group"
+                aria-labelledby="bathroom-count-label"
+              >
+                {BATHROOM_SUBMIT_OPTIONS.map(({ value, label }, i) => (
+                  <label
+                    key={value}
+                    className="flex h-10 min-h-10 min-w-[2.35rem] cursor-pointer items-center justify-center rounded-xl border border-zinc-200/90 bg-white px-2 text-xs font-semibold tabular-nums text-zinc-700 shadow-[0_1px_0_rgb(15_23_42/0.03)] transition has-[:checked]:border-muted-blue-hover has-[:checked]:bg-muted-blue-hover has-[:checked]:text-white has-[:checked]:shadow-none sm:min-w-9 sm:px-2.5"
+                  >
+                    <input
+                      type="radio"
+                      name="bathrooms"
+                      value={value}
+                      required={i === 0}
+                      className="sr-only"
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <p className="text-sm leading-relaxed text-zinc-500">
+                Tap the count that best matches your unit.{" "}
+                <span className="font-medium text-zinc-700">4+</span> means four or more
+                full and half baths combined.
+              </p>
+            </div>
+
+            <div
+              id="lease-years-region"
+              tabIndex={-1}
+              className="grid gap-3 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-4 outline-none ring-muted-blue/40 focus-visible:ring-2 sm:p-5"
+            >
                 <div>
                   <p className="text-sm font-semibold text-zinc-800">
                     Lease start year(s)
@@ -1323,32 +1379,6 @@ export default function SubmitReviewPage() {
                     but only show the bucket publicly.
                   </p>
                 </div>
-              </div>
-              <div className="grid gap-2.5">
-                <label
-                  htmlFor="bathrooms"
-                  className="text-sm font-semibold text-zinc-800"
-                >
-                  Bathrooms
-                </label>
-                <input
-                  id="bathrooms"
-                  name="bathrooms"
-                  type="number"
-                  min={0.5}
-                  max={10}
-                  step={0.5}
-                  placeholder="e.g. 1, 1.5, or 2"
-                  required
-                  className={formInputCompactClass}
-                />
-                <p className="text-sm leading-relaxed text-zinc-500">
-                  Use <span className="font-mono text-zinc-600">.5</span> for a half
-                  bath — for example{" "}
-                  <span className="font-mono text-zinc-600">1.5</span> means one full
-                  and one half.
-                </p>
-              </div>
             </div>
 
             <div className="grid gap-5 rounded-2xl border border-zinc-200/80 bg-gradient-to-b from-muted-blue-tint/40 to-muted-blue-tint/15 p-5 sm:gap-6 sm:p-7">

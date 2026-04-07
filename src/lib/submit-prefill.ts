@@ -1,3 +1,5 @@
+import { snapBathroomsToAllowedDbValue } from "@/lib/policy";
+
 /**
  * Step 1 submit prefill stored in localStorage for “another lease year” flows
  * (`/submit?another=1`, profile → submit).
@@ -76,7 +78,7 @@ export function buildPrefillFromReviewRow(
     unit: (review.unit ?? "").trim(),
     postalCode: (review.property.postalCode ?? "").trim(),
     bedroomCount: review.bedroomCount ?? 0,
-    bathrooms: review.bathrooms ?? 1,
+    bathrooms: snapBathroomsToAllowedDbValue(review.bathrooms ?? 1) ?? 1,
     hasParking: review.hasParking,
     hasCentralHeatCooling: review.hasCentralHeatCooling,
     hasInUnitLaundry: review.hasInUnitLaundry,
@@ -107,12 +109,23 @@ export function applySubmitStepOnePrefill(
   setIf("address", prefill.address);
   setIf("unit", prefill.unit);
   setIf("postalCode", prefill.postalCode);
-  setIf("bathrooms", prefill.bathrooms);
 
-  const radios = form.querySelectorAll<HTMLInputElement>('input[name="bedroomCount"]');
-  radios.forEach((r) => {
+  const bedroomRadios = form.querySelectorAll<HTMLInputElement>(
+    'input[name="bedroomCount"]',
+  );
+  bedroomRadios.forEach((r) => {
     r.checked = String(r.value) === String(prefill.bedroomCount);
   });
+
+  const bathSnapped = snapBathroomsToAllowedDbValue(prefill.bathrooms);
+  if (bathSnapped != null) {
+    const bathRadios = form.querySelectorAll<HTMLInputElement>(
+      'input[name="bathrooms"]',
+    );
+    bathRadios.forEach((r) => {
+      r.checked = Math.abs(Number(r.value) - bathSnapped) < 1e-6;
+    });
+  }
 
   setIf("hasParking", prefill.hasParking);
   setIf("hasCentralHeatCooling", prefill.hasCentralHeatCooling);

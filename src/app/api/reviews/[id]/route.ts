@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { detectLikelyPersonNames } from "@/lib/moderation";
 import { resolveReviewModeration } from "@/lib/review-moderation";
 import { assertReviewYearMeetsBostonFloor } from "@/lib/review-boston-floor";
+import { isAllowedBathroomsSubmitValue } from "@/lib/policy";
 
 const schema = z.object({
   reviewYear: z.number().int().min(2017),
@@ -14,9 +15,7 @@ const schema = z.object({
   monthlyRent: z.number().int().min(0).optional(),
   bathrooms: z
     .number()
-    .min(0.5)
-    .max(10)
-    .multipleOf(0.5)
+    .refine(isAllowedBathroomsSubmitValue, "Invalid bathroom count.")
     .optional(),
   reviewText: z.string().max(4000).optional(),
   hasParking: z.boolean().optional(),

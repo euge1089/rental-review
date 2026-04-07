@@ -4,7 +4,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { detectLikelyPersonNames } from "@/lib/moderation";
-import { PRODUCT_POLICY } from "@/lib/policy";
+import { PRODUCT_POLICY, isAllowedBathroomsSubmitValue } from "@/lib/policy";
 import { assertReviewYearMeetsBostonFloor } from "@/lib/review-boston-floor";
 import {
   formatAddressLine1ForDisplay,
@@ -25,7 +25,9 @@ const batchSchema = z.object({
   state: z.string().default("MA"),
   postalCode: z.string().min(3),
   bedroomCount: z.number().int().min(0).max(5),
-  bathrooms: z.number().min(0.5).max(10).multipleOf(0.5),
+  bathrooms: z
+    .number()
+    .refine(isAllowedBathroomsSubmitValue, "Invalid bathroom count."),
   reviewText: z.string().max(4000).optional(),
   hasParking: z.boolean().optional(),
   hasCentralHeatCooling: z.boolean().optional(),

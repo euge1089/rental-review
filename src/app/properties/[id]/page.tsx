@@ -9,6 +9,7 @@ import {
   getPropertyRentStats,
   getSouthBostonRentBands,
 } from "@/lib/analytics";
+import { bathroomsToPublicLabel } from "@/lib/policy";
 import { ReportReviewButton } from "@/app/_components/report-review-button";
 import { PropertyEngagement } from "@/app/_components/property-engagement";
 import {
@@ -298,6 +299,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                 const textToShow = fullText || "No written review.";
 
                 const maskedName = "Anonymous renter";
+                const bathPublicLabel = bathroomsToPublicLabel(review.bathrooms);
 
                 return (
                   <li
@@ -328,11 +330,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                           {review.bedroomCount != null
                             ? ` · ${bedroomCountToBand(review.bedroomCount)}`
                             : ""}
-                          {typeof review.bathrooms === "number"
-                            ? ` · ${review.bathrooms} bath${
-                                review.bathrooms === 1 ? "" : "s"
-                              }`
-                            : ""}
+                          {bathPublicLabel ? ` · ${bathPublicLabel}` : ""}
                         </p>
                         <div className="flex flex-wrap items-center gap-2 pt-1">
                           <span className="text-xs text-zinc-500">By {maskedName}</span>
@@ -413,6 +411,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                 {property.reviews.map((review) => {
                   const privacyYearBucket = reviewYearToPrivacyBucket(review.reviewYear);
                   const maskedName = "Anonymous renter";
+                  const bathPublicLabel = bathroomsToPublicLabel(review.bathrooms);
                   const amenityLabels = [
                     "Parking",
                     "Central HVAC",
@@ -448,11 +447,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                             {review.bedroomCount != null
                               ? ` · ${bedroomCountToBand(review.bedroomCount)}`
                               : ""}
-                            {typeof review.bathrooms === "number"
-                              ? ` · ${review.bathrooms} bath${
-                                  review.bathrooms === 1 ? "" : "s"
-                                }`
-                              : ""}
+                            {bathPublicLabel ? ` · ${bathPublicLabel}` : ""}
                           </p>
                           <div className="flex flex-wrap items-center gap-2 pt-1">
                             <span className="text-xs text-zinc-500">By {maskedName}</span>

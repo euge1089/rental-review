@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { bathroomsToBaAbbrev } from "@/lib/policy";
 import {
   formInputCompactClass,
   formSelectCompactClass,
@@ -276,13 +277,8 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
     if (item.bedroomBand && item.bedroomBand !== "Unknown") {
       parts.push(item.bedroomBand);
     }
-    if (typeof item.bathrooms === "number") {
-      parts.push(
-        `${item.bathrooms} BA${
-          item.bathrooms === 1 || item.bathrooms === 1.0 ? "" : ""
-        }`,
-      );
-    }
+    const bathAbbrev = bathroomsToBaAbbrev(item.bathrooms);
+    if (bathAbbrev) parts.push(bathAbbrev);
     return parts.join(", ");
   }
 

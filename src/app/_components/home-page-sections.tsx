@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Caveat } from "next/font/google";
 import type { getHomePageData } from "@/lib/home-page-data";
+import { bathroomsToPublicLabel } from "@/lib/policy";
 
 const caveatHint = Caveat({
   subsets: ["latin"],
@@ -50,13 +51,8 @@ function formatBedBathFromReviews(
     else if (n >= 5) parts.push("5+ beds");
     else parts.push(`${n} bed${n === 1 ? "" : "s"}`);
   }
-  if (r.bathrooms != null) {
-    const b = r.bathrooms;
-    const label = b === 1 ? "bath" : "baths";
-    parts.push(
-      Number.isInteger(b) ? `${b} ${label}` : `${b.toFixed(1)} ${label}`,
-    );
-  }
+  const bathLine = bathroomsToPublicLabel(r.bathrooms);
+  if (bathLine) parts.push(bathLine);
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
