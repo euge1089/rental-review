@@ -213,15 +213,21 @@ export default async function ProfilePage({ searchParams }: Props) {
               variant="subtle"
               as="section"
               id="verification"
-              className="scroll-mt-24 lg:w-[min(100%,22rem)] lg:shrink-0"
+              className={`scroll-mt-24 lg:w-[min(100%,22rem)] lg:shrink-0 ${
+                user?.phoneVerified
+                  ? "!border-emerald-200/70 !bg-emerald-50/50 px-4 py-3.5 sm:px-5 sm:py-4 md:px-5 md:py-4"
+                  : ""
+              }`}
             >
               <h2 className="text-base font-semibold text-muted-blue-hover">
                 Profile verification
               </h2>
-              <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                SMS adds a verified badge and usually faster review approval.
-              </p>
-              <div className="mt-3">
+              {!user?.phoneVerified ? (
+                <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                  SMS adds a verified badge and usually faster review approval.
+                </p>
+              ) : null}
+              <div className={user?.phoneVerified ? "mt-2" : "mt-3"}>
                 <ProfileVerification
                   initialVerified={Boolean(user?.phoneVerified)}
                 />

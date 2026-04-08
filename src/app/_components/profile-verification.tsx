@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { PRODUCT_POLICY } from "@/lib/policy";
 
 type Props = {
@@ -8,6 +9,7 @@ type Props = {
 };
 
 export function ProfileVerification({ initialVerified }: Props) {
+  const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [smsCode, setSmsCode] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
@@ -57,6 +59,7 @@ export function ProfileVerification({ initialVerified }: Props) {
         setStatusMessage(
           "Phone verified. New reviews can go live immediately when they pass automated checks.",
         );
+        router.refresh();
       } else {
         setStatusMessage(`SMS status: ${result.status ?? "unknown"}`);
       }
@@ -69,10 +72,10 @@ export function ProfileVerification({ initialVerified }: Props) {
 
   if (isVerified) {
     return (
-      <p className="text-sm text-emerald-700">
-        Your profile is <span className="font-semibold">verified via SMS</span>. Your
-        reviews show a verified badge, and new submissions are typically approved
-        right away if they don&apos;t need manual review.
+      <p className="text-sm leading-relaxed text-emerald-900/85">
+        Your profile is verified via SMS. Your reviews show a verified badge, and new
+        submissions are typically approved right away if they don&apos;t need manual
+        review.
       </p>
     );
   }
