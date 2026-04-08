@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   AppPageShell,
@@ -157,6 +158,7 @@ function ScoreScale({
 }
 
 export default function SubmitReviewPage() {
+  const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
   const sessionUser = useMemo((): SessionUser | null | "loading" => {
     if (sessionStatus === "loading") return "loading";
@@ -929,6 +931,7 @@ export default function SubmitReviewPage() {
     (bostonFloor === undefined || bostonFloor === null);
   const formSurfaceBlocked =
     !isAuthed || atReviewCap || bostonGateActive;
+  const showNewUserWelcome = isAuthed && searchParams.get("new") === "1";
 
   return (
     <AppPageShell gapClass="gap-6" className="relative">
@@ -1043,12 +1046,13 @@ export default function SubmitReviewPage() {
       {isAuthed && bostonFloor === null ? (
         <div className={`${surfaceElevatedClass} space-y-4 p-6 sm:p-8`}>
           <h2 className="text-lg font-semibold text-muted-blue-hover">
-            Set your Boston renting start year
+            First, select the first year you started renting in Boston
           </h2>
           <p className="text-sm leading-relaxed text-zinc-600">
             Before you submit a review, tell us the first calendar year you started
-            renting an apartment in Boston. You&apos;ll only be able to choose
-            lease-start years on or after that year. You can also complete this on{" "}
+            renting an apartment in Boston. We use this only to determine which years
+            you can review. Reviews are fully anonymous, and we do not show the exact
+            year you lived at each property. You can also complete this on{" "}
             <Link href="/profile" className="font-semibold text-muted-blue hover:underline">
               your profile
             </Link>
@@ -1060,6 +1064,33 @@ export default function SubmitReviewPage() {
             onSaved={(y) => setBostonFloor(y)}
           />
         </div>
+      ) : null}
+
+      {showNewUserWelcome ? (
+        <section className="rounded-2xl border border-emerald-200/70 bg-gradient-to-b from-emerald-50 to-white p-5 shadow-[0_1px_2px_rgb(6_78_59/0.06)] sm:p-6">
+          <h2 className="text-lg font-semibold tracking-tight text-emerald-950">
+            Welcome to Rent Review Boston
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-emerald-900/90 sm:text-base">
+            Share your first 60-second anonymous rental review to help future renters,
+            unlock full rental analytics, and get entered into our monthly giveaway for
+            Boston restaurant gift cards.
+          </p>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <a
+              href="#submit-review-form"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-muted-blue-hover"
+            >
+              Leave my first review
+            </a>
+            <Link
+              href="/profile"
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+            >
+              Go to profile
+            </Link>
+          </div>
+        </section>
       ) : null}
 
       <div
@@ -1130,6 +1161,7 @@ export default function SubmitReviewPage() {
       </section>
 
       <form
+        id="submit-review-form"
         ref={formRef}
         noValidate
         onSubmit={handleSubmit}
@@ -1153,8 +1185,7 @@ export default function SubmitReviewPage() {
               <div className="max-w-2xl space-y-2 pt-0.5">
                 <p className="text-sm leading-relaxed text-zinc-600">
                   Public reviews are <span className="font-semibold">fully anonymous</span>.
-                  We never show your name, and we do not publish your exact lease-start
-                  year.
+                  We do not show the exact year you lived at each property.
                 </p>
                 {typeof bostonFloor === "number" ? (
                   <p className="text-sm leading-relaxed text-zinc-600">
@@ -1502,9 +1533,7 @@ export default function SubmitReviewPage() {
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
                 Read the anonymity note below, then check the box to confirm your lease
                 attestation. If you chose more than one lease-start year in step 1, that
-                confirmation applies to each year. Phone verification is optional — you
-                can add it anytime on your profile for SMS verified on your reviews and
-                usually quicker approval.
+                confirmation applies to each year.
               </p>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />
@@ -1516,7 +1545,10 @@ export default function SubmitReviewPage() {
                 required
                 className="mt-1.5 size-4 shrink-0 rounded border-zinc-300"
               />
-              <span>{PRODUCT_POLICY.reviews.majorityYearAttestationRule}</span>
+              <span>
+                I confirm this review is truthful, based on my real rental experience,
+                and I either lived at this property or was a leaseholder there.
+              </span>
             </label>
 
             <p className="rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/30 p-4 text-sm leading-relaxed text-zinc-700 sm:p-5">
@@ -1767,7 +1799,7 @@ export default function SubmitReviewPage() {
               id="submit-success-title"
               className="mt-2 pr-10 text-xl font-semibold tracking-tight text-muted-blue-hover"
             >
-              Big win - your renter intel is live.
+              You&apos;re in - review submitted!
             </h2>
             <p
               id="submit-success-desc"
@@ -1775,16 +1807,18 @@ export default function SubmitReviewPage() {
             >
               {lastSubmittedBatchCount > 1 ? (
                 <>
-                  All {lastSubmittedBatchCount} reviews are in — same ratings and story
-                  for each lease year you picked. You just made the next Boston renter
-                  way harder to rip off.
+                  All {lastSubmittedBatchCount} reviews are in. Thanks for helping
+                  Boston renters with trusted local insight.
                 </>
               ) : (
                 <>
-                  Thanks for sharing that. You just made the next Boston renter way
-                  harder to rip off.
+                  Thanks for helping Boston renters with trusted local insight.
                 </>
               )}
+            </p>
+            <p className="mt-3 rounded-xl border border-emerald-200/70 bg-emerald-50/80 px-3 py-2 text-sm leading-relaxed text-emerald-950">
+              You earned 1 giveaway entry. Each approved review adds another chance to
+              win one of our Boston restaurant gift cards.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <button
@@ -1796,13 +1830,24 @@ export default function SubmitReviewPage() {
                 Leave another review
               </button>
               <Link
-                href="/analytics"
+                href="/profile#verification"
                 onClick={closeSubmitSuccessModal}
                 className="inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
               >
-                See Rent Explorer
+                Verify phone in profile
+              </Link>
+              <Link
+                href="/profile"
+                onClick={closeSubmitSuccessModal}
+                className="inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+              >
+                Go to profile
               </Link>
             </div>
+            <p className="mt-3 text-xs leading-relaxed text-zinc-500">
+              More approved reviews = more chances to win (max 5 submissions per person
+              per month).
+            </p>
           </div>
         </div>
       ) : null}

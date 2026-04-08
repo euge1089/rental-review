@@ -54,6 +54,10 @@ export function EmailAuthPanel({
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const postSignupRedirect =
+    callbackUrl && callbackUrl !== "/"
+      ? `${callbackUrl}${callbackUrl.includes("?") ? "&" : "?"}new=1`
+      : "/submit?new=1";
 
   const resetError = useCallback(() => setError(null), []);
 
@@ -110,7 +114,7 @@ export function EmailAuthPanel({
         return;
       }
       onSignedIn?.();
-      router.push("/profile?welcome=1");
+      router.push(postSignupRedirect);
       router.refresh();
     } finally {
       setLoading(false);
