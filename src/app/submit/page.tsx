@@ -8,6 +8,7 @@ import {
   PageHeader,
 } from "@/app/_components/app-page-shell";
 import { BostonRentingYearPickForm } from "@/app/_components/boston-renting-year-pick-form";
+import { GiveawayPromoStrip } from "@/app/_components/giveaway-promo-strip";
 import {
   BATHROOM_SUBMIT_OPTIONS,
   BEDROOM_SUBMIT_OPTIONS,
@@ -931,6 +932,7 @@ export default function SubmitReviewPage() {
 
   return (
     <AppPageShell gapClass="gap-6" className="relative">
+      <GiveawayPromoStrip variant="submit" />
       {sessionUser === "loading" ? (
         <p className="text-sm text-zinc-500">Checking sign-in…</p>
       ) : null}

@@ -9,6 +9,7 @@ const caveatHint = Caveat({
   subsets: ["latin"],
   weight: ["600"],
 });
+import { GiveawayPromoStrip } from "@/app/_components/giveaway-promo-strip";
 import { HeroSignUpOverlay } from "@/app/_components/hero-sign-up-overlay";
 import { HomeKeywordStrip } from "@/app/_components/home-keyword-strip";
 import { HomeSearch } from "@/app/_components/home-search";
@@ -159,6 +160,12 @@ export function HomePageSections({
             />
           ) : null}
           <div className={heroInnerClass}>
+            <GiveawayPromoStrip
+              variant="home"
+              className={
+                fw ? "relative z-[1] mb-8 lg:mb-10" : "relative z-[1] mb-8"
+              }
+            />
             <div
               className={
                 fw

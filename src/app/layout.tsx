@@ -58,6 +58,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  /** When true, GA4 sends debug hits so they appear in Admin → DebugView (not just Realtime). */
+  const gaDebugMode =
+    process.env.NEXT_PUBLIC_GA_DEBUG === "1" ||
+    process.env.NEXT_PUBLIC_GA_DEBUG === "true";
 
   return (
     <html
@@ -75,7 +79,10 @@ export default function RootLayout({
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', '${gaMeasurementId}');
+              gtag('config', '${gaMeasurementId}', {
+                send_page_view: true
+                ${gaDebugMode ? ", debug_mode: true" : ""}
+              });
             `}
           </Script>
         </>
