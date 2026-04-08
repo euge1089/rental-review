@@ -3,9 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { GiveawayPromoStrip } from "@/app/_components/giveaway-promo-strip";
 import { isGiveawayPromoActive } from "@/lib/giveaway-promo";
-import { modalBackdropClass, modalDialogClass } from "@/lib/ui-classes";
+import { modalBackdropClass } from "@/lib/ui-classes";
 
-const STORAGE_KEY = "rr_home_giveaway_promo_dismissed";
+/**
+ * Once per browser session: the promo is offered on the first visit to the home page only.
+ * Navigating away and back without closing still counts — we set this when we open the modal.
+ */
+const SESSION_FIRST_HOME_VISIT_KEY = "rr_home_giveaway_promo_first_home_done";
 
 export function HomeGiveawayPromoModal() {
   const [open, setOpen] = useState(false);
@@ -13,7 +17,7 @@ export function HomeGiveawayPromoModal() {
 
   const dismiss = useCallback(() => {
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, "1");
+      window.sessionStorage.setItem(SESSION_FIRST_HOME_VISIT_KEY, "1");
     }
     setOpen(false);
   }, []);
@@ -22,9 +26,18 @@ export function HomeGiveawayPromoModal() {
     setHydrated(true);
     if (!isGiveawayPromoActive()) return;
     if (typeof window === "undefined") return;
-    if (window.localStorage.getItem(STORAGE_KEY) === "1") return;
+    if (window.sessionStorage.getItem(SESSION_FIRST_HOME_VISIT_KEY) === "1") return;
     setOpen(true);
   }, []);
+
+  /** After paint so React Strict Mode’s remount doesn’t see storage set before the real mount. */
+  useEffect(() => {
+    if (!open || typeof window === "undefined") return;
+    const id = window.requestAnimationFrame(() => {
+      window.sessionStorage.setItem(SESSION_FIRST_HOME_VISIT_KEY, "1");
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -56,11 +69,19 @@ export function HomeGiveawayPromoModal() {
         onClick={dismiss}
       />
       <div
-        className={`${modalDialogClass} relative z-10 max-w-lg p-0 sm:max-w-xl sm:p-0`}
+        className="relative z-10 w-full max-w-[min(100%,24rem)] overflow-hidden rounded-2xl border-2 border-pop/35 bg-gradient-to-b from-pop-tint/90 via-white to-muted-blue-tint/20 shadow-[0_20px_50px_-12px_rgb(219_120_55/0.35),0_0_0_1px_rgb(219_120_55/0.12)] sm:max-w-lg"
       >
+        <div
+          className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-pop/25 blur-2xl"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-muted-blue/15 blur-2xl"
+          aria-hidden
+        />
         <button
           type="button"
-          className="absolute right-3 top-3 z-20 rounded-full p-2 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700"
+          className="absolute right-2 top-2 z-20 rounded-full bg-white/90 p-2 text-zinc-500 shadow-sm ring-1 ring-zinc-200/80 transition hover:bg-white hover:text-zinc-800"
           aria-label="Close"
           onClick={dismiss}
         >
@@ -79,14 +100,11 @@ export function HomeGiveawayPromoModal() {
             />
           </svg>
         </button>
-        <div className="p-4 pt-12 sm:p-6 sm:pt-14">
+        <div className="relative px-2 pb-2 pt-10 sm:px-3 sm:pb-3 sm:pt-11">
           <span id="home-giveaway-promo-title" className="sr-only">
             April giveaway promotion
           </span>
-          <GiveawayPromoStrip
-            variant="home"
-            className="border-0 shadow-none ring-0"
-          />
+          <GiveawayPromoStrip variant="modal" className="border-0 bg-transparent shadow-none ring-0" />
         </div>
       </div>
     </div>
