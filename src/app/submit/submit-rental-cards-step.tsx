@@ -127,7 +127,7 @@ export function SubmitRentalCardsStep({
     <div className="space-y-7">
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-blue">
-          Step 1
+          Rental details
         </p>
         <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
           Your Boston rental place(s)
@@ -370,91 +370,88 @@ export function SubmitRentalCardsStep({
                         </div>
                       </div>
 
-                      <div
-                        id={cardIndex === 0 ? "lease-years-region" : undefined}
-                        tabIndex={cardIndex === 0 ? -1 : undefined}
-                        className="space-y-2 outline-none ring-muted-blue/40 focus-visible:ring-2 focus-visible:ring-offset-2"
-                      >
-                        <p className="text-xs font-semibold text-zinc-700">
-                          Lease start year(s) ·{" "}
-                          <span className="font-normal text-zinc-500">
-                            {PRODUCT_POLICY.reviews.leaseStartYearRule} Rent per year.
-                          </span>
-                        </p>
-                        {leaseYearOptions.length === 0 ? (
-                          <p className="text-sm text-zinc-600">
-                            Set your Boston renting start year above to see eligible
-                            years.
+                      <div className="lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-8">
+                        <div
+                          id={cardIndex === 0 ? "lease-years-region" : undefined}
+                          tabIndex={cardIndex === 0 ? -1 : undefined}
+                          className="min-w-0 space-y-2 outline-none ring-muted-blue/40 focus-visible:ring-2 focus-visible:ring-offset-2 lg:col-span-4"
+                        >
+                          <p className="text-xs font-semibold text-zinc-700">
+                            Lease years ·{" "}
+                            <span className="font-normal text-zinc-500">
+                              {PRODUCT_POLICY.reviews.leaseStartYearRule}
+                            </span>
                           </p>
-                        ) : (
-                          <ul className="divide-y divide-zinc-100 border-y border-zinc-100" role="list">
-                            {leaseYearOptions.map((year) => {
-                              const checked = card.selectedYears.includes(year);
-                              return (
-                                <li key={`${card.id}-${year}`}>
-                                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2 sm:flex-nowrap sm:justify-between">
-                                    <label className="flex min-w-[5rem] cursor-pointer items-center gap-2.5">
-                                      <input
-                                        type="checkbox"
-                                        checked={checked}
-                                        onChange={() =>
-                                          toggleCardYear(card.id, year)
-                                        }
-                                        className="size-4 shrink-0 rounded border-zinc-300 text-muted-blue focus:ring-muted-blue/30"
-                                      />
-                                      <span className="text-sm font-semibold tabular-nums text-zinc-900">
-                                        {year}
-                                      </span>
-                                    </label>
-                                    {checked ? (
-                                      <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:max-w-[14rem]">
-                                        <label
-                                          htmlFor={`lease-rent-${card.id}-${year}`}
-                                          className="sr-only"
-                                        >
-                                          Monthly rent for {year}
-                                        </label>
-                                        <span
-                                          className="hidden text-xs text-zinc-500 sm:inline"
-                                          aria-hidden
-                                        >
-                                          $/mo
-                                        </span>
+                          {leaseYearOptions.length === 0 ? (
+                            <p className="text-sm text-zinc-600">
+                              Set your Boston renting start year above to see eligible
+                              years.
+                            </p>
+                          ) : (
+                            <ul
+                              className="divide-y divide-zinc-100 border-y border-zinc-100"
+                              role="list"
+                            >
+                              {leaseYearOptions.map((year) => {
+                                const checked = card.selectedYears.includes(year);
+                                return (
+                                  <li key={`${card.id}-${year}`}>
+                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 py-1.5">
+                                      <label className="flex cursor-pointer items-center gap-2">
                                         <input
-                                          id={`lease-rent-${card.id}-${year}`}
-                                          type="number"
-                                          min={0}
-                                          step={1}
-                                          inputMode="numeric"
-                                          placeholder="Rent"
-                                          value={card.rentByYear[year] ?? ""}
-                                          onChange={(e) =>
-                                            setCardRentForYear(
-                                              card.id,
-                                              year,
-                                              e.target.value,
-                                            )
+                                          type="checkbox"
+                                          checked={checked}
+                                          onChange={() =>
+                                            toggleCardYear(card.id, year)
                                           }
-                                          className={`min-w-0 flex-1 sm:max-w-[9rem] ${formInputCompactClass}`}
+                                          className="size-4 shrink-0 rounded border-zinc-300 text-muted-blue focus:ring-muted-blue/30"
                                         />
-                                      </div>
-                                    ) : null}
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
-                      </div>
+                                        <span className="text-sm font-semibold tabular-nums text-zinc-900">
+                                          {year}
+                                        </span>
+                                      </label>
+                                      {checked ? (
+                                        <>
+                                          <label
+                                            htmlFor={`lease-rent-${card.id}-${year}`}
+                                            className="sr-only"
+                                          >
+                                            Monthly rent for {year}
+                                          </label>
+                                          <input
+                                            id={`lease-rent-${card.id}-${year}`}
+                                            type="number"
+                                            min={0}
+                                            step={1}
+                                            inputMode="numeric"
+                                            placeholder="$/mo"
+                                            value={card.rentByYear[year] ?? ""}
+                                            onChange={(e) =>
+                                              setCardRentForYear(
+                                                card.id,
+                                                year,
+                                                e.target.value,
+                                              )
+                                            }
+                                            className={`h-9 w-[4.75rem] shrink-0 sm:w-[5.25rem] ${formInputCompactClass}`}
+                                          />
+                                        </>
+                                      ) : null}
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
+                        </div>
 
-                      <div className="space-y-3 border-t border-zinc-100 pt-4">
-                        <p className="text-sm font-semibold text-zinc-800">
-                          How was it?{" "}
-                          <span className="font-normal text-zinc-500">
-                            (1–10 for each — applies to every year above)
-                          </span>
-                        </p>
-                        <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
+                        <div className="mt-5 min-w-0 space-y-3 border-t border-zinc-100 pt-5 lg:col-span-8 lg:mt-0 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+                          <p className="text-sm font-semibold text-zinc-800">
+                            How was it?{" "}
+                            <span className="font-normal text-zinc-500">
+                              (1–10 each — applies to every year you selected)
+                            </span>
+                          </p>
                           <ScoreScale
                             label="Overall experience"
                             value={card.overallScore}
@@ -469,31 +466,31 @@ export function SubmitRentalCardsStep({
                             }
                             dense
                           />
-                        </div>
-                        <div className="grid gap-1.5">
-                          <label
-                            htmlFor={`reviewText-${card.id}`}
-                            className="text-sm font-semibold text-zinc-800"
-                          >
-                            Anything else?{" "}
-                            <span className="font-normal text-zinc-500">
-                              (optional)
-                            </span>
-                          </label>
-                          <textarea
-                            id={`reviewText-${card.id}`}
-                            rows={3}
-                            value={card.reviewText}
-                            onChange={(e) =>
-                              patchCard(card.id, { reviewText: e.target.value })
-                            }
-                            placeholder="Noise, repairs, tips — a few sentences help."
-                            className={formTextareaClass}
-                          />
-                          <p className="text-xs leading-relaxed text-zinc-500">
-                            Full names may trigger a quick manual check before going
-                            live.
-                          </p>
+                          <div className="grid gap-1.5 pt-1">
+                            <label
+                              htmlFor={`reviewText-${card.id}`}
+                              className="text-sm font-semibold text-zinc-800"
+                            >
+                              Anything else?{" "}
+                              <span className="font-normal text-zinc-500">
+                                (optional)
+                              </span>
+                            </label>
+                            <textarea
+                              id={`reviewText-${card.id}`}
+                              rows={3}
+                              value={card.reviewText}
+                              onChange={(e) =>
+                                patchCard(card.id, { reviewText: e.target.value })
+                              }
+                              placeholder="Noise, repairs, tips — a few sentences help."
+                              className={formTextareaClass}
+                            />
+                            <p className="text-xs leading-relaxed text-zinc-500">
+                              Full names may trigger a quick manual check before going
+                              live.
+                            </p>
+                          </div>
                         </div>
                       </div>
 
@@ -521,7 +518,7 @@ export function SubmitRentalCardsStep({
                                 }
                               />
                               <div
-                                className="flex min-h-[4.5rem] flex-col justify-center gap-0.5 rounded-xl border border-zinc-200/90 bg-zinc-50/80 px-3 py-2.5 transition hover:border-muted-blue/35 hover:bg-muted-blue-tint/25 peer-checked:border-muted-blue-hover peer-checked:bg-muted-blue-hover peer-checked:[&_.amenity-card-title]:text-white peer-checked:[&_.amenity-card-sub]:text-white/85 peer-focus-visible:ring-2 peer-focus-visible:ring-muted-blue/35 peer-focus-visible:ring-offset-1"
+                                className="flex min-h-[3.825rem] flex-col justify-center gap-0 rounded-xl border border-zinc-200/90 bg-zinc-50/80 px-2.5 py-1.5 transition hover:border-muted-blue/35 hover:bg-muted-blue-tint/25 peer-checked:border-muted-blue-hover peer-checked:bg-muted-blue-hover peer-checked:[&_.amenity-card-title]:text-white peer-checked:[&_.amenity-card-sub]:text-white/85 peer-focus-visible:ring-2 peer-focus-visible:ring-muted-blue/35 peer-focus-visible:ring-offset-1"
                               >
                                 <span className="amenity-card-title text-xs font-semibold tracking-tight text-zinc-900">
                                   {title}

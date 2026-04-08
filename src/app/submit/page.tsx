@@ -68,7 +68,6 @@ export default function SubmitReviewPage() {
   const statusBannerRef = useRef<HTMLDivElement | null>(null);
   const successPrimaryActionRef = useRef<HTMLButtonElement | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
-  const [step, setStep] = useState<1 | 2>(1);
   const [showSmsNudge, setShowSmsNudge] = useState(false);
   const [duplicateModalDupes, setDuplicateModalDupes] = useState<
     { reviewYear: number; reviewId: string }[] | null
@@ -291,7 +290,6 @@ export default function SubmitReviewPage() {
           setRentalCards([prefillToRentalCard(prefill)]);
           setMajorityAttestationDraft(false);
           setStep1ErrorsByCardId({});
-          setStep(1);
           window.history.replaceState(null, "", "/submit");
           setStatusMessage(
             "We filled in your building from last time — pick your lease-start year(s) and rent for each.",
@@ -314,14 +312,13 @@ export default function SubmitReviewPage() {
           ? hydrated.rentalCards
           : [emptyRentalCard()];
       setRentalCards(cards);
-      setStep(hydrated.step);
       setMajorityAttestationDraft(hydrated.majorityYearAttestation);
       try {
         window.localStorage.setItem(
           DRAFT_KEY,
           serializeSubmitDraft({
             rentalCards: cards,
-            step: hydrated.step,
+            step: 1,
             majorityYearAttestation: hydrated.majorityYearAttestation,
           }),
         );
@@ -340,19 +337,19 @@ export default function SubmitReviewPage() {
         DRAFT_KEY,
         serializeSubmitDraft({
           rentalCards,
-          step,
+          step: 1,
           majorityYearAttestation: majorityAttestationDraft,
         }),
       );
     } catch {
       // ignore
     }
-  }, [rentalCards, step, majorityAttestationDraft]);
+  }, [rentalCards, majorityAttestationDraft]);
 
   useEffect(() => {
     if (!draftTouchedRef.current) return;
     persistDraft();
-  }, [rentalCards, step, majorityAttestationDraft, persistDraft]);
+  }, [rentalCards, majorityAttestationDraft, persistDraft]);
 
   function addRentalCard() {
     if (rentalCards.length >= MAX_RENTAL_CARDS) return;
@@ -384,7 +381,6 @@ export default function SubmitReviewPage() {
     setMajorityAttestationDraft(false);
     setShowAnotherYearCta(false);
     setAnotherYearPrefill(null);
-    setStep(1);
     setStep1ErrorsByCardId({});
     setStatusMessage(
       "We kept your place details — pick lease-start year(s) and rent for each.",
@@ -398,66 +394,6 @@ export default function SubmitReviewPage() {
   function dismissAnotherYearCta() {
     setShowAnotherYearCta(false);
     setAnotherYearPrefill(null);
-  }
-
-  /** Constraint check only (no UI); used before switching step on final submit. */
-  function isStepPanelValid(form: HTMLFormElement, stepNum: number): boolean {
-    if (stepNum === 1) return true;
-    const root = form.querySelector<HTMLElement>(`[data-step-panel="${stepNum}"]`);
-    if (!root) return true;
-
-    const controls = root.querySelectorAll<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >("input:not([type=hidden]), select, textarea");
-
-    const radioNames = new Set<string>();
-    for (const el of controls) {
-      if (el instanceof HTMLInputElement && el.type === "radio") {
-        radioNames.add(el.name);
-      }
-    }
-    for (const name of radioNames) {
-      const group = root.querySelectorAll<HTMLInputElement>(
-        `input[type="radio"][name="${CSS.escape(name)}"]`,
-      );
-      if (group.length === 0) continue;
-      const required = [...group].some((r) => r.required);
-      const checked = [...group].some((r) => r.checked);
-      if (required && !checked) return false;
-    }
-
-    for (const el of controls) {
-      if (el instanceof HTMLInputElement && el.type === "radio") continue;
-      if (el instanceof HTMLInputElement && (el.type === "submit" || el.type === "button")) {
-        continue;
-      }
-      if (!el.willValidate) continue;
-      if (!el.checkValidity()) return false;
-    }
-    return true;
-  }
-
-  /** Validate one step and focus/report the first invalid control. */
-  function validateStepPanel(form: HTMLFormElement, stepNum: number): boolean {
-    if (stepNum === 1) return true;
-    const root = form.querySelector<HTMLElement>(`[data-step-panel="${stepNum}"]`);
-    if (!root) return true;
-
-    const controls = root.querySelectorAll<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >("input:not([type=hidden]), select, textarea");
-
-    for (const el of controls) {
-      if (el instanceof HTMLInputElement && (el.type === "submit" || el.type === "button")) {
-        continue;
-      }
-      if (!el.willValidate) continue;
-      if (!el.checkValidity()) {
-        el.reportValidity();
-        return false;
-      }
-    }
-    return true;
   }
 
   function validateRentalStep1(cards: RentalCardState[]): boolean {
@@ -595,7 +531,6 @@ export default function SubmitReviewPage() {
     } else {
       setRentalCards([emptyRentalCard()]);
       setMajorityAttestationDraft(false);
-      setStep(1);
       setStep1ErrorsByCardId({});
       setStatusMessage("Ready for your next review.");
       if (typeof window !== "undefined") {
@@ -631,7 +566,7 @@ export default function SubmitReviewPage() {
       }
       closeDuplicateModal();
       setStatusMessage(
-        "That review was removed. You can tap Continue again to move on with a fresh submission.",
+        "That review was removed. You can tap Submit again to continue.",
       );
     } finally {
       setDuplicateDeleting(false);
@@ -640,194 +575,166 @@ export default function SubmitReviewPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
+    const signedIn = sessionUser && sessionUser !== "loading";
+    if (!signedIn) return;
 
-    if (step === 1) {
-      if (formRef.current && !validateStepPanel(formRef.current, 1)) {
-        return;
-      }
-      const signedIn = sessionUser && sessionUser !== "loading";
-      if (!signedIn) {
-        return;
-      }
-      if (!validateRentalStep1(rentalCards)) {
-        return;
-      }
-
-      setDuplicateChecking(true);
-      setDuplicateModalAddressHint(null);
-      try {
-        for (let i = 0; i < rentalCards.length; i++) {
-          const c = rentalCards[i]!;
-          const sortedYears = [...c.selectedYears].sort((a, b) => b - a);
-          const res = await fetch("/api/reviews/duplicate-check", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              address: c.address.trim(),
-              city: "Boston",
-              state: "MA",
-              reviewYears: sortedYears,
-            }),
-          });
-          let data: {
-            ok: boolean;
-            duplicates?: { reviewYear: number; reviewId: string }[];
-            error?: string;
-          };
-          try {
-            data = (await res.json()) as typeof data;
-          } catch {
-            setStatusMessage(
-              "We couldn’t read the server response. Please try Continue again.",
-            );
-            return;
-          }
-          if (!data.ok) {
-            setStatusMessage(
-              data.error ?? "Could not check for existing reviews.",
-            );
-            return;
-          }
-          const dups = data.duplicates ?? [];
-          if (dups.length > 0) {
-            setDuplicateModalDupes(dups);
-            setDuplicateModalAddressHint(
-              c.address.trim().slice(0, 72) || `Place ${i + 1}`,
-            );
-            return;
-          }
-        }
-      } catch (err) {
-        setStatusMessage(
-          err instanceof Error
-            ? err.message
-            : "Network error while checking your review. Please try again.",
-        );
-        return;
-      } finally {
-        setDuplicateChecking(false);
-      }
-      setStep(2);
+    if (!validateRentalStep1(rentalCards)) {
       return;
     }
 
-    if (step === 2) {
-      const formElement = event.currentTarget;
-      if (formRef.current && !validateStepPanel(formRef.current, 2)) {
-        return;
-      }
-      const form = new FormData(formElement);
-      if (form.get("majorityYearAttestation") !== "on") {
-        setStatusMessage(
-          "Please check the box to confirm your lease attestation.",
-        );
-        return;
-      }
+    const form = new FormData(formElement);
+    if (form.get("majorityYearAttestation") !== "on") {
+      setStatusMessage(
+        "Please check the box to confirm your lease attestation.",
+      );
+      document.getElementById("majority-year-attestation")?.focus();
+      return;
+    }
 
-      for (const s of [1, 2] as const) {
-        if (!isStepPanelValid(formElement, s)) {
-          setStep(s);
-          requestAnimationFrame(() => {
-            if (formRef.current) validateStepPanel(formRef.current, s);
-          });
-          return;
-        }
-      }
-
-      if (!validateRentalStep1(rentalCards)) {
-        setStep(1);
-        return;
-      }
-
-      const multiPayload = {
-        majorityYearAttestation: true as const,
-        rentals: rentalCards.map((c) => {
-          const sortedYears = [...c.selectedYears].sort((a, b) => b - a);
-          return {
-            address: c.address.trim(),
-            unit: c.unit.trim() || undefined,
-            city: "Boston",
-            state: "MA",
-            postalCode: c.postalCode.trim(),
-            bedroomCount: c.bedroomCount!,
-            bathrooms: c.bathrooms!,
-            reviewText: c.reviewText.trim() || undefined,
-            hasParking: c.hasParking,
-            hasCentralHeatCooling: c.hasCentralHeatCooling,
-            hasInUnitLaundry: c.hasInUnitLaundry,
-            hasStorageSpace: c.hasStorageSpace,
-            hasOutdoorSpace: c.hasOutdoorSpace,
-            petFriendly: c.petFriendly,
-            overallScore: c.overallScore!,
-            landlordScore: c.landlordScore!,
-            yearEntries: sortedYears.map((y) => ({
-              reviewYear: y,
-              monthlyRent: Number(c.rentByYear[y]),
-            })),
-          };
-        }),
-      };
-
-      const primaryPlace = rentalCards[0]!;
-
-      setFinalSubmitting(true);
-      try {
-        const response = await fetch("/api/reviews/batch-multi", {
+    setDuplicateChecking(true);
+    setDuplicateModalAddressHint(null);
+    try {
+      for (let i = 0; i < rentalCards.length; i++) {
+        const c = rentalCards[i]!;
+        const sortedYears = [...c.selectedYears].sort((a, b) => b - a);
+        const res = await fetch("/api/reviews/duplicate-check", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(multiPayload),
+          body: JSON.stringify({
+            address: c.address.trim(),
+            city: "Boston",
+            state: "MA",
+            reviewYears: sortedYears,
+          }),
         });
-        const result = (await response.json()) as {
+        let data: {
           ok: boolean;
+          duplicates?: { reviewYear: number; reviewId: string }[];
           error?: string;
-          moderationStatus?: string;
-          userMessage?: string;
-          count?: number;
         };
-
-        if (!result.ok) {
-          setStatusMessage(result.error ?? "Could not submit review.");
+        try {
+          data = (await res.json()) as typeof data;
+        } catch {
+          setStatusMessage(
+            "We couldn’t read the server response. Please try Submit again.",
+          );
           return;
         }
-
-        setStatusMessage(
-          result.userMessage ??
-            (result.moderationStatus === "PENDING_REVIEW"
-              ? "Submitted — your review is being reviewed."
-              : "Submitted successfully."),
-        );
-        const created = Math.max(
-          1,
-          result.count ??
-            rentalCards.reduce((n, c) => n + c.selectedYears.length, 0),
-        );
-        setLastSubmittedBatchCount(created);
-        if (typeof window !== "undefined") {
-          window.localStorage.removeItem(DRAFT_KEY);
-          const prefill = buildPrefillFromSubmitPayload({
-            address: primaryPlace.address.trim(),
-            unit: primaryPlace.unit.trim() || undefined,
-            postalCode: primaryPlace.postalCode.trim(),
-            bedroomCount: primaryPlace.bedroomCount!,
-            bathrooms: primaryPlace.bathrooms!,
-            hasParking: primaryPlace.hasParking,
-            hasCentralHeatCooling: primaryPlace.hasCentralHeatCooling,
-            hasInUnitLaundry: primaryPlace.hasInUnitLaundry,
-            hasStorageSpace: primaryPlace.hasStorageSpace,
-            hasOutdoorSpace: primaryPlace.hasOutdoorSpace,
-            petFriendly: primaryPlace.petFriendly,
-          });
-          window.localStorage.setItem(
-            SUBMIT_STEP1_PREFILL_KEY,
-            JSON.stringify(prefill),
+        if (!data.ok) {
+          setStatusMessage(
+            data.error ?? "Could not check for existing reviews.",
           );
-          setAnotherYearPrefill(prefill);
-          setShowAnotherYearCta(true);
+          return;
         }
-        setShowSubmitSuccessModal(true);
-      } finally {
-        setFinalSubmitting(false);
+        const dups = data.duplicates ?? [];
+        if (dups.length > 0) {
+          setDuplicateModalDupes(dups);
+          setDuplicateModalAddressHint(
+            c.address.trim().slice(0, 72) || `Property ${i + 1}`,
+          );
+          return;
+        }
       }
+    } catch (err) {
+      setStatusMessage(
+        err instanceof Error
+          ? err.message
+          : "Network error while checking your review. Please try again.",
+      );
+      return;
+    } finally {
+      setDuplicateChecking(false);
+    }
+
+    const multiPayload = {
+      majorityYearAttestation: true as const,
+      rentals: rentalCards.map((c) => {
+        const sortedYears = [...c.selectedYears].sort((a, b) => b - a);
+        return {
+          address: c.address.trim(),
+          unit: c.unit.trim() || undefined,
+          city: "Boston",
+          state: "MA",
+          postalCode: c.postalCode.trim(),
+          bedroomCount: c.bedroomCount!,
+          bathrooms: c.bathrooms!,
+          reviewText: c.reviewText.trim() || undefined,
+          hasParking: c.hasParking,
+          hasCentralHeatCooling: c.hasCentralHeatCooling,
+          hasInUnitLaundry: c.hasInUnitLaundry,
+          hasStorageSpace: c.hasStorageSpace,
+          hasOutdoorSpace: c.hasOutdoorSpace,
+          petFriendly: c.petFriendly,
+          overallScore: c.overallScore!,
+          landlordScore: c.landlordScore!,
+          yearEntries: sortedYears.map((y) => ({
+            reviewYear: y,
+            monthlyRent: Number(c.rentByYear[y]),
+          })),
+        };
+      }),
+    };
+
+    const primaryPlace = rentalCards[0]!;
+
+    setFinalSubmitting(true);
+    try {
+      const response = await fetch("/api/reviews/batch-multi", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(multiPayload),
+      });
+      const result = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+        moderationStatus?: string;
+        userMessage?: string;
+        count?: number;
+      };
+
+      if (!result.ok) {
+        setStatusMessage(result.error ?? "Could not submit review.");
+        return;
+      }
+
+      setStatusMessage(
+        result.userMessage ??
+          (result.moderationStatus === "PENDING_REVIEW"
+            ? "Submitted — your review is being reviewed."
+            : "Submitted successfully."),
+      );
+      const created = Math.max(
+        1,
+        result.count ??
+          rentalCards.reduce((n, c) => n + c.selectedYears.length, 0),
+      );
+      setLastSubmittedBatchCount(created);
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(DRAFT_KEY);
+        const prefill = buildPrefillFromSubmitPayload({
+          address: primaryPlace.address.trim(),
+          unit: primaryPlace.unit.trim() || undefined,
+          postalCode: primaryPlace.postalCode.trim(),
+          bedroomCount: primaryPlace.bedroomCount!,
+          bathrooms: primaryPlace.bathrooms!,
+          hasParking: primaryPlace.hasParking,
+          hasCentralHeatCooling: primaryPlace.hasCentralHeatCooling,
+          hasInUnitLaundry: primaryPlace.hasInUnitLaundry,
+          hasStorageSpace: primaryPlace.hasStorageSpace,
+          hasOutdoorSpace: primaryPlace.hasOutdoorSpace,
+          petFriendly: primaryPlace.petFriendly,
+        });
+        window.localStorage.setItem(
+          SUBMIT_STEP1_PREFILL_KEY,
+          JSON.stringify(prefill),
+        );
+        setAnotherYearPrefill(prefill);
+        setShowAnotherYearCta(true);
+      }
+      setShowSubmitSuccessModal(true);
+    } finally {
+      setFinalSubmitting(false);
     }
   }
 
@@ -982,13 +889,12 @@ export default function SubmitReviewPage() {
           description={
             <>
               <p>
-                Two quick steps: your rental place(s) — address, years, rent, and how
-                it felt — then one confirmation before you send. You can cover multiple
-                Boston buildings in a single submission.
+                One submission: your rental place(s) — address, years, rent, how it
+                felt, and a quick lease confirmation. You can cover multiple Boston
+                buildings at once.
               </p>
               <p className="mt-3 text-zinc-500 sm:mt-4">
-                Your draft saves on this device, so you can step away and pick up where
-                you left off.
+                Your draft saves on this device until you send it.
               </p>
             </>
           }
@@ -1000,38 +906,15 @@ export default function SubmitReviewPage() {
       >
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-base font-medium tracking-tight text-emerald-950">
-            {step === 2
-              ? "Last step — you've got this"
-              : "Take it one step at a time"}
-          </p>
-          <p className="text-sm font-medium text-emerald-800/90">
-            Step {step} of 2
+            One page — add each property, then submit
           </p>
         </div>
-        <div className="mt-4 flex gap-1.5">
-          {[1, 2].map((s) => (
-            <div
-              key={s}
-              className={`h-2.5 flex-1 rounded-full transition-colors ${
-                step >= s ? "bg-emerald-500" : "bg-emerald-200/80"
-              }`}
-            />
-          ))}
+        <div className="mt-4 h-2.5 w-full rounded-full bg-emerald-200/80">
+          <div className="h-full w-full rounded-full bg-emerald-500" />
         </div>
-        <ul className="mt-5 grid gap-3 text-sm leading-snug sm:grid-cols-2 sm:gap-4">
-          <li
-            className={`rounded-xl bg-white/60 px-3 py-2.5 sm:px-3.5 ${step === 1 ? "font-semibold text-emerald-950 ring-1 ring-emerald-300/50" : "text-emerald-900/75"}`}
-          >
-            <span className="text-emerald-700/80">1 · </span>
-            Your rental place(s)
-          </li>
-          <li
-            className={`rounded-xl bg-white/60 px-3 py-2.5 sm:px-3.5 ${step === 2 ? "font-semibold text-emerald-950 ring-1 ring-emerald-300/50" : "text-emerald-900/75"}`}
-          >
-            <span className="text-emerald-700/80">2 · </span>
-            Confirm &amp; send
-          </li>
-        </ul>
+        <p className="mt-4 text-sm leading-relaxed text-emerald-900/85">
+          We check for duplicate years and save your draft automatically while you type.
+        </p>
       </section>
 
       <form
@@ -1040,11 +923,7 @@ export default function SubmitReviewPage() {
         onSubmit={handleSubmit}
         className={`${surfaceElevatedClass} space-y-7 p-6 text-base sm:space-y-8 sm:p-10 ${formSurfaceBlocked ? "pointer-events-none opacity-40" : ""}`}
       >
-        <div
-          data-step-panel="1"
-          className={step === 1 ? "space-y-7" : "hidden"}
-          aria-hidden={step !== 1}
-        >
+        <div className="space-y-7">
           <SubmitRentalCardsStep
             rentalCards={rentalCards}
             leaseYearOptions={leaseYearOptions}
@@ -1058,30 +937,11 @@ export default function SubmitReviewPage() {
             addRentalCard={addRentalCard}
             maxCards={MAX_RENTAL_CARDS}
           />
-        </div>
 
-        <div
-          data-step-panel="2"
-          className={step === 2 ? "space-y-7" : "hidden"}
-          aria-hidden={step !== 2}
-        >
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-blue">
-                Step 2
-              </p>
-              <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
-                One last look
-              </h2>
-              <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
-                Confirm your lease attestation for every lease-start year on every place
-                card. Phone verification is optional — you can add it anytime on your
-                profile for a verified badge and usually quicker approval.
-              </p>
-            </div>
-            <div className="h-px w-full bg-zinc-200/90" />
-
-            <label className="flex cursor-pointer items-start gap-4 rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/30 p-4 text-base leading-relaxed text-zinc-700 sm:p-5">
+          <div className="space-y-4 border-t border-zinc-200/90 pt-6">
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-zinc-200/80 bg-muted-blue-tint/30 p-4 text-sm leading-relaxed text-zinc-700 sm:gap-4 sm:p-5 sm:text-base">
               <input
+                id="majority-year-attestation"
                 type="checkbox"
                 name="majorityYearAttestation"
                 required
@@ -1090,15 +950,16 @@ export default function SubmitReviewPage() {
                   draftTouchedRef.current = true;
                   setMajorityAttestationDraft(e.target.checked);
                 }}
-                className="mt-1.5 size-4 shrink-0 rounded border-zinc-300"
+                className="mt-1 size-4 shrink-0 rounded border-zinc-300"
               />
               <span>{PRODUCT_POLICY.reviews.majorityYearAttestationRule}</span>
             </label>
-
-            <p className="rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/30 p-4 text-sm leading-relaxed text-zinc-700 sm:p-5">
+            <p className="text-sm leading-relaxed text-zinc-600">
               Your public review is fully anonymous by default. We never show your name
-              on review cards.
+              on review cards. Phone verification is optional on your profile for a
+              verified badge and usually quicker approval.
             </p>
+          </div>
         </div>
 
         {statusMessage ? (
@@ -1124,35 +985,19 @@ export default function SubmitReviewPage() {
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-5 border-t border-zinc-100 pt-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
-          <div className="flex flex-wrap gap-3">
-            {step > 1 && (
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
-              >
-                Back
-              </button>
-            )}
-            <button
-              type="submit"
-              ref={submitButtonRef}
-              disabled={duplicateChecking || finalSubmitting}
-              className="rounded-full bg-muted-blue px-6 py-2.5 text-sm font-semibold text-white shadow-[0_8px_22px_-8px_rgb(92_107_127/0.4)] transition hover:bg-muted-blue-hover disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {duplicateChecking
-                ? "Checking…"
-                : finalSubmitting
-                  ? "Submitting…"
-                  : step < 2
-                    ? "Continue"
-                    : "Submit review"}
-            </button>
-          </div>
-          <p className="max-w-md text-sm leading-relaxed text-zinc-500">
-            Need a break? Your answers stay on this device until you send the review.
-          </p>
+        <div className="flex flex-col gap-4 border-t border-zinc-100 pt-6 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+          <button
+            type="submit"
+            ref={submitButtonRef}
+            disabled={duplicateChecking || finalSubmitting}
+            className="rounded-full bg-muted-blue px-6 py-2.5 text-sm font-semibold text-white shadow-[0_8px_22px_-8px_rgb(92_107_127/0.4)] transition hover:bg-muted-blue-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {duplicateChecking
+              ? "Checking…"
+              : finalSubmitting
+                ? "Submitting…"
+                : "Submit review"}
+          </button>
         </div>
 
         {showAnotherYearCta && anotherYearPrefill ? (
@@ -1248,7 +1093,7 @@ export default function SubmitReviewPage() {
             </h2>
             {duplicateModalAddressHint ? (
               <p className="mt-2 text-sm font-medium text-muted-blue-hover">
-                Affected place: {duplicateModalAddressHint}
+                Affected property: {duplicateModalAddressHint}
               </p>
             ) : null}
             <p className="mt-3 text-sm leading-relaxed text-zinc-600 sm:text-base sm:leading-relaxed">
