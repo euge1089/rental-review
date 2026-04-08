@@ -166,7 +166,7 @@ export default async function ProfilePage({ searchParams }: Props) {
             </span>
             {user?.phoneVerified ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-600/15">
-                Verified renter
+                SMS verified
               </span>
             ) : null}
           </div>
@@ -225,7 +225,8 @@ export default async function ProfilePage({ searchParams }: Props) {
               </h2>
               {!user?.phoneVerified ? (
                 <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                  SMS adds a verified badge and usually faster review approval.
+                  After SMS verification, your reviews can show SMS verified and are
+                  often approved faster.
                 </p>
               ) : null}
               <div

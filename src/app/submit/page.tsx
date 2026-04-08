@@ -995,8 +995,8 @@ export default function SubmitReviewPage() {
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-zinc-600">
               Add SMS verification under{" "}
-              <span className="font-medium">Profile</span> for a verified renter badge
-              and <span className="font-medium">faster approval</span> (usually right
+              <span className="font-medium">Profile</span> for SMS verified on your
+              reviews and <span className="font-medium">faster approval</span> (usually right
               away when your review doesn&apos;t need manual checks). If you skip it,
               we may take up to{" "}
               <span className="font-medium">
@@ -1503,8 +1503,8 @@ export default function SubmitReviewPage() {
                 Read the anonymity note below, then check the box to confirm your lease
                 attestation. If you chose more than one lease-start year in step 1, that
                 confirmation applies to each year. Phone verification is optional — you
-                can add it anytime on your profile for a verified badge and usually
-                quicker approval.
+                can add it anytime on your profile for SMS verified on your reviews and
+                usually quicker approval.
               </p>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />

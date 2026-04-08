@@ -73,7 +73,7 @@ export function ProfileVerification({ initialVerified }: Props) {
   if (isVerified) {
     return (
       <p className="text-sm leading-snug text-zinc-700">
-        Your profile is verified via SMS. Your reviews show a verified badge, and new
+        Your profile is verified via SMS. Your reviews show SMS verified, and new
         submissions are typically approved right away if they don&apos;t need manual
         review.
       </p>
@@ -83,8 +83,9 @@ export function ProfileVerification({ initialVerified }: Props) {
   return (
     <div className="space-y-3 text-sm text-zinc-700">
       <p>
-        Verify with SMS for a <span className="font-medium">verified renter</span>{" "}
-        badge and <span className="font-medium">faster approval</span> on new reviews.
+        Verify with SMS so your reviews can show{" "}
+        <span className="font-medium">SMS verified</span>, with{" "}
+        <span className="font-medium">faster approval</span> on new reviews.
         If you skip it, we may take up to{" "}
         <span className="font-medium">
           {PRODUCT_POLICY.verification.unverifiedReviewSlaBusinessDays} business days

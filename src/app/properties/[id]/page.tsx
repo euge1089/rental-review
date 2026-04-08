@@ -336,7 +336,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                           <span className="text-xs text-zinc-500">By {maskedName}</span>
                           {review.user.phoneVerified && (
                             <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200/80">
-                              Verified renter
+                              SMS verified
                             </span>
                           )}
                         </div>
@@ -453,7 +453,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                             <span className="text-xs text-zinc-500">By {maskedName}</span>
                             {review.user.phoneVerified && (
                               <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200/80">
-                                Verified renter
+                                SMS verified
                               </span>
                             )}
                           </div>
