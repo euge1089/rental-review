@@ -277,6 +277,18 @@ export default function SubmitReviewPage() {
     return reviewYearsAllowedForUser(bostonFloor);
   }, [sessionUser, bostonFloor]);
 
+  const unusedEligibleYearsOnForm = useMemo(
+    () => leaseYearOptions.filter((y) => !selectedLeaseYears.includes(y)),
+    [leaseYearOptions, selectedLeaseYears],
+  );
+
+  const unusedYearsShortList = useMemo(() => {
+    const y = [...unusedEligibleYearsOnForm].sort((a, b) => b - a);
+    if (y.length === 0) return "";
+    if (y.length <= 4) return y.join(", ");
+    return `${y.slice(0, 3).join(", ")}, +${y.length - 3} more`;
+  }, [unusedEligibleYearsOnForm]);
+
   /** Drop lease years that fall outside the profile floor once options are known. */
   useEffect(() => {
     if (bostonFloor === undefined || bostonFloor === null) return;
@@ -1265,7 +1277,7 @@ export default function SubmitReviewPage() {
                 {BATHROOM_SUBMIT_OPTIONS.map(({ value, label }, i) => (
                   <label
                     key={value}
-                    className="flex h-10 min-h-10 min-w-[2.35rem] cursor-pointer items-center justify-center rounded-xl border border-zinc-200/90 bg-white px-2 text-xs font-semibold tabular-nums text-zinc-700 shadow-[0_1px_0_rgb(15_23_42/0.03)] transition has-[:checked]:border-muted-blue-hover has-[:checked]:bg-muted-blue-hover has-[:checked]:text-white has-[:checked]:shadow-none sm:min-w-9 sm:px-2.5"
+                    className="flex h-10 min-h-10 min-w-[3rem] cursor-pointer items-center justify-center rounded-xl border border-zinc-200/90 bg-white px-3 text-xs font-semibold tabular-nums text-zinc-700 shadow-[0_1px_0_rgb(15_23_42/0.03)] transition has-[:checked]:border-muted-blue-hover has-[:checked]:bg-muted-blue-hover has-[:checked]:text-white has-[:checked]:shadow-none sm:min-w-[3.25rem] sm:px-3.5"
                   >
                     <input
                       type="radio"
@@ -1278,11 +1290,6 @@ export default function SubmitReviewPage() {
                   </label>
                 ))}
               </div>
-              <p className="text-sm leading-relaxed text-zinc-500">
-                Tap the count that best matches your unit.{" "}
-                <span className="font-medium text-zinc-700">4+</span> means four or more
-                full and half baths combined.
-              </p>
             </div>
 
             <div
@@ -1356,6 +1363,44 @@ export default function SubmitReviewPage() {
                     })}
                   </ul>
                 )}
+                {step === 1 &&
+                sessionUser &&
+                sessionUser !== "loading" &&
+                typeof bostonFloor === "number" &&
+                unusedEligibleYearsOnForm.length > 0 ? (
+                  <div className="rounded-xl border border-muted-blue/25 bg-muted-blue-tint/40 px-3 py-3.5 sm:px-4">
+                    <p className="text-sm font-semibold text-muted-blue-hover">
+                      More lease years?
+                    </p>
+                    <p className="mt-1.5 text-sm leading-relaxed text-zinc-700">
+                      {selectedLeaseYears.length === 0 ? (
+                        <>
+                          You can pick <span className="font-medium">several years</span>{" "}
+                          for this address if you lived here in a row. Any other years
+                          you&apos;re eligible for (
+                          <span className="font-medium tabular-nums">
+                            {unusedYearsShortList}
+                          </span>
+                          ) might belong to a{" "}
+                          <span className="font-medium">different</span> Boston
+                          building — you&apos;ll submit that place as a separate review
+                          after this one.
+                        </>
+                      ) : (
+                        <>
+                          You haven&apos;t added{" "}
+                          <span className="font-medium tabular-nums">
+                            {unusedYearsShortList}
+                          </span>{" "}
+                          on this form yet. Tap them above if those years were at{" "}
+                          <span className="font-medium">this</span> address. If they
+                          were somewhere else in Boston, finish this review and start a
+                          new one for that building.
+                        </>
+                      )}
+                    </p>
+                  </div>
+                ) : null}
                 <div className="rounded-xl border border-zinc-200/80 bg-white/80 p-3">
                   <p className="text-xs font-semibold uppercase tracking-wide text-zinc-700">
                     Privacy mapping shown publicly

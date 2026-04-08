@@ -84,17 +84,14 @@ export const BEDROOM_SUBMIT_OPTIONS = [
 ] as const;
 
 /**
- * Stored `Review.bathrooms` values on submit. `5` means 4+ baths (display only),
- * parallel to bedroom `5` = 5+.
+ * Stored `Review.bathrooms` on submit. `4` means 3+ baths in the UI (not “exactly 4”).
  */
 export const BATHROOM_SUBMIT_OPTIONS = [
   { value: 1, label: "1" },
   { value: 1.5, label: "1.5" },
   { value: 2, label: "2" },
   { value: 2.5, label: "2.5" },
-  { value: 3, label: "3" },
-  { value: 3.5, label: "3.5" },
-  { value: 5, label: "4+" },
+  { value: 4, label: "3+" },
 ] as const;
 
 const BATH_EPS = 1e-6;
@@ -104,8 +101,7 @@ export function isAllowedBathroomsSubmitValue(n: number): boolean {
 }
 
 /**
- * Snap legacy half-bath floats to the nearest allowed bucket (matches Prisma migration
- * `20260407143000_review_bathrooms_discrete_buckets`).
+ * Snap any legacy float to an allowed bucket (matches Prisma migrations for bathrooms).
  */
 export function snapBathroomsToAllowedDbValue(raw: number | null): number | null {
   if (raw == null || Number.isNaN(raw)) return null;
@@ -114,26 +110,24 @@ export function snapBathroomsToAllowedDbValue(raw: number | null): number | null
   if (raw < 1.75) return 1.5;
   if (raw < 2.25) return 2;
   if (raw < 2.75) return 2.5;
-  if (raw < 3.25) return 3;
-  if (raw < 3.75) return 3.5;
-  return 5;
+  return 4;
 }
 
-/** Property cards / home preview: "1 bath", "1.5 baths", "4+ baths". */
+/** Property cards / home preview: "1 bath", "3+ baths", etc. */
 export function bathroomsToPublicLabel(b: number | null | undefined): string | null {
   if (b == null) return null;
   const n = snapBathroomsToAllowedDbValue(b);
   if (n == null) return null;
-  if (Math.abs(n - 5) < BATH_EPS) return "4+ baths";
+  if (Math.abs(n - 4) < BATH_EPS) return "3+ baths";
   if (Math.abs(n - 1) < BATH_EPS) return "1 bath";
   return `${n} baths`;
 }
 
-/** Rent Explorer compact line, e.g. "4+ BA". */
+/** Rent Explorer compact line, e.g. "3+ BA". */
 export function bathroomsToBaAbbrev(b: number | null | undefined): string | null {
   if (b == null) return null;
   const n = snapBathroomsToAllowedDbValue(b);
   if (n == null) return null;
-  if (Math.abs(n - 5) < BATH_EPS) return "4+ BA";
+  if (Math.abs(n - 4) < BATH_EPS) return "3+ BA";
   return `${n} BA`;
 }

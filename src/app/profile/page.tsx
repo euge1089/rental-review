@@ -17,7 +17,11 @@ import { ProfileContributorLadder } from "@/app/_components/profile-contributor-
 import { ProfileVerification } from "@/app/_components/profile-verification";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getBostonRentingSinceYearChoices, PRODUCT_POLICY } from "@/lib/policy";
+import {
+  getBostonRentingSinceYearChoices,
+  PRODUCT_POLICY,
+  reviewYearsAllowedForUser,
+} from "@/lib/policy";
 import { linkInlineClass } from "@/lib/ui-classes";
 
 type Props = {
@@ -80,6 +84,21 @@ export default async function ProfilePage({ searchParams }: Props) {
 
   const displayName = user?.displayName ?? null;
 
+  const allowedLeaseYearsForProfile =
+    bostonRentingSinceYear != null
+      ? reviewYearsAllowedForUser(bostonRentingSinceYear)
+      : [];
+  const reviewYearsCovered = new Set(reviews.map((r) => r.reviewYear));
+  const eligibleYearsWithoutAnyReview = allowedLeaseYearsForProfile.filter(
+    (y) => !reviewYearsCovered.has(y),
+  );
+
+  function formatYearsForMessage(years: number[]): string {
+    const desc = [...years].sort((a, b) => b - a);
+    if (desc.length <= 4) return desc.join(", ");
+    return `${desc.slice(0, 3).join(", ")}, +${desc.length - 3} more`;
+  }
+
   return (
     <AppPageShell>
       {bostonRentingSinceYear == null ? (
@@ -91,6 +110,45 @@ export default async function ProfilePage({ searchParams }: Props) {
         reviewCount={reviews.length}
         bostonRentingSinceYear={bostonRentingSinceYear}
       />
+      {bostonRentingSinceYear != null &&
+      eligibleYearsWithoutAnyReview.length > 0 ? (
+        <SurfacePanel
+          variant="subtle"
+          as="section"
+          className="border border-muted-blue/20 bg-gradient-to-b from-muted-blue-tint/50 to-muted-blue-tint/25"
+        >
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-blue">
+            Grow your impact
+          </p>
+          <p className="mt-2 text-base font-semibold leading-snug text-muted-blue-hover">
+            You still have lease years to cover
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-700">
+            We don&apos;t see a review yet for every lease-start year you&apos;re allowed
+            to share since{" "}
+            <span className="font-medium text-zinc-900">
+              {bostonRentingSinceYear}
+            </span>
+            . Examples:{" "}
+            <span className="font-medium text-zinc-900">
+              {formatYearsForMessage(eligibleYearsWithoutAnyReview)}
+            </span>
+            . If a year was at the same building as a review you already wrote, add it
+            when you submit for that address again; if it was a different Boston
+            apartment, use a new review for that place. Lived in more than one spot?
+            Each building helps someone new.
+          </p>
+          <div className="mt-4">
+            <Link
+              href="/submit"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-muted-blue-hover"
+            >
+              Add a review
+            </Link>
+          </div>
+        </SurfacePanel>
+      ) : null}
+
       <PageHeader
         eyebrow="Profile"
         title="Your reviews and saved apartments"

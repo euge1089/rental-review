@@ -249,7 +249,7 @@ export function ReviewEditForm({ reviewId, minLeaseStartYear, initial }: Props) 
           ))}
         </div>
         <p className="text-xs text-zinc-500">
-          <span className="font-medium">4+</span> means four or more bathrooms combined.
+          <span className="font-medium">3+</span> means three or more bathrooms combined.
         </p>
       </div>
 
