@@ -44,10 +44,20 @@ export default function PropertiesPage() {
     void load();
   }, []);
 
+  const previewLimit = 8;
+  const isLoggedOutBrowse = loggedIn === false;
+
+  const poolForFilter = useMemo(() => {
+    if (loggedIn === false) {
+      return properties.slice(0, previewLimit);
+    }
+    return properties;
+  }, [properties, loggedIn, previewLimit]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return properties;
-    return properties.filter((p) => {
+    if (!q) return poolForFilter;
+    return poolForFilter.filter((p) => {
       const haystack = [
         p.addressLine1,
         p.city,
@@ -58,15 +68,11 @@ export default function PropertiesPage() {
         .toLowerCase();
       return haystack.includes(q);
     });
-  }, [properties, query]);
+  }, [poolForFilter, query]);
 
-  const previewLimit = 8;
-  const isLoggedOutBrowse = loggedIn === false;
-  const visibleProperties = isLoggedOutBrowse
-    ? filtered.slice(0, previewLimit)
-    : filtered;
+  const visibleProperties = filtered;
   const showSignInTeaser =
-    isLoggedOutBrowse && filtered.length > previewLimit;
+    isLoggedOutBrowse && properties.length > previewLimit;
 
   const propertiesCallback = encodeURIComponent("/properties");
 
@@ -78,13 +84,22 @@ export default function PropertiesPage() {
           title="Reviewed Boston addresses"
           description={
             <>
-              <p>
-                Start typing a street, apartment name, or ZIP to filter. South Boston
-                addresses will appear first as you add more reviews there.
-              </p>
+              {loggedIn === false ? (
+                <p>
+                  You&apos;re seeing the {previewLimit} most recently added addresses.
+                  Sign in to browse and search the full database and open listings for
+                  full review details.
+                </p>
+              ) : (
+                <p>
+                  Start typing a street, apartment name, or ZIP to filter. South Boston
+                  addresses will appear first as you add more reviews there.
+                </p>
+              )}
               {loggedIn === false ? (
                 <p className="mt-2 text-xs text-zinc-500">
-                  Sign in to see full review details for each apartment.
+                  Search below only filters these preview cards—not every address we have
+                  on file.
                 </p>
               ) : loggedIn === true ? (
                 <p className="mt-2 text-xs text-zinc-500">
@@ -95,26 +110,73 @@ export default function PropertiesPage() {
           }
         />
         <div className="w-full max-w-xs shrink-0">
-          <label className="mb-1.5 block text-xs font-medium text-zinc-600">
-            Search by street or ZIP
+          <label
+            htmlFor="properties-search"
+            className="mb-1.5 block text-xs font-medium text-zinc-600"
+          >
+            {isLoggedOutBrowse
+              ? `Filter these ${previewLimit} preview addresses`
+              : "Search by street or ZIP"}
           </label>
           <input
+            id="properties-search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="e.g. West 3rd, 02127"
+            placeholder={
+              isLoggedOutBrowse
+                ? `Searches only these ${previewLimit} cards`
+                : "e.g. West 3rd, 02127"
+            }
+            aria-describedby={
+              isLoggedOutBrowse ? "properties-search-hint" : undefined
+            }
             className={formInputCompactClass}
           />
+          {isLoggedOutBrowse ? (
+            <p
+              id="properties-search-hint"
+              className="mt-1.5 text-[11px] leading-snug text-zinc-500"
+            >
+              Does not search the full database.{" "}
+              <Link
+                href={`/signin?callbackUrl=${propertiesCallback}`}
+                className="font-medium text-muted-blue hover:underline"
+              >
+                Sign in
+              </Link>{" "}
+              for that.
+            </p>
+          ) : null}
         </div>
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-zinc-600">
-          No properties match your search yet. Try a different street or ZIP, or{" "}
-          <Link href="/submit" className="font-medium text-muted-blue hover:underline">
-            add the first review for an address
-          </Link>
-          .
-        </p>
+        isLoggedOutBrowse ? (
+          <p className="text-sm text-zinc-600">
+            {query.trim()
+              ? "No preview address matches that search. It only looks at these 8 cards—not the full database."
+              : "No preview addresses to show yet."}{" "}
+            <Link
+              href={`/signin?callbackUrl=${propertiesCallback}`}
+              className="font-medium text-muted-blue hover:underline"
+            >
+              Sign in
+            </Link>{" "}
+            to search everything, or{" "}
+            <Link href="/submit" className="font-medium text-muted-blue hover:underline">
+              add a review
+            </Link>
+            .
+          </p>
+        ) : (
+          <p className="text-sm text-zinc-600">
+            No properties match your search yet. Try a different street or ZIP, or{" "}
+            <Link href="/submit" className="font-medium text-muted-blue hover:underline">
+              add the first review for an address
+            </Link>
+            .
+          </p>
+        )
       ) : (
         <div className="space-y-0">
           <ul className="grid gap-4 md:grid-cols-2">
