@@ -3,13 +3,8 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
+import { GIVEAWAY_PROMO_END_MS } from "@/lib/giveaway-promo";
 import { linkInlineClass } from "@/lib/ui-classes";
-
-/**
- * Entries close at the start of May 1, 2026 in America/New_York
- * (end of April 30 Eastern).
- */
-const GIVEAWAY_END_MS = Date.parse("2026-05-01T04:00:00.000Z");
 
 /** Max entries we show in the promo bar (matches your giveaway cap story). */
 const GIVEAWAY_ENTRY_CAP = 5;
@@ -225,7 +220,7 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
     };
   }, [signedIn]);
 
-  if (mounted && Date.now() >= GIVEAWAY_END_MS) {
+  if (mounted && Date.now() >= GIVEAWAY_PROMO_END_MS) {
     return null;
   }
 
@@ -289,7 +284,7 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
                   Ends Apr 30 · ET
                 </span>
               </div>
-              <CountdownDisplay endMs={GIVEAWAY_END_MS} />
+              <CountdownDisplay endMs={GIVEAWAY_PROMO_END_MS} />
             </div>
           </div>
 

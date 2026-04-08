@@ -20,6 +20,7 @@ export default async function Home() {
       <HomePageSections
         layout="fullwidth"
         showHeroSignUp={showHeroSignUp}
+        homeGiveawaySignedIn={Boolean(session?.user?.email)}
         {...data}
       />
     </>

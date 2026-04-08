@@ -10,6 +10,7 @@ const caveatHint = Caveat({
   weight: ["600"],
 });
 import { GiveawayPromoStrip } from "@/app/_components/giveaway-promo-strip";
+import { HomeGiveawayPromoModal } from "@/app/_components/home-giveaway-promo-modal";
 import { HeroSignUpOverlay } from "@/app/_components/hero-sign-up-overlay";
 import { HomeKeywordStrip } from "@/app/_components/home-keyword-strip";
 import { HomeSearch } from "@/app/_components/home-search";
@@ -91,11 +92,14 @@ type Props = {
   layout: HomePageLayout;
   /** When false, hero “Sign up” CTA is hidden (e.g. signed-in users). */
   showHeroSignUp?: boolean;
+  /** Logged-in users see giveaway inline; logged-out users get a dismissible homepage modal instead. */
+  homeGiveawaySignedIn?: boolean;
 } & HomePageData;
 
 export function HomePageSections({
   layout,
   showHeroSignUp = true,
+  homeGiveawaySignedIn = false,
   southBostonTop,
   approvedReviewCount,
   bostonPropertyCount,
@@ -160,12 +164,16 @@ export function HomePageSections({
             />
           ) : null}
           <div className={heroInnerClass}>
-            <GiveawayPromoStrip
-              variant="home"
-              className={
-                fw ? "relative z-[1] mb-8 lg:mb-10" : "relative z-[1] mb-8"
-              }
-            />
+            {homeGiveawaySignedIn ? (
+              <GiveawayPromoStrip
+                variant="home"
+                className={
+                  fw ? "relative z-[1] mb-8 lg:mb-10" : "relative z-[1] mb-8"
+                }
+              />
+            ) : (
+              <HomeGiveawayPromoModal />
+            )}
             <div
               className={
                 fw
