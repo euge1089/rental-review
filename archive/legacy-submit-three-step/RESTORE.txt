@@ -1,0 +1,41 @@
+Legacy submit flow backup (three steps: property → experience → attest)
+================================================================================
+
+Git commit this snapshot came from: 140b393
+(Last commit before multi-address / rental-cards revamp; parent of cd9bc7d)
+
+Files in this folder
+----------------------
+  submit-page.tsx     Full copy of src/app/submit/page.tsx at 140b393
+
+Restore in your repo (recommended — uses git)
+-----------------------------------------------
+From repo root:
+
+  git checkout 140b393 -- src/app/submit/page.tsx
+  rm -f src/app/api/reviews/batch-multi/route.ts \
+        src/app/submit/submit-rental-cards-step.tsx \
+        src/lib/submit-rental-draft.ts
+
+Then run: npm run build
+
+Copy-file restore (no git checkout)
+-----------------------------------
+  cp archive/legacy-submit-three-step/submit-page.tsx src/app/submit/page.tsx
+  rm -f src/app/api/reviews/batch-multi/route.ts \
+        src/app/submit/submit-rental-cards-step.tsx \
+        src/lib/submit-rental-draft.ts
+
+Inspect old tree without changing main branch
+---------------------------------------------
+  git worktree add ../rental-review-submit-legacy 140b393
+
+Or: git show 140b393:src/app/submit/page.tsx | less
+
+Git branch (local label for commit 140b393)
+-------------------------------------------
+  legacy/submit-three-step-140b393
+
+Push to origin for an off-machine backup:
+
+  git push origin legacy/submit-three-step-140b393
