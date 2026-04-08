@@ -104,7 +104,7 @@ function CountdownDisplay({
   if (parts == null) {
     return (
       <span
-        className={`tabular-nums text-zinc-400 ${large ? "text-lg" : "text-sm"}`}
+        className={`tabular-nums text-zinc-400 ${large ? "text-base" : "text-sm"}`}
         aria-hidden
       >
         — · — · — · —
@@ -117,7 +117,7 @@ function CountdownDisplay({
     <span
       className={
         large
-          ? "text-xl font-bold tabular-nums tracking-tight text-pop sm:text-2xl"
+          ? "text-base font-medium tabular-nums tracking-tight text-pop sm:text-lg"
           : "text-sm font-medium tabular-nums tracking-tight text-muted-blue-hover"
       }
     >
@@ -315,7 +315,13 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
                 />
               </div>
               <div className={`min-w-0 ${isModal ? "pt-0" : "pt-0.5"}`}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                <p
+                  className={
+                    isModal
+                      ? "text-sm font-semibold uppercase tracking-[0.14em] text-zinc-600 sm:text-[0.9375rem]"
+                      : "text-xs font-semibold uppercase tracking-[0.15em] text-zinc-500"
+                  }
+                >
                   April giveaway
                 </p>
                 <p
