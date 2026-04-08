@@ -1049,7 +1049,6 @@ export default function SubmitReviewPage() {
             rentalCards={rentalCards}
             leaseYearOptions={leaseYearOptions}
             bostonFloor={bostonFloor}
-            sessionUser={sessionUser}
             step1ErrorsByCardId={step1ErrorsByCardId}
             patchCard={patchCard}
             toggleCardYear={toggleCardYear}
