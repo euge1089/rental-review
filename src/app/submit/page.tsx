@@ -1755,8 +1755,9 @@ export default function SubmitReviewPage() {
               )}
             </p>
             <p className="mt-3 rounded-xl border border-emerald-200/70 bg-emerald-50/80 px-3 py-2 text-sm leading-relaxed text-emerald-950">
-              You earned 1 giveaway entry. Each approved review adds another chance to
-              win one of our Boston restaurant gift cards.
+              You earned 1 giveaway entry.{" "}
+              <span className="font-semibold">$200</span> in Boston restaurant gift
+              cards will be awarded — each approved review adds another chance to win.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <button
