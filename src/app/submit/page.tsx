@@ -7,6 +7,7 @@ import {
   AppPageShell,
   PageHeader,
 } from "@/app/_components/app-page-shell";
+import { SubmitRentalCardsStep } from "@/app/submit/submit-rental-cards-step";
 import { BostonRentingYearPickForm } from "@/app/_components/boston-renting-year-pick-form";
 import {
   BATHROOM_SUBMIT_OPTIONS,
@@ -15,14 +16,19 @@ import {
   REVIEW_YEAR_OPTIONS,
   getBostonRentingSinceYearChoices,
   reviewYearsAllowedForUser,
-  snapBathroomsToAllowedDbValue,
 } from "@/lib/policy";
 import {
   SUBMIT_STEP1_PREFILL_KEY,
   type SubmitStepOnePrefill,
-  applySubmitStepOnePrefill,
   buildPrefillFromSubmitPayload,
 } from "@/lib/submit-prefill";
+import {
+  emptyRentalCard,
+  hydrateSubmitDraft,
+  prefillToRentalCard,
+  serializeSubmitDraft,
+  type RentalCardState,
+} from "@/lib/submit-rental-draft";
 import {
   formInputCompactClass,
   formTextareaClass,
@@ -33,128 +39,17 @@ import {
 
 const DRAFT_KEY = "rental-review-draft-v1";
 const SMS_PROMPT_KEY = "sms-prompt-dismissed";
-
-/**
- * Server-side Review rows are unchanged by the multi-year submit flow. This only
- * normalizes the client draft: legacy `reviewYear` + `monthlyRent` become `leaseYears`,
- * and old keys are dropped so new saves stay consistent.
- */
-function migrateSubmitDraft(d: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = { ...d };
-  if (!Array.isArray(out.leaseYears)) {
-    const yRaw = out.reviewYear;
-    if (yRaw != null && String(yRaw).trim() !== "") {
-      const y = Number(yRaw);
-      out.leaseYears = Number.isNaN(y)
-        ? []
-        : [{ year: y, rent: String(out.monthlyRent ?? "") }];
-    } else {
-      out.leaseYears = [];
-    }
-  }
-  delete out.reviewYear;
-  delete out.monthlyRent;
-  return out;
-}
+const MAX_RENTAL_CARDS = 5;
 
 /** Shown when Continue is tapped without both 1–10 scores; also used for scroll/focus UX. */
 const SUBMIT_STEP2_SCORES_PROMPT =
-  "Please tap a score from 1–10 for both questions.";
-
-function resetYearSpecificFields(
-  form: HTMLFormElement,
-  setOverall: (n: number | null) => void,
-  setLandlord: (n: number | null) => void,
-  clearLeaseYears?: () => void,
-) {
-  const text = form.elements.namedItem("reviewText") as HTMLTextAreaElement | null;
-  if (text) text.value = "";
-  const majority = form.elements.namedItem(
-    "majorityYearAttestation",
-  ) as HTMLInputElement | null;
-  if (majority) majority.checked = false;
-  setOverall(null);
-  setLandlord(null);
-  clearLeaseYears?.();
-}
-
-const STEP1_AMENITY_CARDS: {
-  name: "hasParking" | "hasCentralHeatCooling" | "hasInUnitLaundry" | "hasStorageSpace" | "hasOutdoorSpace" | "petFriendly";
-  title: string;
-  sub: string;
-}[] = [
-  {
-    name: "hasParking",
-    title: "Parking",
-    sub: "Garage, driveway, or dedicated spot",
-  },
-  {
-    name: "hasCentralHeatCooling",
-    title: "Central heat & AC",
-    sub: "Building-wide heating and cooling",
-  },
-  {
-    name: "hasInUnitLaundry",
-    title: "In-unit laundry",
-    sub: "Washer and dryer in your unit",
-  },
-  {
-    name: "hasStorageSpace",
-    title: "Extra storage",
-    sub: "Unit closet, locker, or basement space",
-  },
-  {
-    name: "hasOutdoorSpace",
-    title: "Outdoor space",
-    sub: "Yard, balcony, deck, or roof access",
-  },
-  {
-    name: "petFriendly",
-    title: "Pet friendly",
-    sub: "Building or lease allowed pets",
-  },
-];
+  "Please tap a score from 1–10 for both ratings on each place card.";
 
 type SessionUser = {
   email?: string | null;
   name?: string | null;
   phoneVerified?: boolean;
 };
-
-function ScoreScale({
-  name,
-  label,
-  value,
-  onChange,
-}: {
-  name: string;
-  label: string;
-  value: number | null;
-  onChange: (n: number) => void;
-}) {
-  return (
-    <div className="grid gap-3">
-      <p className="text-base font-medium leading-snug text-zinc-800">{label}</p>
-      <div className="flex flex-wrap gap-2">
-        {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-          <button
-            key={n}
-            type="button"
-            onClick={() => onChange(n)}
-            className={`h-10 min-w-[2.5rem] rounded-xl text-sm font-semibold transition ${
-              value === n
-                ? "bg-muted-blue-hover text-white shadow-sm"
-                : "border border-zinc-200/90 bg-white text-zinc-600 hover:border-muted-blue/30 hover:bg-muted-blue-tint/50"
-            }`}
-          >
-            {n}
-          </button>
-        ))}
-      </div>
-      <input type="hidden" name={name} value={value ?? ""} />
-    </div>
-  );
-}
 
 export default function SubmitReviewPage() {
   const { data: session, status: sessionStatus } = useSession();
@@ -173,46 +68,126 @@ export default function SubmitReviewPage() {
   const statusBannerRef = useRef<HTMLDivElement | null>(null);
   const successPrimaryActionRef = useRef<HTMLButtonElement | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2>(1);
   const [showSmsNudge, setShowSmsNudge] = useState(false);
-  const [overallScore, setOverallScore] = useState<number | null>(null);
-  const [landlordScore, setLandlordScore] = useState<number | null>(null);
   const [duplicateModalDupes, setDuplicateModalDupes] = useState<
     { reviewYear: number; reviewId: string }[] | null
+  >(null);
+  const [duplicateModalAddressHint, setDuplicateModalAddressHint] = useState<
+    string | null
   >(null);
   const [duplicateChecking, setDuplicateChecking] = useState(false);
   const [duplicateDeleting, setDuplicateDeleting] = useState(false);
   const [finalSubmitting, setFinalSubmitting] = useState(false);
-  const [selectedLeaseYears, setSelectedLeaseYears] = useState<number[]>([]);
-  const [rentByYear, setRentByYear] = useState<Record<number, string>>({});
+  const [rentalCards, setRentalCards] = useState<RentalCardState[]>(() => [
+    emptyRentalCard(),
+  ]);
+  const [majorityAttestationDraft, setMajorityAttestationDraft] =
+    useState(false);
+  const [step1ErrorsByCardId, setStep1ErrorsByCardId] = useState<
+    Record<string, string>
+  >({});
   const [lastSubmittedBatchCount, setLastSubmittedBatchCount] = useState(1);
-  const leaseUserTouchedRef = useRef(false);
+  const draftTouchedRef = useRef(false);
 
-  const clearLeaseYearsState = useCallback(() => {
-    leaseUserTouchedRef.current = false;
-    setSelectedLeaseYears([]);
-    setRentByYear({});
-  }, []);
+  const patchCard = useCallback(
+    (id: string, patch: Partial<RentalCardState>) => {
+      draftTouchedRef.current = true;
+      setStep1ErrorsByCardId((e) => {
+        if (!e[id]) return e;
+        const next = { ...e };
+        delete next[id];
+        return next;
+      });
+      setRentalCards((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+      );
+    },
+    [],
+  );
 
-  const toggleLeaseYear = useCallback((year: number) => {
-    leaseUserTouchedRef.current = true;
-    setSelectedLeaseYears((prev) => {
-      if (prev.includes(year)) {
-        setRentByYear((r) => {
-          const next = { ...r };
-          delete next[year];
-          return next;
-        });
-        return prev.filter((y) => y !== year).sort((a, b) => b - a);
-      }
-      return [...prev, year].sort((a, b) => b - a);
+  const toggleCardYear = useCallback((cardId: string, year: number) => {
+    draftTouchedRef.current = true;
+    setRentalCards((prev) =>
+      prev.map((c) => {
+        if (c.id !== cardId) return c;
+        if (c.selectedYears.includes(year)) {
+          const rentByYear = { ...c.rentByYear };
+          delete rentByYear[year];
+          return {
+            ...c,
+            selectedYears: c.selectedYears
+              .filter((y) => y !== year)
+              .sort((a, b) => b - a),
+            rentByYear,
+          };
+        }
+        return {
+          ...c,
+          selectedYears: [...c.selectedYears, year].sort((a, b) => b - a),
+        };
+      }),
+    );
+    setStep1ErrorsByCardId((e) => {
+      const next = { ...e };
+      delete next[cardId];
+      return next;
     });
   }, []);
 
-  const setRentForYear = useCallback((year: number, value: string) => {
-    leaseUserTouchedRef.current = true;
-    setRentByYear((r) => ({ ...r, [year]: value }));
-  }, []);
+  const setCardRentForYear = useCallback(
+    (cardId: string, year: number, value: string) => {
+      draftTouchedRef.current = true;
+      setRentalCards((prev) =>
+        prev.map((c) =>
+          c.id === cardId
+            ? { ...c, rentByYear: { ...c.rentByYear, [year]: value } }
+            : c,
+        ),
+      );
+    },
+    [],
+  );
+
+  const copyFromPreviousCard = useCallback(
+    (targetIndex: number, targetId: string) => {
+      draftTouchedRef.current = true;
+      setStep1ErrorsByCardId((e) => {
+        if (!e[targetId]) return e;
+        const next = { ...e };
+        delete next[targetId];
+        return next;
+      });
+      setRentalCards((prev) => {
+        if (targetIndex < 1) return prev;
+        const source = prev[targetIndex - 1];
+        const target = prev[targetIndex];
+        if (!source || !target || target.id !== targetId) return prev;
+        return prev.map((c, i) =>
+          i === targetIndex
+            ? {
+                ...c,
+                address: source.address,
+                unit: source.unit,
+                postalCode: source.postalCode,
+                bedroomCount: source.bedroomCount,
+                bathrooms: source.bathrooms,
+                hasParking: source.hasParking,
+                hasCentralHeatCooling: source.hasCentralHeatCooling,
+                hasInUnitLaundry: source.hasInUnitLaundry,
+                hasStorageSpace: source.hasStorageSpace,
+                hasOutdoorSpace: source.hasOutdoorSpace,
+                petFriendly: source.petFriendly,
+                overallScore: source.overallScore,
+                landlordScore: source.landlordScore,
+                reviewText: source.reviewText,
+              }
+            : c,
+        );
+      });
+    },
+    [],
+  );
   const [reviewQuota, setReviewQuota] = useState<{
     count: number;
     max: number;
@@ -277,33 +252,23 @@ export default function SubmitReviewPage() {
     return reviewYearsAllowedForUser(bostonFloor);
   }, [sessionUser, bostonFloor]);
 
-  const unusedEligibleYearsOnForm = useMemo(
-    () => leaseYearOptions.filter((y) => !selectedLeaseYears.includes(y)),
-    [leaseYearOptions, selectedLeaseYears],
-  );
-
-  const unusedYearsShortList = useMemo(() => {
-    const y = [...unusedEligibleYearsOnForm].sort((a, b) => b - a);
-    if (y.length === 0) return "";
-    if (y.length <= 4) return y.join(", ");
-    return `${y.slice(0, 3).join(", ")}, +${y.length - 3} more`;
-  }, [unusedEligibleYearsOnForm]);
-
   /** Drop lease years that fall outside the profile floor once options are known. */
   useEffect(() => {
     if (bostonFloor === undefined || bostonFloor === null) return;
     if (leaseYearOptions.length === 0) return;
-    setSelectedLeaseYears((prev) =>
-      prev.filter((y) => leaseYearOptions.includes(y)),
+    setRentalCards((prev) =>
+      prev.map((c) => {
+        const years = c.selectedYears.filter((y) =>
+          leaseYearOptions.includes(y),
+        );
+        const rentByYear = { ...c.rentByYear };
+        for (const k of Object.keys(rentByYear)) {
+          const y = Number(k);
+          if (!leaseYearOptions.includes(y)) delete rentByYear[y];
+        }
+        return { ...c, selectedYears: years, rentByYear };
+      }),
     );
-    setRentByYear((prev) => {
-      const next = { ...prev };
-      for (const k of Object.keys(next)) {
-        const y = Number(k);
-        if (!leaseYearOptions.includes(y)) delete next[y];
-      }
-      return next;
-    });
   }, [bostonFloor, leaseYearOptions]);
 
   useEffect(() => {
@@ -316,28 +281,21 @@ export default function SubmitReviewPage() {
   }, [sessionUser]);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !formRef.current) return;
+    if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("another") === "1") {
       const preRaw = window.localStorage.getItem(SUBMIT_STEP1_PREFILL_KEY);
       if (preRaw) {
         try {
           const prefill = JSON.parse(preRaw) as SubmitStepOnePrefill;
-          applySubmitStepOnePrefill(formRef.current, prefill);
-          resetYearSpecificFields(
-            formRef.current,
-            setOverallScore,
-            setLandlordScore,
-            clearLeaseYearsState,
-          );
+          setRentalCards([prefillToRentalCard(prefill)]);
+          setMajorityAttestationDraft(false);
+          setStep1ErrorsByCardId({});
+          setStep(1);
           window.history.replaceState(null, "", "/submit");
           setStatusMessage(
             "We filled in your building from last time — pick your lease-start year(s) and rent for each.",
           );
-          setStep(1);
-          setTimeout(() => {
-            persistDraft({ overall: null, landlord: null });
-          }, 0);
         } catch {
           // ignore
         }
@@ -350,155 +308,88 @@ export default function SubmitReviewPage() {
     const raw = window.localStorage.getItem(DRAFT_KEY);
     if (!raw) return;
     try {
-      const draft = migrateSubmitDraft(JSON.parse(raw) as Record<string, unknown>);
+      const hydrated = hydrateSubmitDraft(JSON.parse(raw));
+      const cards =
+        hydrated.rentalCards.length > 0
+          ? hydrated.rentalCards
+          : [emptyRentalCard()];
+      setRentalCards(cards);
+      setStep(hydrated.step);
+      setMajorityAttestationDraft(hydrated.majorityYearAttestation);
       try {
-        window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        window.localStorage.setItem(
+          DRAFT_KEY,
+          serializeSubmitDraft({
+            rentalCards: cards,
+            step: hydrated.step,
+            majorityYearAttestation: hydrated.majorityYearAttestation,
+          }),
+        );
       } catch {
         // ignore quota / private mode
       }
-      const form = formRef.current;
-      const setIfPresent = (name: string, value: unknown) => {
-        const field = form.elements.namedItem(name) as
-          | HTMLInputElement
-          | HTMLTextAreaElement
-          | HTMLSelectElement
-          | null;
-        if (!field || value == null) return;
-        if (field instanceof HTMLInputElement && field.type === "checkbox") {
-          field.checked = Boolean(value);
-        } else if (
-          field instanceof HTMLInputElement &&
-          field.type === "radio"
-        ) {
-          if (String(field.value) === String(value)) field.checked = true;
-        } else {
-          field.value = String(value);
-        }
-      };
-
-      setIfPresent("address", draft.address);
-      setIfPresent("unit", draft.unit);
-      setIfPresent("postalCode", draft.postalCode);
-      setIfPresent("reviewText", draft.reviewText);
-      setIfPresent("hasParking", draft.hasParking);
-      setIfPresent("hasCentralHeatCooling", draft.hasCentralHeatCooling);
-      setIfPresent("hasInUnitLaundry", draft.hasInUnitLaundry);
-      setIfPresent("hasStorageSpace", draft.hasStorageSpace);
-      setIfPresent("hasOutdoorSpace", draft.hasOutdoorSpace);
-      setIfPresent("petFriendly", draft.petFriendly);
-      setIfPresent("majorityYearAttestation", draft.majorityYearAttestation);
-
-      if (draft.bedroomCount != null) {
-        const radios = form.querySelectorAll<HTMLInputElement>(
-          'input[name="bedroomCount"]',
-        );
-        radios.forEach((r) => {
-          r.checked = String(r.value) === String(draft.bedroomCount);
-        });
-      }
-
-      const bathRaw = draft.bathrooms;
-      if (bathRaw != null && String(bathRaw).trim() !== "") {
-        const snapped = snapBathroomsToAllowedDbValue(Number(bathRaw));
-        if (snapped != null) {
-          const bathRadios = form.querySelectorAll<HTMLInputElement>(
-            'input[name="bathrooms"]',
-          );
-          bathRadios.forEach((r) => {
-            r.checked = Math.abs(Number(r.value) - snapped) < 1e-6;
-          });
-        }
-      }
-
-      const os = draft.overallScore;
-      const ls = draft.landlordScore;
-      if (typeof os === "number" || (typeof os === "string" && os !== "")) {
-        setOverallScore(Number(os));
-      }
-      if (typeof ls === "number" || (typeof ls === "string" && ls !== "")) {
-        setLandlordScore(Number(ls));
-      }
-
-      const loadedYears: number[] = [];
-      const loadedRents: Record<number, string> = {};
-      for (const row of (draft.leaseYears ?? []) as {
-        year?: unknown;
-        rent?: unknown;
-      }[]) {
-        if (row && typeof row.year === "number") {
-          loadedYears.push(row.year);
-          if (row.rent != null && String(row.rent).trim() !== "") {
-            loadedRents[row.year] = String(row.rent);
-          }
-        }
-      }
-      setSelectedLeaseYears(loadedYears.sort((a, b) => b - a));
-      setRentByYear(loadedRents);
     } catch {
       // ignore
     }
   }, []);
 
-  const persistDraft = useCallback(
-    (scores?: { overall: number | null; landlord: number | null }) => {
-      if (typeof window === "undefined" || !formRef.current) return;
-      const form = formRef.current;
-      const data = new FormData(form);
-      const br = data.get("bedroomCount");
-      const os = scores ? scores.overall : overallScore;
-      const ls = scores ? scores.landlord : landlordScore;
-      const draft = {
-        address: data.get("address") ?? "",
-        unit: data.get("unit") ?? "",
-        postalCode: data.get("postalCode") ?? "",
-        leaseYears: selectedLeaseYears.map((y) => ({
-          year: y,
-          rent: rentByYear[y] ?? "",
-        })),
-        bedroomCount: br != null && br !== "" ? Number(br) : "",
-        bathrooms: data.get("bathrooms") ?? "",
-        hasParking: data.get("hasParking") === "on",
-        hasCentralHeatCooling: data.get("hasCentralHeatCooling") === "on",
-        hasInUnitLaundry: data.get("hasInUnitLaundry") === "on",
-        hasStorageSpace: data.get("hasStorageSpace") === "on",
-        hasOutdoorSpace: data.get("hasOutdoorSpace") === "on",
-        petFriendly: data.get("petFriendly") === "on",
-        overallScore: os ?? "",
-        landlordScore: ls ?? "",
-        reviewText: data.get("reviewText") ?? "",
-        majorityYearAttestation: data.get("majorityYearAttestation") === "on",
-      };
-      window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    },
-    [overallScore, landlordScore, selectedLeaseYears, rentByYear],
-  );
+  const persistDraft = useCallback(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        DRAFT_KEY,
+        serializeSubmitDraft({
+          rentalCards,
+          step,
+          majorityYearAttestation: majorityAttestationDraft,
+        }),
+      );
+    } catch {
+      // ignore
+    }
+  }, [rentalCards, step, majorityAttestationDraft]);
 
   useEffect(() => {
-    if (!leaseUserTouchedRef.current) return;
+    if (!draftTouchedRef.current) return;
     persistDraft();
-  }, [selectedLeaseYears, rentByYear, persistDraft]);
+  }, [rentalCards, step, majorityAttestationDraft, persistDraft]);
+
+  function addRentalCard() {
+    if (rentalCards.length >= MAX_RENTAL_CARDS) return;
+    draftTouchedRef.current = true;
+    setRentalCards((prev) => [...prev, emptyRentalCard()]);
+  }
+
+  function removeRentalCard(id: string) {
+    if (rentalCards.length <= 1) return;
+    draftTouchedRef.current = true;
+    setRentalCards((prev) => prev.filter((c) => c.id !== id));
+    setStep1ErrorsByCardId((e) => {
+      if (!e[id]) return e;
+      const next = { ...e };
+      delete next[id];
+      return next;
+    });
+  }
 
   function handleAddAnotherLeaseYear() {
-    if (!formRef.current || !anotherYearPrefill) return;
+    if (!anotherYearPrefill) return;
     if (typeof window !== "undefined") {
       window.localStorage.setItem(
         SUBMIT_STEP1_PREFILL_KEY,
         JSON.stringify(anotherYearPrefill),
       );
     }
-    resetYearSpecificFields(
-      formRef.current,
-      setOverallScore,
-      setLandlordScore,
-      clearLeaseYearsState,
-    );
+    setRentalCards([prefillToRentalCard(anotherYearPrefill)]);
+    setMajorityAttestationDraft(false);
     setShowAnotherYearCta(false);
     setAnotherYearPrefill(null);
     setStep(1);
+    setStep1ErrorsByCardId({});
     setStatusMessage(
       "We kept your place details — pick lease-start year(s) and rent for each.",
     );
-    setTimeout(() => persistDraft({ overall: null, landlord: null }), 0);
+    draftTouchedRef.current = true;
     requestAnimationFrame(() => {
       document.getElementById("lease-years-region")?.focus();
     });
@@ -511,6 +402,7 @@ export default function SubmitReviewPage() {
 
   /** Constraint check only (no UI); used before switching step on final submit. */
   function isStepPanelValid(form: HTMLFormElement, stepNum: number): boolean {
+    if (stepNum === 1) return true;
     const root = form.querySelector<HTMLElement>(`[data-step-panel="${stepNum}"]`);
     if (!root) return true;
 
@@ -547,6 +439,7 @@ export default function SubmitReviewPage() {
 
   /** Validate one step and focus/report the first invalid control. */
   function validateStepPanel(form: HTMLFormElement, stepNum: number): boolean {
+    if (stepNum === 1) return true;
     const root = form.querySelector<HTMLElement>(`[data-step-panel="${stepNum}"]`);
     if (!root) return true;
 
@@ -554,40 +447,7 @@ export default function SubmitReviewPage() {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >("input:not([type=hidden]), select, textarea");
 
-    const radioNames = new Set<string>();
     for (const el of controls) {
-      if (el instanceof HTMLInputElement && el.type === "radio") {
-        radioNames.add(el.name);
-      }
-    }
-    for (const name of radioNames) {
-      const group = root.querySelectorAll<HTMLInputElement>(
-        `input[type="radio"][name="${CSS.escape(name)}"]`,
-      );
-      if (group.length === 0) continue;
-      const required = [...group].some((r) => r.required);
-      const checked = [...group].some((r) => r.checked);
-      if (required && !checked) {
-        if (name === "bedroomCount") {
-          setStatusMessage("Please choose how many bedrooms.");
-          document.getElementById("bedroom-count-label")?.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        } else if (name === "bathrooms") {
-          setStatusMessage("Please choose how many bathrooms.");
-          document.getElementById("bathroom-count-label")?.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        }
-        group[0]?.reportValidity();
-        return false;
-      }
-    }
-
-    for (const el of controls) {
-      if (el instanceof HTMLInputElement && el.type === "radio") continue;
       if (el instanceof HTMLInputElement && (el.type === "submit" || el.type === "button")) {
         continue;
       }
@@ -600,6 +460,76 @@ export default function SubmitReviewPage() {
     return true;
   }
 
+  function validateRentalStep1(cards: RentalCardState[]): boolean {
+    const errors: Record<string, string> = {};
+    for (let i = 0; i < cards.length; i++) {
+      const c = cards[i]!;
+      const label = `Place ${i + 1}`;
+      if (c.address.trim().length < 5) {
+        errors[c.id] = `${label}: Add a street address.`;
+        continue;
+      }
+      if (c.postalCode.trim().length < 3) {
+        errors[c.id] = `${label}: Add a ZIP code.`;
+        continue;
+      }
+      if (c.bedroomCount == null) {
+        errors[c.id] = `${label}: Choose bedrooms.`;
+        continue;
+      }
+      if (c.bathrooms == null) {
+        errors[c.id] = `${label}: Choose bathrooms.`;
+        continue;
+      }
+      const sortedYears = [...c.selectedYears].sort((a, b) => b - a);
+      if (sortedYears.length === 0) {
+        errors[c.id] = `${label}: Select at least one lease-start year.`;
+        continue;
+      }
+      let rentOk = true;
+      for (const y of sortedYears) {
+        const raw = (c.rentByYear[y] ?? "").trim();
+        const rent = Number(raw);
+        if (
+          raw === "" ||
+          Number.isNaN(rent) ||
+          rent < 0 ||
+          !Number.isInteger(rent)
+        ) {
+          errors[c.id] = `${label}: Enter whole-dollar monthly rent for ${y} (use 0 if rent-free).`;
+          rentOk = false;
+          break;
+        }
+      }
+      if (!rentOk) continue;
+      if (c.overallScore == null || c.landlordScore == null) {
+        errors[c.id] = `${label}: Tap 1–10 for both experience ratings.`;
+      }
+    }
+    setStep1ErrorsByCardId(errors);
+    if (Object.keys(errors).length > 0) {
+      const first = cards.find((card) => errors[card.id]);
+      if (first) {
+        setRentalCards((prev) =>
+          prev.map((card) =>
+            card.id === first.id ? { ...card, collapsed: false } : card,
+          ),
+        );
+        requestAnimationFrame(() => {
+          document.getElementById(`rental-card-${first.id}`)?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        });
+      }
+      setStatusMessage("Fix the highlighted places above, then tap Continue.");
+      return false;
+    }
+    setStep1ErrorsByCardId({});
+    setStatusMessage("");
+    return true;
+  }
+
   function dismissSmsNudge() {
     if (typeof window !== "undefined") {
       window.sessionStorage.setItem(SMS_PROMPT_KEY, "1");
@@ -609,6 +539,7 @@ export default function SubmitReviewPage() {
 
   const closeDuplicateModal = useCallback(() => {
     setDuplicateModalDupes(null);
+    setDuplicateModalAddressHint(null);
   }, []);
 
   const closeSubmitSuccessModal = useCallback(() => {
@@ -659,20 +590,19 @@ export default function SubmitReviewPage() {
   }, [statusMessage]);
 
   function handleLeaveAnotherReview() {
-    if (anotherYearPrefill && formRef.current) {
+    if (anotherYearPrefill) {
       handleAddAnotherLeaseYear();
-    } else if (formRef.current) {
-      formRef.current.reset();
-      setOverallScore(null);
-      setLandlordScore(null);
-      clearLeaseYearsState();
+    } else {
+      setRentalCards([emptyRentalCard()]);
+      setMajorityAttestationDraft(false);
       setStep(1);
+      setStep1ErrorsByCardId({});
       setStatusMessage("Ready for your next review.");
       if (typeof window !== "undefined") {
         window.localStorage.removeItem(DRAFT_KEY);
       }
       requestAnimationFrame(() => {
-        document.getElementById("address")?.focus();
+        document.getElementById("rental-card-first-address")?.focus();
       });
     }
     setShowSubmitSuccessModal(false);
@@ -710,55 +640,30 @@ export default function SubmitReviewPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (step < 3) {
-      if (formRef.current && !validateStepPanel(formRef.current, step)) {
+
+    if (step === 1) {
+      if (formRef.current && !validateStepPanel(formRef.current, 1)) {
         return;
       }
-      if (step === 1) {
-        const signedIn = sessionUser && sessionUser !== "loading";
-        if (!signedIn || !formRef.current) {
-          setStatusMessage("");
-          setStep(2);
-          return;
-        }
-        const fd = new FormData(formRef.current);
-        const address = String(fd.get("address") ?? "").trim();
-        const sortedYears = [...selectedLeaseYears].sort((a, b) => b - a);
-        if (sortedYears.length === 0) {
-          setStatusMessage("Select at least one lease-start year.");
-          document.getElementById("lease-years-region")?.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-          return;
-        }
-        for (const y of sortedYears) {
-          const raw = (rentByYear[y] ?? "").trim();
-          const rent = Number(raw);
-          if (
-            raw === "" ||
-            Number.isNaN(rent) ||
-            rent < 0 ||
-            !Number.isInteger(rent)
-          ) {
-            setStatusMessage(
-              `Enter a whole-dollar monthly rent for ${y} (use 0 if rent-free).`,
-            );
-            document.getElementById(`lease-rent-${y}`)?.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-            return;
-          }
-        }
-        setStatusMessage("");
-        setDuplicateChecking(true);
-        try {
+      const signedIn = sessionUser && sessionUser !== "loading";
+      if (!signedIn) {
+        return;
+      }
+      if (!validateRentalStep1(rentalCards)) {
+        return;
+      }
+
+      setDuplicateChecking(true);
+      setDuplicateModalAddressHint(null);
+      try {
+        for (let i = 0; i < rentalCards.length; i++) {
+          const c = rentalCards[i]!;
+          const sortedYears = [...c.selectedYears].sort((a, b) => b - a);
           const res = await fetch("/api/reviews/duplicate-check", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              address,
+              address: c.address.trim(),
               city: "Boston",
               state: "MA",
               reviewYears: sortedYears,
@@ -786,150 +691,143 @@ export default function SubmitReviewPage() {
           const dups = data.duplicates ?? [];
           if (dups.length > 0) {
             setDuplicateModalDupes(dups);
+            setDuplicateModalAddressHint(
+              c.address.trim().slice(0, 72) || `Place ${i + 1}`,
+            );
             return;
           }
-        } catch (err) {
-          setStatusMessage(
-            err instanceof Error
-              ? err.message
-              : "Network error while checking your review. Please try again.",
-          );
-          return;
-        } finally {
-          setDuplicateChecking(false);
         }
-        setStep(2);
+      } catch (err) {
+        setStatusMessage(
+          err instanceof Error
+            ? err.message
+            : "Network error while checking your review. Please try again.",
+        );
         return;
+      } finally {
+        setDuplicateChecking(false);
       }
-      if (step === 2) {
-        if (overallScore == null || landlordScore == null) {
-          setStatusMessage(SUBMIT_STEP2_SCORES_PROMPT);
-          return;
-        }
-        setStatusMessage("");
-        setStep(3);
-        return;
-      }
-      return;
-    }
-    const formElement = event.currentTarget;
-    for (const s of [1, 2, 3] as const) {
-      if (!isStepPanelValid(formElement, s)) {
-        setStep(s);
-        requestAnimationFrame(() => {
-          if (formRef.current) validateStepPanel(formRef.current, s);
-        });
-        return;
-      }
-    }
-    if (overallScore == null || landlordScore == null) {
-      setStatusMessage(SUBMIT_STEP2_SCORES_PROMPT);
       setStep(2);
       return;
     }
 
-    const sortedYears = [...selectedLeaseYears].sort((a, b) => b - a);
-    if (sortedYears.length === 0) {
-      setStatusMessage("Select at least one lease-start year.");
-      setStep(1);
-      return;
-    }
-    for (const y of sortedYears) {
-      const raw = (rentByYear[y] ?? "").trim();
-      const rent = Number(raw);
-      if (
-        raw === "" ||
-        Number.isNaN(rent) ||
-        rent < 0 ||
-        !Number.isInteger(rent)
-      ) {
-        setStatusMessage(`Enter a valid monthly rent for ${y}.`);
+    if (step === 2) {
+      const formElement = event.currentTarget;
+      if (formRef.current && !validateStepPanel(formRef.current, 2)) {
+        return;
+      }
+      const form = new FormData(formElement);
+      if (form.get("majorityYearAttestation") !== "on") {
+        setStatusMessage(
+          "Please check the box to confirm your lease attestation.",
+        );
+        return;
+      }
+
+      for (const s of [1, 2] as const) {
+        if (!isStepPanelValid(formElement, s)) {
+          setStep(s);
+          requestAnimationFrame(() => {
+            if (formRef.current) validateStepPanel(formRef.current, s);
+          });
+          return;
+        }
+      }
+
+      if (!validateRentalStep1(rentalCards)) {
         setStep(1);
         return;
       }
-    }
-    const yearEntries = sortedYears.map((y) => ({
-      reviewYear: y,
-      monthlyRent: Number(rentByYear[y]),
-    }));
 
-    const form = new FormData(formElement);
-
-    const batchPayload = {
-      address: String(form.get("address") ?? ""),
-      unit: String(form.get("unit") ?? "").trim() || undefined,
-      city: "Boston",
-      state: "MA",
-      postalCode: String(form.get("postalCode") ?? ""),
-      bedroomCount: Number(form.get("bedroomCount")),
-      bathrooms: Number(form.get("bathrooms")),
-      reviewText: String(form.get("reviewText") ?? ""),
-      hasParking: form.get("hasParking") === "on",
-      hasCentralHeatCooling: form.get("hasCentralHeatCooling") === "on",
-      hasInUnitLaundry: form.get("hasInUnitLaundry") === "on",
-      hasStorageSpace: form.get("hasStorageSpace") === "on",
-      hasOutdoorSpace: form.get("hasOutdoorSpace") === "on",
-      petFriendly: form.get("petFriendly") === "on",
-      overallScore: overallScore ?? undefined,
-      landlordScore: landlordScore ?? undefined,
-      majorityYearAttestation: form.get("majorityYearAttestation") === "on",
-      yearEntries,
-    };
-
-    setFinalSubmitting(true);
-    try {
-      const response = await fetch("/api/reviews/batch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(batchPayload),
-      });
-      const result = (await response.json()) as {
-        ok: boolean;
-        error?: string;
-        moderationStatus?: string;
-        userMessage?: string;
-        count?: number;
+      const multiPayload = {
+        majorityYearAttestation: true as const,
+        rentals: rentalCards.map((c) => {
+          const sortedYears = [...c.selectedYears].sort((a, b) => b - a);
+          return {
+            address: c.address.trim(),
+            unit: c.unit.trim() || undefined,
+            city: "Boston",
+            state: "MA",
+            postalCode: c.postalCode.trim(),
+            bedroomCount: c.bedroomCount!,
+            bathrooms: c.bathrooms!,
+            reviewText: c.reviewText.trim() || undefined,
+            hasParking: c.hasParking,
+            hasCentralHeatCooling: c.hasCentralHeatCooling,
+            hasInUnitLaundry: c.hasInUnitLaundry,
+            hasStorageSpace: c.hasStorageSpace,
+            hasOutdoorSpace: c.hasOutdoorSpace,
+            petFriendly: c.petFriendly,
+            overallScore: c.overallScore!,
+            landlordScore: c.landlordScore!,
+            yearEntries: sortedYears.map((y) => ({
+              reviewYear: y,
+              monthlyRent: Number(c.rentByYear[y]),
+            })),
+          };
+        }),
       };
 
-      if (!result.ok) {
-        setStatusMessage(result.error ?? "Could not submit review.");
-        return;
-      }
+      const primaryPlace = rentalCards[0]!;
 
-      setStatusMessage(
-        result.userMessage ??
-          (result.moderationStatus === "PENDING_REVIEW"
-            ? "Submitted — your review is being reviewed."
-            : "Submitted successfully."),
-      );
-      setLastSubmittedBatchCount(
-        Math.max(1, result.count ?? yearEntries.length),
-      );
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem(DRAFT_KEY);
-        const prefill = buildPrefillFromSubmitPayload({
-          address: batchPayload.address,
-          unit: batchPayload.unit,
-          postalCode: batchPayload.postalCode,
-          bedroomCount: batchPayload.bedroomCount,
-          bathrooms: batchPayload.bathrooms,
-          hasParking: batchPayload.hasParking,
-          hasCentralHeatCooling: batchPayload.hasCentralHeatCooling,
-          hasInUnitLaundry: batchPayload.hasInUnitLaundry,
-          hasStorageSpace: batchPayload.hasStorageSpace,
-          hasOutdoorSpace: batchPayload.hasOutdoorSpace,
-          petFriendly: batchPayload.petFriendly,
+      setFinalSubmitting(true);
+      try {
+        const response = await fetch("/api/reviews/batch-multi", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(multiPayload),
         });
-        window.localStorage.setItem(
-          SUBMIT_STEP1_PREFILL_KEY,
-          JSON.stringify(prefill),
+        const result = (await response.json()) as {
+          ok: boolean;
+          error?: string;
+          moderationStatus?: string;
+          userMessage?: string;
+          count?: number;
+        };
+
+        if (!result.ok) {
+          setStatusMessage(result.error ?? "Could not submit review.");
+          return;
+        }
+
+        setStatusMessage(
+          result.userMessage ??
+            (result.moderationStatus === "PENDING_REVIEW"
+              ? "Submitted — your review is being reviewed."
+              : "Submitted successfully."),
         );
-        setAnotherYearPrefill(prefill);
-        setShowAnotherYearCta(true);
+        const created = Math.max(
+          1,
+          result.count ??
+            rentalCards.reduce((n, c) => n + c.selectedYears.length, 0),
+        );
+        setLastSubmittedBatchCount(created);
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem(DRAFT_KEY);
+          const prefill = buildPrefillFromSubmitPayload({
+            address: primaryPlace.address.trim(),
+            unit: primaryPlace.unit.trim() || undefined,
+            postalCode: primaryPlace.postalCode.trim(),
+            bedroomCount: primaryPlace.bedroomCount!,
+            bathrooms: primaryPlace.bathrooms!,
+            hasParking: primaryPlace.hasParking,
+            hasCentralHeatCooling: primaryPlace.hasCentralHeatCooling,
+            hasInUnitLaundry: primaryPlace.hasInUnitLaundry,
+            hasStorageSpace: primaryPlace.hasStorageSpace,
+            hasOutdoorSpace: primaryPlace.hasOutdoorSpace,
+            petFriendly: primaryPlace.petFriendly,
+          });
+          window.localStorage.setItem(
+            SUBMIT_STEP1_PREFILL_KEY,
+            JSON.stringify(prefill),
+          );
+          setAnotherYearPrefill(prefill);
+          setShowAnotherYearCta(true);
+        }
+        setShowSubmitSuccessModal(true);
+      } finally {
+        setFinalSubmitting(false);
       }
-      setShowSubmitSuccessModal(true);
-    } finally {
-      setFinalSubmitting(false);
     }
   }
 
@@ -1084,8 +982,9 @@ export default function SubmitReviewPage() {
           description={
             <>
               <p>
-                There&apos;s no rush — we&apos;ll guide you through three simple parts:
-                your place, how living there felt, and a quick check before you send it.
+                Two quick steps: your rental place(s) — address, years, rent, and how
+                it felt — then one confirmation before you send. You can cover multiple
+                Boston buildings in a single submission.
               </p>
               <p className="mt-3 text-zinc-500 sm:mt-4">
                 Your draft saves on this device, so you can step away and pick up where
@@ -1101,16 +1000,16 @@ export default function SubmitReviewPage() {
       >
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-base font-medium tracking-tight text-emerald-950">
-            {step === 3
+            {step === 2
               ? "Last step — you've got this"
               : "Take it one step at a time"}
           </p>
           <p className="text-sm font-medium text-emerald-800/90">
-            Step {step} of 3
+            Step {step} of 2
           </p>
         </div>
         <div className="mt-4 flex gap-1.5">
-          {[1, 2, 3].map((s) => (
+          {[1, 2].map((s) => (
             <div
               key={s}
               className={`h-2.5 flex-1 rounded-full transition-colors ${
@@ -1119,24 +1018,18 @@ export default function SubmitReviewPage() {
             />
           ))}
         </div>
-        <ul className="mt-5 grid gap-3 text-sm leading-snug sm:grid-cols-3 sm:gap-4">
+        <ul className="mt-5 grid gap-3 text-sm leading-snug sm:grid-cols-2 sm:gap-4">
           <li
             className={`rounded-xl bg-white/60 px-3 py-2.5 sm:px-3.5 ${step === 1 ? "font-semibold text-emerald-950 ring-1 ring-emerald-300/50" : "text-emerald-900/75"}`}
           >
             <span className="text-emerald-700/80">1 · </span>
-            Your Property
+            Your rental place(s)
           </li>
           <li
             className={`rounded-xl bg-white/60 px-3 py-2.5 sm:px-3.5 ${step === 2 ? "font-semibold text-emerald-950 ring-1 ring-emerald-300/50" : "text-emerald-900/75"}`}
           >
             <span className="text-emerald-700/80">2 · </span>
-            Your Experience
-          </li>
-          <li
-            className={`rounded-xl bg-white/60 px-3 py-2.5 sm:px-3.5 ${step === 3 ? "font-semibold text-emerald-950 ring-1 ring-emerald-300/50" : "text-emerald-900/75"}`}
-          >
-            <span className="text-emerald-700/80">3 · </span>
-            Submit
+            Confirm &amp; send
           </li>
         </ul>
       </section>
@@ -1145,9 +1038,6 @@ export default function SubmitReviewPage() {
         ref={formRef}
         noValidate
         onSubmit={handleSubmit}
-        onChange={() => {
-          persistDraft();
-        }}
         className={`${surfaceElevatedClass} space-y-7 p-6 text-base sm:space-y-8 sm:p-10 ${formSurfaceBlocked ? "pointer-events-none opacity-40" : ""}`}
       >
         <div
@@ -1155,303 +1045,20 @@ export default function SubmitReviewPage() {
           className={step === 1 ? "space-y-7" : "hidden"}
           aria-hidden={step !== 1}
         >
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-blue">
-                Step 1
-              </p>
-              <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
-                Where did you live?
-              </h2>
-              <div className="max-w-2xl space-y-2 pt-0.5">
-                <p className="text-sm leading-relaxed text-zinc-600">
-                  Public reviews are <span className="font-semibold">fully anonymous</span>.
-                  We never show your name, and we do not publish your exact lease-start
-                  year.
-                </p>
-                {typeof bostonFloor === "number" ? (
-                  <p className="text-sm leading-relaxed text-zinc-600">
-                    Your profile says you started renting in Boston in {bostonFloor},
-                    so only {bostonFloor} and later years appear here.
-                  </p>
-                ) : null}
-              </div>
-            </div>
-            <div className="h-px w-full bg-zinc-200/90" />
-
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch lg:gap-3">
-              <div className="grid min-w-0 flex-1 gap-2">
-                <label
-                  htmlFor="address"
-                  className="text-sm font-semibold leading-5 text-zinc-800"
-                >
-                  Street address
-                </label>
-                <input
-                  id="address"
-                  name="address"
-                  placeholder="35 W 3rd St"
-                  required
-                  className={formInputCompactClass}
-                />
-              </div>
-              <div className="flex min-w-0 gap-2 sm:gap-3 lg:contents">
-                <div className="grid min-w-0 flex-1 gap-2 sm:max-w-[10rem] lg:w-[min(7.5rem,100%)] lg:max-w-[7.5rem] lg:flex-none">
-                  <label
-                    htmlFor="unit"
-                    className="text-sm font-semibold leading-5 text-zinc-800"
-                  >
-                    Unit{" "}
-                    <span className="font-normal text-zinc-500">(opt.)</span>
-                  </label>
-                  <input
-                    id="unit"
-                    name="unit"
-                    placeholder="3B"
-                    className={formInputCompactClass}
-                  />
-                </div>
-                <div className="grid w-[min(100%,6.5rem)] shrink-0 gap-2 sm:w-28 lg:w-24 lg:flex-none">
-                  <label
-                    htmlFor="postalCode"
-                    className="text-sm font-semibold leading-5 text-zinc-800"
-                  >
-                    ZIP
-                  </label>
-                  <input
-                    id="postalCode"
-                    name="postalCode"
-                    placeholder="02127"
-                    required
-                    className={formInputCompactClass}
-                  />
-                </div>
-              </div>
-              <div className="grid min-w-0 flex-[1.2] gap-2 lg:min-w-0">
-                <span
-                  className="text-sm font-semibold leading-5 text-zinc-800"
-                  id="bedroom-count-label"
-                >
-                  Bedrooms
-                </span>
-                <div
-                  className="flex h-10 w-full min-w-0 gap-1.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] lg:overflow-visible [&::-webkit-scrollbar]:hidden"
-                  role="group"
-                  aria-labelledby="bedroom-count-label"
-                >
-                  {BEDROOM_SUBMIT_OPTIONS.map(({ value, label }, i) => (
-                    <label
-                      key={value}
-                      className="flex h-10 min-h-10 min-w-[2.35rem] flex-1 cursor-pointer items-center justify-center rounded-xl border border-zinc-200/90 bg-white px-2 text-xs font-semibold tabular-nums text-zinc-700 shadow-[0_1px_0_rgb(15_23_42/0.03)] transition has-[:checked]:border-muted-blue-hover has-[:checked]:bg-muted-blue-hover has-[:checked]:text-white has-[:checked]:shadow-none sm:min-w-9 sm:px-2.5"
-                    >
-                      <input
-                        type="radio"
-                        name="bedroomCount"
-                        value={value}
-                        required={i === 0}
-                        className="sr-only"
-                      />
-                      {label}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid min-w-0 gap-2">
-              <span
-                className="text-sm font-semibold leading-5 text-zinc-800"
-                id="bathroom-count-label"
-              >
-                Bathrooms
-              </span>
-              <div
-                className="flex w-full min-w-0 flex-wrap gap-1.5 sm:gap-2"
-                role="group"
-                aria-labelledby="bathroom-count-label"
-              >
-                {BATHROOM_SUBMIT_OPTIONS.map(({ value, label }, i) => (
-                  <label
-                    key={value}
-                    className="flex h-10 min-h-10 min-w-[3rem] cursor-pointer items-center justify-center rounded-xl border border-zinc-200/90 bg-white px-3 text-xs font-semibold tabular-nums text-zinc-700 shadow-[0_1px_0_rgb(15_23_42/0.03)] transition has-[:checked]:border-muted-blue-hover has-[:checked]:bg-muted-blue-hover has-[:checked]:text-white has-[:checked]:shadow-none sm:min-w-[3.25rem] sm:px-3.5"
-                  >
-                    <input
-                      type="radio"
-                      name="bathrooms"
-                      value={value}
-                      required={i === 0}
-                      className="sr-only"
-                    />
-                    {label}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div
-              id="lease-years-region"
-              tabIndex={-1}
-              className="grid gap-3 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-4 outline-none ring-muted-blue/40 focus-visible:ring-2 sm:p-5"
-            >
-                <div>
-                  <p className="text-sm font-semibold text-zinc-800">
-                    Lease start year(s)
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-zinc-500">
-                    {PRODUCT_POLICY.reviews.leaseStartYearRule} Choose every year you
-                    want a review for — rent can differ each year.
-                  </p>
-                </div>
-                {leaseYearOptions.length === 0 ? (
-                  <p className="text-sm text-zinc-600">
-                    Set your Boston renting start year above to see eligible years.
-                  </p>
-                ) : (
-                  <ul className="grid gap-2" role="list">
-                    {leaseYearOptions.map((year) => {
-                      const checked = selectedLeaseYears.includes(year);
-                      return (
-                        <li key={year}>
-                          <div
-                            className={`rounded-xl border bg-white transition ${
-                              checked
-                                ? "border-muted-blue-hover shadow-[0_1px_0_rgb(15_23_42/0.04)]"
-                                : "border-zinc-200/90"
-                            }`}
-                          >
-                            <label className="flex cursor-pointer items-center gap-3 px-3 py-3 sm:px-4">
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                onChange={() => toggleLeaseYear(year)}
-                                className="size-4 shrink-0 rounded border-zinc-300 text-muted-blue focus:ring-muted-blue/30"
-                              />
-                              <span className="text-base font-semibold tabular-nums text-zinc-900">
-                                {year}
-                              </span>
-                            </label>
-                            {checked ? (
-                              <div className="border-t border-zinc-100 px-3 pb-3 pt-1 sm:px-4 sm:pb-4">
-                                <label
-                                  htmlFor={`lease-rent-${year}`}
-                                  className="text-xs font-semibold uppercase tracking-wide text-zinc-600"
-                                >
-                                  Monthly rent for {year}
-                                </label>
-                                <input
-                                  id={`lease-rent-${year}`}
-                                  type="number"
-                                  min={0}
-                                  step={1}
-                                  inputMode="numeric"
-                                  placeholder="e.g. 3200"
-                                  value={rentByYear[year] ?? ""}
-                                  onChange={(e) =>
-                                    setRentForYear(year, e.target.value)
-                                  }
-                                  className={`mt-1.5 ${formInputCompactClass}`}
-                                />
-                              </div>
-                            ) : null}
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-                {step === 1 &&
-                sessionUser &&
-                sessionUser !== "loading" &&
-                typeof bostonFloor === "number" &&
-                unusedEligibleYearsOnForm.length > 0 ? (
-                  <div className="rounded-xl border border-muted-blue/25 bg-muted-blue-tint/40 px-3 py-3.5 sm:px-4">
-                    <p className="text-sm font-semibold text-muted-blue-hover">
-                      More lease years?
-                    </p>
-                    <p className="mt-1.5 text-sm leading-relaxed text-zinc-700">
-                      {selectedLeaseYears.length === 0 ? (
-                        <>
-                          You can pick <span className="font-medium">several years</span>{" "}
-                          for this address if you lived here in a row. Any other years
-                          you&apos;re eligible for (
-                          <span className="font-medium tabular-nums">
-                            {unusedYearsShortList}
-                          </span>
-                          ) might belong to a{" "}
-                          <span className="font-medium">different</span> Boston
-                          building — you&apos;ll submit that place as a separate review
-                          after this one.
-                        </>
-                      ) : (
-                        <>
-                          You haven&apos;t added{" "}
-                          <span className="font-medium tabular-nums">
-                            {unusedYearsShortList}
-                          </span>{" "}
-                          on this form yet. Tap them above if those years were at{" "}
-                          <span className="font-medium">this</span> address. If they
-                          were somewhere else in Boston, finish this review and start a
-                          new one for that building.
-                        </>
-                      )}
-                    </p>
-                  </div>
-                ) : null}
-                <div className="rounded-xl border border-zinc-200/80 bg-white/80 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-zinc-700">
-                    Privacy mapping shown publicly
-                  </p>
-                  <div className="mt-2 grid gap-2 text-xs text-zinc-600">
-                    <p>
-                      <span className="font-medium text-zinc-800">Recent years</span>{" "}
-                      -&gt; Recent (within ~2 years)
-                    </p>
-                    <p>
-                      <span className="font-medium text-zinc-800">Mid-range years</span>{" "}
-                      -&gt; A few years ago (2-5 years)
-                    </p>
-                    <p>
-                      <span className="font-medium text-zinc-800">Older years</span>{" "}
-                      -&gt; Older experience (5+ years)
-                    </p>
-                  </div>
-                  <p className="mt-2 text-xs text-zinc-500">
-                    We store the exact year internally for quality checks and anti-spam,
-                    but only show the bucket publicly.
-                  </p>
-                </div>
-            </div>
-
-            <div className="grid gap-5 rounded-2xl border border-zinc-200/80 bg-gradient-to-b from-muted-blue-tint/40 to-muted-blue-tint/15 p-5 sm:gap-6 sm:p-7">
-              <div>
-                <p className="text-sm font-semibold text-zinc-800">
-                  Amenities at your place
-                </p>
-                <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">
-                  Tap the ones that fit — tap again to turn off. Skip anything you&apos;re
-                  unsure about.
-                </p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {STEP1_AMENITY_CARDS.map(({ name, title, sub }) => (
-                  <label
-                    key={name}
-                    className="relative block cursor-pointer select-none"
-                  >
-                    <input type="checkbox" name={name} className="peer sr-only" />
-                    <div
-                      className="flex min-h-[5.25rem] flex-col justify-center gap-1 rounded-2xl border border-zinc-200/90 bg-white px-4 py-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.05)] ring-1 ring-transparent transition hover:border-muted-blue/35 hover:bg-muted-blue-tint/30 hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.12)] peer-checked:border-muted-blue-hover peer-checked:bg-muted-blue-hover peer-checked:shadow-[0_10px_28px_-10px_rgb(21_42_69/0.45)] peer-checked:ring-muted-blue-hover/20 peer-checked:[&_.amenity-card-title]:text-white peer-checked:[&_.amenity-card-sub]:text-white/85 peer-focus-visible:ring-2 peer-focus-visible:ring-muted-blue/35 peer-focus-visible:ring-offset-2"
-                    >
-                      <span className="amenity-card-title text-sm font-semibold tracking-tight text-zinc-900">
-                        {title}
-                      </span>
-                      <span className="amenity-card-sub text-xs leading-snug text-zinc-600">
-                        {sub}
-                      </span>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
+          <SubmitRentalCardsStep
+            rentalCards={rentalCards}
+            leaseYearOptions={leaseYearOptions}
+            bostonFloor={bostonFloor}
+            sessionUser={sessionUser}
+            step1ErrorsByCardId={step1ErrorsByCardId}
+            patchCard={patchCard}
+            toggleCardYear={toggleCardYear}
+            setCardRentForYear={setCardRentForYear}
+            copyFromPreviousCard={copyFromPreviousCard}
+            removeRentalCard={removeRentalCard}
+            addRentalCard={addRentalCard}
+            maxCards={MAX_RENTAL_CARDS}
+          />
         </div>
 
         <div
@@ -1464,94 +1071,12 @@ export default function SubmitReviewPage() {
                 Step 2
               </p>
               <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
-                How was it, really?
-              </h2>
-              <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
-                Two quick number ratings, then a written part only if you want — even a
-                few sentences help the next renter a lot. If you picked multiple
-                lease-start years in step 1, these answers count for every year you
-                selected.
-              </p>
-            </div>
-            <div className="h-px w-full bg-zinc-200/90" />
-
-            <div className="grid gap-8 rounded-2xl border border-zinc-200/80 bg-white p-5 sm:gap-9 sm:p-7">
-              <div>
-                <p className="text-sm font-semibold text-zinc-800">
-                  Tap a number from 1 (rough) to 10 (great)
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-500">
-                  Go with your gut — there are no wrong answers.
-                </p>
-              </div>
-              <ScoreScale
-                name="overallScore"
-                label="Overall rental experience"
-                value={overallScore}
-                onChange={(n) => {
-                  setOverallScore(n);
-                  queueMicrotask(persistDraft);
-                }}
-              />
-              <ScoreScale
-                name="landlordScore"
-                label="Landlord / management responsiveness"
-                value={landlordScore}
-                onChange={(n) => {
-                  setLandlordScore(n);
-                  queueMicrotask(persistDraft);
-                }}
-              />
-            </div>
-
-            {overallScore == null || landlordScore == null ? (
-              <p
-                id="step2-scores-hint"
-                className="rounded-xl border border-muted-blue/30 bg-muted-blue-tint/50 px-4 py-3.5 text-sm font-medium leading-snug text-muted-blue-hover sm:text-[0.9375rem]"
-              >
-                Tap a number (1–10) for <strong>both</strong> questions above — then
-                Continue below will work.
-              </p>
-            ) : null}
-
-            <div className="grid gap-3">
-              <label htmlFor="reviewText" className="text-base font-semibold text-zinc-800">
-                Anything else you&apos;d like to add?{" "}
-                <span className="font-normal text-zinc-500">(optional)</span>
-              </label>
-              <textarea
-                id="reviewText"
-                name="reviewText"
-                rows={6}
-                placeholder="Noise, management, repairs, neighbors, tips for someone new — whatever feels fair to share."
-                className={formTextareaClass}
-              />
-              <p className="text-sm leading-relaxed text-zinc-500">
-                Totally optional, but stories help people the most. If you mention
-                someone&apos;s full name, we may hold the review for a quick manual
-                check before it goes live.
-              </p>
-            </div>
-        </div>
-
-        <div
-          data-step-panel="3"
-          className={step === 3 ? "space-y-7" : "hidden"}
-          aria-hidden={step !== 3}
-        >
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-blue">
-                Step 3
-              </p>
-              <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
                 One last look
               </h2>
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
-                Read the anonymity note below, then check the box to confirm your lease
-                attestation. If you chose more than one lease-start year in step 1, that
-                confirmation applies to each year. Phone verification is optional — you
-                can add it anytime on your profile for a verified badge and usually
-                quicker approval.
+                Confirm your lease attestation for every lease-start year on every place
+                card. Phone verification is optional — you can add it anytime on your
+                profile for a verified badge and usually quicker approval.
               </p>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />
@@ -1561,6 +1086,11 @@ export default function SubmitReviewPage() {
                 type="checkbox"
                 name="majorityYearAttestation"
                 required
+                checked={majorityAttestationDraft}
+                onChange={(e) => {
+                  draftTouchedRef.current = true;
+                  setMajorityAttestationDraft(e.target.checked);
+                }}
                 className="mt-1.5 size-4 shrink-0 rounded border-zinc-300"
               />
               <span>{PRODUCT_POLICY.reviews.majorityYearAttestationRule}</span>
@@ -1600,7 +1130,7 @@ export default function SubmitReviewPage() {
             {step > 1 && (
               <button
                 type="button"
-                onClick={() => setStep((prev) => (prev === 3 ? 2 : 1))}
+                onClick={() => setStep(1)}
                 className="rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
               >
                 Back
@@ -1609,25 +1139,14 @@ export default function SubmitReviewPage() {
             <button
               type="submit"
               ref={submitButtonRef}
-              disabled={
-                duplicateChecking ||
-                finalSubmitting ||
-                (step === 2 &&
-                  (overallScore == null || landlordScore == null))
-              }
-              aria-describedby={
-                step === 2 &&
-                (overallScore == null || landlordScore == null)
-                  ? "step2-scores-hint"
-                  : undefined
-              }
+              disabled={duplicateChecking || finalSubmitting}
               className="rounded-full bg-muted-blue px-6 py-2.5 text-sm font-semibold text-white shadow-[0_8px_22px_-8px_rgb(92_107_127/0.4)] transition hover:bg-muted-blue-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {duplicateChecking
                 ? "Checking…"
                 : finalSubmitting
                   ? "Submitting…"
-                  : step < 3
+                  : step < 2
                     ? "Continue"
                     : "Submit review"}
             </button>
@@ -1728,10 +1247,15 @@ export default function SubmitReviewPage() {
                 ? "You already reviewed this place for that year"
                 : "Some years already have reviews"}
             </h2>
+            {duplicateModalAddressHint ? (
+              <p className="mt-2 text-sm font-medium text-muted-blue-hover">
+                Affected place: {duplicateModalAddressHint}
+              </p>
+            ) : null}
             <p className="mt-3 text-sm leading-relaxed text-zinc-600 sm:text-base sm:leading-relaxed">
               Each address and lease-start year can only have one review from your
-              account. Deselect those years above and tap Continue again, or open an
-              existing review to edit it.
+              account. Deselect those years on that place card and tap Continue again,
+              or open an existing review to edit it.
             </p>
             <ul className="mt-4 space-y-2 border-t border-zinc-100 pt-4">
               {duplicateModalDupes
@@ -1822,9 +1346,9 @@ export default function SubmitReviewPage() {
             >
               {lastSubmittedBatchCount > 1 ? (
                 <>
-                  All {lastSubmittedBatchCount} reviews are in — same ratings and story
-                  for each lease year you picked. You just made the next Boston renter
-                  way harder to rip off.
+                  All {lastSubmittedBatchCount} reviews are in — across the place cards
+                  and years you submitted. You just made the next Boston renter way
+                  harder to rip off.
                 </>
               ) : (
                 <>
