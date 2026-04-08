@@ -2,7 +2,6 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   AppPageShell,
@@ -158,7 +157,6 @@ function ScoreScale({
 }
 
 export default function SubmitReviewPage() {
-  const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
   const sessionUser = useMemo((): SessionUser | null | "loading" => {
     if (sessionStatus === "loading") return "loading";
@@ -224,9 +222,16 @@ export default function SubmitReviewPage() {
     useState<SubmitStepOnePrefill | null>(null);
   const [showAnotherYearCta, setShowAnotherYearCta] = useState(false);
   const [showSubmitSuccessModal, setShowSubmitSuccessModal] = useState(false);
+  const [showNewUserWelcome, setShowNewUserWelcome] = useState(false);
   const [bostonFloor, setBostonFloor] = useState<number | null | undefined>(
     undefined,
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setShowNewUserWelcome(params.get("new") === "1");
+  }, []);
 
   useEffect(() => {
     if (!sessionUser || sessionUser === "loading") {
@@ -931,7 +936,6 @@ export default function SubmitReviewPage() {
     (bostonFloor === undefined || bostonFloor === null);
   const formSurfaceBlocked =
     !isAuthed || atReviewCap || bostonGateActive;
-  const showNewUserWelcome = isAuthed && searchParams.get("new") === "1";
 
   return (
     <AppPageShell gapClass="gap-6" className="relative">
@@ -1066,7 +1070,7 @@ export default function SubmitReviewPage() {
         </div>
       ) : null}
 
-      {showNewUserWelcome ? (
+      {isAuthed && showNewUserWelcome ? (
         <section className="rounded-2xl border border-emerald-200/70 bg-gradient-to-b from-emerald-50 to-white p-5 shadow-[0_1px_2px_rgb(6_78_59/0.06)] sm:p-6">
           <h2 className="text-lg font-semibold tracking-tight text-emerald-950">
             Welcome to Rent Review Boston
