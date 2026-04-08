@@ -220,16 +220,9 @@ export default function SubmitReviewPage() {
     useState<SubmitStepOnePrefill | null>(null);
   const [showAnotherYearCta, setShowAnotherYearCta] = useState(false);
   const [showSubmitSuccessModal, setShowSubmitSuccessModal] = useState(false);
-  const [showNewUserWelcome, setShowNewUserWelcome] = useState(false);
   const [bostonFloor, setBostonFloor] = useState<number | null | undefined>(
     undefined,
   );
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    setShowNewUserWelcome(params.get("new") === "1");
-  }, []);
 
   useEffect(() => {
     if (!sessionUser || sessionUser === "loading") {
@@ -491,6 +484,16 @@ export default function SubmitReviewPage() {
   function dismissAnotherYearCta() {
     setShowAnotherYearCta(false);
     setAnotherYearPrefill(null);
+  }
+
+  function advanceToStep(nextStep: 2 | 3) {
+    setStep(nextStep);
+    requestAnimationFrame(() => {
+      document.getElementById(`submit-step-${nextStep}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
   }
 
   /** Constraint check only (no UI); used before switching step on final submit. */
@@ -775,7 +778,7 @@ export default function SubmitReviewPage() {
         } finally {
           setDuplicateChecking(false);
         }
-        setStep(2);
+        advanceToStep(2);
         return;
       }
       if (step === 2) {
@@ -784,7 +787,7 @@ export default function SubmitReviewPage() {
           return;
         }
         setStatusMessage("");
-        setStep(3);
+        advanceToStep(3);
         return;
       }
       return;
@@ -1021,33 +1024,6 @@ export default function SubmitReviewPage() {
         </div>
       ) : null}
 
-      {isAuthed && showNewUserWelcome ? (
-        <section className="rounded-2xl border border-emerald-200/70 bg-gradient-to-b from-emerald-50 to-white p-5 shadow-[0_1px_2px_rgb(6_78_59/0.06)] sm:p-6">
-          <h2 className="text-lg font-semibold tracking-tight text-emerald-950">
-            Welcome to Rent Review Boston
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-emerald-900/90 sm:text-base">
-            Share your first 60-second anonymous rental review to help future renters,
-            unlock full rental analytics, and get entered into our monthly giveaway for
-            Boston restaurant gift cards.
-          </p>
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <a
-              href="#submit-review-form"
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-muted-blue-hover"
-            >
-              Leave my first review
-            </a>
-            <Link
-              href="/profile"
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
-            >
-              Go to profile
-            </Link>
-          </div>
-        </section>
-      ) : null}
-
       <div
         className={formSurfaceBlocked ? "pointer-events-none opacity-40" : ""}
       >
@@ -1130,7 +1106,7 @@ export default function SubmitReviewPage() {
           className={step === 1 ? "space-y-7" : "hidden"}
           aria-hidden={step !== 1}
         >
-            <div className="space-y-3">
+            <div id="submit-step-2" className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-blue">
                 Step 1
               </p>
@@ -1274,8 +1250,8 @@ export default function SubmitReviewPage() {
                     {PRODUCT_POLICY.reviews.leaseStartYearRule} Choose every year you
                     want a review for — rent can differ each year.
                   </p>
-                  <p className="mt-1.5 text-xs font-medium text-zinc-600">
-                    Whole-unit monthly rent (not per room).
+                  <p className="mt-1.5 text-sm font-medium text-zinc-600">
+                    Please enter total unit monthly rent (not per room).
                   </p>
                 </div>
                 {leaseYearOptions.length === 0 ? (
@@ -1407,9 +1383,7 @@ export default function SubmitReviewPage() {
               </h2>
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
                 Two quick number ratings, then a written part only if you want — even a
-                few sentences help the next renter a lot. If you picked multiple
-                lease-start years in step 1, these answers count for every year you
-                selected.
+                few sentences help the next renter a lot.
               </p>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />
@@ -1478,7 +1452,7 @@ export default function SubmitReviewPage() {
           className={step === 3 ? "space-y-7" : "hidden"}
           aria-hidden={step !== 3}
         >
-            <div className="space-y-3">
+            <div id="submit-step-3" className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-blue">
                 Step 3
               </p>
@@ -1486,9 +1460,8 @@ export default function SubmitReviewPage() {
                 One last look
               </h2>
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
-                Read the anonymity note below, then check the box to confirm your lease
-                attestation. If you chose more than one lease-start year in step 1, that
-                confirmation applies to each year.
+                Please check the box below to confirm your lease attestation before you
+                submit.
               </p>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />
@@ -1502,7 +1475,8 @@ export default function SubmitReviewPage() {
               />
               <span>
                 I confirm this review is truthful, based on my real rental experience,
-                and I either lived at this property or was a leaseholder there.
+                and I either lived at this property or was a leaseholder there for the
+                year(s) I selected.
               </span>
             </label>
 
