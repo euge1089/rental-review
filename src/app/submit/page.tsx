@@ -1164,11 +1164,6 @@ export default function SubmitReviewPage() {
               </h2>
               <div className="max-w-2xl space-y-2 pt-0.5">
                 <p className="text-sm leading-relaxed text-zinc-600">
-                  {PRODUCT_POLICY.reviews.oneReviewPerLeaseStartYearShort} Lived at the
-                  same address multiple years in a row? Select every lease-start year
-                  you want — your ratings and write-up in step 2 apply to each year.
-                </p>
-                <p className="text-sm leading-relaxed text-zinc-600">
                   Public reviews are <span className="font-semibold">fully anonymous</span>.
                   We never show your name, and we do not publish your exact lease-start
                   year.
