@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { trackEvent } from "@/lib/analytics-client";
 
 type Props = {
   yearChoices: number[];
@@ -40,6 +41,7 @@ export function BostonRentingYearPickForm({
         setError(data.error ?? "Could not save.");
         return;
       }
+      trackEvent("boston_year_saved", { year: y });
       onSaved?.(y);
       router.refresh();
     } finally {

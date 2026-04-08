@@ -8,6 +8,7 @@ import {
   useCallback,
   useState,
 } from "react";
+import { trackEvent } from "@/lib/analytics-client";
 import { formInputClass } from "@/lib/ui-classes";
 
 function AuthLegalNote() {
@@ -113,6 +114,7 @@ export function EmailAuthPanel({
         setFlow("signin");
         return;
       }
+      trackEvent("sign_up_completed", { method: "email" });
       onSignedIn?.();
       router.push(postSignupRedirect);
       router.refresh();

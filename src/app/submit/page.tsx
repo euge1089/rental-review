@@ -23,6 +23,7 @@ import {
   applySubmitStepOnePrefill,
   buildPrefillFromSubmitPayload,
 } from "@/lib/submit-prefill";
+import { trackEvent } from "@/lib/analytics-client";
 import {
   formInputCompactClass,
   formTextareaClass,
@@ -488,6 +489,9 @@ export default function SubmitReviewPage() {
 
   function advanceToStep(nextStep: 2 | 3) {
     setStep(nextStep);
+    if (nextStep === 2) {
+      trackEvent("submit_step_2_reached");
+    }
     requestAnimationFrame(() => {
       document.getElementById(`submit-step-${nextStep}`)?.scrollIntoView({
         behavior: "smooth",
@@ -885,6 +889,9 @@ export default function SubmitReviewPage() {
       setLastSubmittedBatchCount(
         Math.max(1, result.count ?? yearEntries.length),
       );
+      trackEvent("review_submitted", {
+        review_count: Math.max(1, result.count ?? yearEntries.length),
+      });
       if (typeof window !== "undefined") {
         window.localStorage.removeItem(DRAFT_KEY);
         const prefill = buildPrefillFromSubmitPayload({
@@ -1106,7 +1113,7 @@ export default function SubmitReviewPage() {
           className={step === 1 ? "space-y-7" : "hidden"}
           aria-hidden={step !== 1}
         >
-            <div id="submit-step-2" className="space-y-3">
+            <div id="submit-step-1" className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-blue">
                 Step 1
               </p>
@@ -1374,7 +1381,7 @@ export default function SubmitReviewPage() {
           className={step === 2 ? "space-y-7" : "hidden"}
           aria-hidden={step !== 2}
         >
-            <div className="space-y-3">
+            <div id="submit-step-2" className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-blue">
                 Step 2
               </p>
