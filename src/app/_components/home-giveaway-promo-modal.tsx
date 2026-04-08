@@ -68,20 +68,10 @@ export function HomeGiveawayPromoModal() {
         aria-label="Close promotion"
         onClick={dismiss}
       />
-      <div
-        className="relative z-10 w-full max-w-[min(100%,24rem)] overflow-hidden rounded-2xl border-2 border-pop/35 bg-gradient-to-b from-pop-tint/90 via-white to-muted-blue-tint/20 shadow-[0_20px_50px_-12px_rgb(219_120_55/0.35),0_0_0_1px_rgb(219_120_55/0.12)] sm:max-w-lg"
-      >
-        <div
-          className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-pop/25 blur-2xl"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-muted-blue/15 blur-2xl"
-          aria-hidden
-        />
+      <div className="relative z-10 w-full max-w-[min(100%,24rem)] overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_20px_50px_-12px_rgb(15_23_42/0.18)] sm:max-w-lg">
         <button
           type="button"
-          className="absolute right-2 top-2 z-20 rounded-full bg-white/90 p-2 text-zinc-500 shadow-sm ring-1 ring-zinc-200/80 transition hover:bg-white hover:text-zinc-800"
+          className="absolute right-2 top-2 z-20 rounded-full bg-white p-2 text-zinc-500 ring-1 ring-zinc-200/80 transition hover:bg-zinc-50 hover:text-zinc-800"
           aria-label="Close"
           onClick={dismiss}
         >
@@ -104,7 +94,7 @@ export function HomeGiveawayPromoModal() {
           <span id="home-giveaway-promo-title" className="sr-only">
             April giveaway promotion
           </span>
-          <GiveawayPromoStrip variant="modal" className="border-0 bg-transparent shadow-none ring-0" />
+          <GiveawayPromoStrip variant="modal" className="border-0 bg-white shadow-none ring-0" />
         </div>
       </div>
     </div>

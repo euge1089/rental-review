@@ -276,11 +276,11 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
   const entriesUsed = reviewCount ?? 0;
 
   const asideSurface = isModal
-    ? "rounded-2xl border-2 border-pop/35 bg-gradient-to-br from-white via-amber-50/45 to-orange-50/30 shadow-lg shadow-orange-200/35 ring-1 ring-pop/20"
+    ? "rounded-2xl border-0 bg-white shadow-none"
     : "rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_3px_rgb(15_23_42/0.06)]";
 
   const innerAccent = isModal
-    ? "flex border-l-4 border-l-pop pl-3 pr-3 py-3 sm:pl-4 sm:pr-4 sm:py-3.5"
+    ? "flex px-1 py-1 sm:px-2 sm:py-2"
     : "flex border-l-[3px] border-l-muted-blue pl-4 pr-4 py-4 sm:pl-5 sm:pr-5 sm:py-5";
 
   return (
@@ -303,59 +303,35 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
               <div
                 className={
                   isModal
-                    ? "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-pop text-white shadow-md ring-2 ring-pop/35"
+                    ? "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted-blue-tint/60 text-muted-blue-hover ring-1 ring-muted-blue/15"
                     : "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted-blue-tint/60 text-muted-blue-hover ring-1 ring-muted-blue/15"
                 }
                 aria-hidden
               >
                 <GiftIcon
-                  className={isModal ? "text-white" : "text-muted-blue-hover"}
-                  width={isModal ? 24 : 20}
-                  height={isModal ? 24 : 20}
+                  className="text-muted-blue-hover"
+                  width={isModal ? 22 : 20}
+                  height={isModal ? 22 : 20}
                 />
               </div>
               <div className={`min-w-0 ${isModal ? "pt-0" : "pt-0.5"}`}>
-                <p
-                  className={
-                    isModal
-                      ? "text-xs font-extrabold uppercase tracking-[0.2em] text-pop"
-                      : "text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500"
-                  }
-                >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
                   April giveaway
                 </p>
                 <p
                   className={
                     isModal
-                      ? "mt-2 text-pretty text-base font-medium leading-snug text-zinc-900 sm:text-lg"
+                      ? "mt-1.5 text-pretty text-[0.9375rem] leading-relaxed text-zinc-800 sm:text-base"
                       : "mt-1.5 text-pretty text-sm leading-relaxed text-zinc-800 sm:text-[0.9375rem]"
                   }
                 >
-                  <strong
-                    className={
-                      isModal
-                        ? "text-xl font-extrabold text-pop sm:text-2xl"
-                        : "font-semibold text-muted-blue-hover"
-                    }
-                  >
-                    $200
-                  </strong>{" "}
-                  in Boston restaurant gift cards — enter by sharing an{" "}
-                  <strong
-                    className={
-                      isModal ? "font-bold text-zinc-900" : "font-semibold text-muted-blue-hover"
-                    }
-                  >
-                    anonymous
-                  </strong>{" "}
+                  <strong className="font-semibold text-muted-blue-hover">$200</strong>{" "}
+                  in Boston restaurant gift cards will be awarded — enter by sharing an{" "}
+                  <strong className="font-semibold text-muted-blue-hover">anonymous</strong>{" "}
                   rental review.{" "}
                   <Link
                     href="/submit"
-                    className={
-                      isModal
-                        ? "font-bold text-pop underline decoration-pop/45 underline-offset-2 hover:text-pop-hover"
-                        : `${linkInlineClass} font-semibold text-muted-blue`
-                    }
+                    className={`${linkInlineClass} font-semibold text-muted-blue`}
                   >
                     Submit a review
                   </Link>
@@ -368,23 +344,13 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
                 isHome && !isModal
                   ? "flex shrink-0 items-center gap-2.5 rounded-xl border border-zinc-100 bg-zinc-50/80 px-3.5 py-2.5 lg:flex-col lg:items-stretch lg:gap-1"
                   : isModal
-                    ? "flex w-full flex-col gap-1 rounded-xl border-2 border-pop/25 bg-white/90 px-4 py-3 shadow-sm shadow-orange-100/50"
+                    ? "flex w-full flex-col gap-1 rounded-xl bg-zinc-50 px-3.5 py-2.5"
                     : "flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-zinc-50/80 px-3.5 py-2.5"
               }
             >
-              <div
-                className={`flex items-center gap-2 ${isModal ? "text-pop" : "text-zinc-500"}`}
-              >
-                <ClockIcon
-                  className={`shrink-0 ${isModal ? "text-pop" : "text-muted-blue/80"}`}
-                />
-                <span
-                  className={
-                    isModal
-                      ? "text-[11px] font-extrabold uppercase tracking-[0.14em] text-pop/90"
-                      : "text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500"
-                  }
-                >
+              <div className="flex items-center gap-2 text-zinc-500">
+                <ClockIcon className="shrink-0 text-muted-blue/80" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
                   Ends Apr 30 · ET
                 </span>
               </div>
@@ -397,7 +363,7 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
             cap={GIVEAWAY_ENTRY_CAP}
             signedIn={signedIn}
             loading={signedIn && countLoading}
-            excited={isModal}
+            excited={false}
           />
         </div>
       </div>
