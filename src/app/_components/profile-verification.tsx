@@ -72,7 +72,7 @@ export function ProfileVerification({ initialVerified }: Props) {
 
   if (isVerified) {
     return (
-      <p className="text-sm leading-relaxed text-emerald-900/85">
+      <p className="text-sm leading-snug text-zinc-700">
         Your profile is verified via SMS. Your reviews show a verified badge, and new
         submissions are typically approved right away if they don&apos;t need manual
         review.

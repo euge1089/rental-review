@@ -206,19 +206,20 @@ export default async function ProfilePage({ searchParams }: Props) {
           }
         >
           <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch lg:gap-6">
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 lg:flex lg:h-full lg:min-h-0 lg:flex-col">
               <ProfileDisplayNameCard initialDisplayName={displayName} />
             </div>
-            <SurfacePanel
-              variant="subtle"
-              as="section"
-              id="verification"
-              className={`scroll-mt-24 lg:w-[min(100%,22rem)] lg:shrink-0 ${
-                user?.phoneVerified
-                  ? "!border-emerald-200/70 !bg-emerald-50/50 px-4 py-3.5 sm:px-5 sm:py-4 md:px-5 md:py-4"
-                  : ""
-              }`}
-            >
+            <div className="lg:flex lg:h-full lg:min-h-0 lg:w-[min(100%,22rem)] lg:shrink-0 lg:flex-col">
+              <SurfacePanel
+                variant="subtle"
+                as="section"
+                id="verification"
+                className={`scroll-mt-24 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col ${
+                  user?.phoneVerified
+                    ? "!border-emerald-200/70 !bg-emerald-50/50 px-4 py-3.5 sm:px-5 sm:py-4 md:px-5 md:py-4"
+                    : ""
+                }`}
+              >
               <h2 className="text-base font-semibold text-muted-blue-hover">
                 Profile verification
               </h2>
@@ -227,12 +228,17 @@ export default async function ProfilePage({ searchParams }: Props) {
                   SMS adds a verified badge and usually faster review approval.
                 </p>
               ) : null}
-              <div className={user?.phoneVerified ? "mt-2" : "mt-3"}>
+              <div
+                className={`min-h-0 lg:flex-1 lg:flex lg:flex-col ${
+                  user?.phoneVerified ? "mt-2" : "mt-3"
+                }`}
+              >
                 <ProfileVerification
                   initialVerified={Boolean(user?.phoneVerified)}
                 />
               </div>
             </SurfacePanel>
+            </div>
           </div>
 
           {bostonRentingSinceYear != null ? (

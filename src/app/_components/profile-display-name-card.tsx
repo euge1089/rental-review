@@ -70,43 +70,48 @@ export function ProfileDisplayNameCard({ initialDisplayName }: Props) {
   return (
     <section
       id="profile-display-name"
-      className={`scroll-mt-24 rounded-2xl border shadow-[0_1px_2px_rgb(15_23_42/0.04)] ${
+      className={`scroll-mt-24 rounded-2xl border shadow-[0_1px_2px_rgb(15_23_42/0.04)] lg:flex lg:min-h-0 lg:flex-1 lg:flex-col ${
         showCollapsed
           ? "border-emerald-200/70 bg-emerald-50/50 px-4 py-3.5 sm:px-5 sm:py-4"
           : "border-zinc-200/80 bg-white p-5 sm:p-6"
       }`}
     >
       {showCollapsed ? (
-        <div className="flex items-start gap-2">
-          <button
-            type="button"
-            onClick={() => setExpanded(true)}
-            className="group flex min-w-0 flex-1 items-start gap-2 rounded-lg text-left outline-none ring-muted-blue/40 focus-visible:ring-2"
-            aria-expanded={false}
-            aria-label="Expand to edit your name"
-          >
-            <span className="min-w-0 flex-1 text-sm leading-snug text-zinc-700">
-              {ANONYMOUS_COPY}
-            </span>
-            <span
-              className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-emerald-200/80 bg-white/80 text-zinc-500 transition group-hover:border-emerald-300 group-hover:text-zinc-700"
-              aria-hidden
+        <>
+          <h2 className="text-base font-semibold text-muted-blue-hover">
+            Your name
+          </h2>
+          <div className="mt-2 flex items-start gap-2">
+            <button
+              type="button"
+              onClick={() => setExpanded(true)}
+              className="group flex min-w-0 flex-1 items-start gap-2 rounded-lg text-left outline-none ring-muted-blue/40 focus-visible:ring-2"
+              aria-expanded={false}
+              aria-label="Expand to edit your name"
             >
-              <svg
-                className="size-4"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+              <span className="min-w-0 flex-1 text-sm leading-snug text-zinc-700">
+                {ANONYMOUS_COPY}
+              </span>
+              <span
+                className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-emerald-200/80 bg-white/80 text-zinc-500 transition group-hover:border-emerald-300 group-hover:text-zinc-700"
                 aria-hidden
               >
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </span>
-          </button>
-        </div>
+                <svg
+                  className="size-4"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            </button>
+          </div>
+        </>
       ) : (
         <>
           <h2 className="text-base font-semibold text-muted-blue-hover">
