@@ -7,7 +7,6 @@ import { authOptions } from "@/lib/auth";
 import {
   bedroomCountToBand,
   getPropertyRentStats,
-  getSouthBostonRentBands,
 } from "@/lib/analytics";
 import { bathroomsToPublicLabel } from "@/lib/policy";
 import { ReportReviewButton } from "@/app/_components/report-review-button";
@@ -35,7 +34,7 @@ export default async function PropertyDetailPage({ params }: Props) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
 
-  const [property, rentStats, southBostonBands] = await Promise.all([
+  const [property, rentStats] = await Promise.all([
     prisma.property.findUnique({
       where: { id },
       include: {
@@ -50,7 +49,6 @@ export default async function PropertyDetailPage({ params }: Props) {
       },
     }),
     getPropertyRentStats(id),
-    getSouthBostonRentBands(),
   ]);
 
   if (!property) {
@@ -154,60 +152,6 @@ export default async function PropertyDetailPage({ params }: Props) {
               </div>
             ))}
           </div>
-
-          {southBostonBands.length > 0 ? (
-            <div className="relative mt-6 rounded-2xl border border-accent-coral/20 bg-gradient-to-br from-accent-coral-tint/80 to-white px-4 py-4 sm:px-5">
-              <p className="text-sm font-semibold text-muted-blue-hover">
-                South Boston context
-              </p>
-              <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-zinc-700">
-                {rentStats.map((row) => {
-                  const hood = southBostonBands.find(
-                    (b) => b.bedroomCount === row.bedroomCount,
-                  );
-                  if (!hood || typeof row.median !== "number" || !hood.median) {
-                    return null;
-                  }
-                  const diff = row.median - hood.median;
-                  const abs = Math.abs(diff);
-                  if (abs === 0) {
-                    return (
-                      <li key={row.bedroomCount} className="flex gap-2">
-                        <span className="text-accent-teal" aria-hidden>
-                          ◆
-                        </span>
-                        <span>
-                          <strong>{row.bedroomCount}:</strong> in line with the South
-                          Boston median.
-                        </span>
-                      </li>
-                    );
-                  }
-                  const direction = diff > 0 ? "above" : "below";
-                  return (
-                    <li key={row.bedroomCount} className="flex gap-2">
-                      <span className="text-pop" aria-hidden>
-                        ◆
-                      </span>
-                      <span>
-                        <strong>{row.bedroomCount}:</strong>{" "}
-                        {isSignedIn ? (
-                          <>
-                            about <strong>${abs.toLocaleString()}</strong> {direction}{" "}
-                            South Boston&apos;s median.
-                          </>
-                        ) : (
-                          <span className="text-zinc-500">
-                            Sign in to see comparison to South Boston medians.
-                          </span>
-                        )}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ) : null}
 
           {!isSignedIn && (
             <p className="relative mt-4 text-sm text-zinc-500">
