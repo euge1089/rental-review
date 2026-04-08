@@ -32,7 +32,6 @@ import {
 } from "@/lib/ui-classes";
 
 const DRAFT_KEY = "rental-review-draft-v1";
-const SMS_PROMPT_KEY = "sms-prompt-dismissed";
 
 /**
  * Server-side Review rows are unchanged by the multi-year submit flow. This only
@@ -174,7 +173,6 @@ export default function SubmitReviewPage() {
   const successPrimaryActionRef = useRef<HTMLButtonElement | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [showSmsNudge, setShowSmsNudge] = useState(false);
   const [overallScore, setOverallScore] = useState<number | null>(null);
   const [landlordScore, setLandlordScore] = useState<number | null>(null);
   const [duplicateModalDupes, setDuplicateModalDupes] = useState<
@@ -300,15 +298,6 @@ export default function SubmitReviewPage() {
       return next;
     });
   }, [bostonFloor, leaseYearOptions]);
-
-  useEffect(() => {
-    if (sessionUser && sessionUser !== "loading" && !sessionUser.phoneVerified) {
-      if (typeof window === "undefined") return;
-      if (!window.sessionStorage.getItem(SMS_PROMPT_KEY)) {
-        setShowSmsNudge(true);
-      }
-    }
-  }, [sessionUser]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !formRef.current) return;
@@ -593,13 +582,6 @@ export default function SubmitReviewPage() {
       }
     }
     return true;
-  }
-
-  function dismissSmsNudge() {
-    if (typeof window !== "undefined") {
-      window.sessionStorage.setItem(SMS_PROMPT_KEY, "1");
-    }
-    setShowSmsNudge(false);
   }
 
   const closeDuplicateModal = useCallback(() => {
@@ -986,52 +968,6 @@ export default function SubmitReviewPage() {
         </div>
       ) : null}
 
-      {showSmsNudge && isAuthed ? (
-        <div
-          className={`${modalBackdropClass} z-30`}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="sms-nudge-title"
-        >
-          <div className={modalDialogClass}>
-            <h2
-              id="sms-nudge-title"
-              className="text-lg font-semibold text-zinc-900"
-            >
-              Verify your phone on Profile?
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-600">
-              Add SMS verification under{" "}
-              <span className="font-medium">Profile</span> for SMS verified on your
-              reviews and <span className="font-medium">faster approval</span> (usually right
-              away when your review doesn&apos;t need manual checks). If you skip it,
-              we may take up to{" "}
-              <span className="font-medium">
-                {PRODUCT_POLICY.verification.unverifiedReviewSlaBusinessDays} business
-                days
-              </span>{" "}
-              to manually review new submissions.
-            </p>
-            <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-              <Link
-                href="/profile#verification"
-                className="inline-flex justify-center rounded-full bg-muted-blue px-5 py-2.5 text-sm font-semibold text-white hover:bg-muted-blue-hover"
-                onClick={dismissSmsNudge}
-              >
-                Verify in profile
-              </Link>
-              <button
-                type="button"
-                onClick={dismissSmsNudge}
-                className="inline-flex justify-center rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
-              >
-                Not now
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
       {isAuthed && atReviewCap ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950 ring-1 ring-amber-100">
           You&apos;ve used all {reviewQuota?.max ?? 10} review slots for your account.
@@ -1048,25 +984,40 @@ export default function SubmitReviewPage() {
       ) : null}
 
       {isAuthed && bostonFloor === null ? (
-        <div className={`${surfaceElevatedClass} space-y-4 p-6 sm:p-8`}>
-          <h2 className="text-lg font-semibold text-muted-blue-hover">
-            First, select the first year you started renting in Boston
-          </h2>
-          <p className="text-sm leading-relaxed text-zinc-600">
-            Before you submit a review, tell us the first calendar year you started
-            renting an apartment in Boston. We use this only to determine which years
-            you can review. Reviews are fully anonymous, and we do not show the exact
-            year you lived at each property. You can also complete this on{" "}
-            <Link href="/profile" className="font-semibold text-muted-blue hover:underline">
-              your profile
-            </Link>
-            .
-          </p>
-          <BostonRentingYearPickForm
-            yearChoices={getBostonRentingSinceYearChoices()}
-            submitLabel="Save and continue"
-            onSaved={(y) => setBostonFloor(y)}
-          />
+        <div className={`${modalBackdropClass} z-30`}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="submit-boston-year-title"
+            className={`${modalDialogClass} z-10 max-w-xl shadow-elevated`}
+          >
+            <h2
+              id="submit-boston-year-title"
+              className="text-lg font-semibold text-muted-blue-hover"
+            >
+              First, select the first year you started renting in Boston
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+              Before you submit a review, tell us the first calendar year you started
+              renting an apartment in Boston. We use this only to determine which years
+              you can review. Reviews are fully anonymous, and we do not show the exact
+              year you lived at each property. You can also complete this on{" "}
+              <Link
+                href="/profile"
+                className="font-semibold text-muted-blue hover:underline"
+              >
+                your profile
+              </Link>
+              .
+            </p>
+            <div className="mt-6">
+              <BostonRentingYearPickForm
+                yearChoices={getBostonRentingSinceYearChoices()}
+                submitLabel="Save and continue"
+                onSaved={(y) => setBostonFloor(y)}
+              />
+            </div>
+          </div>
         </div>
       ) : null}
 
