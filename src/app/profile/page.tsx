@@ -205,7 +205,29 @@ export default async function ProfilePage({ searchParams }: Props) {
               : "space-y-5"
           }
         >
-          <ProfileDisplayNameCard initialDisplayName={displayName} />
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch lg:gap-6">
+            <div className="min-w-0 flex-1">
+              <ProfileDisplayNameCard initialDisplayName={displayName} />
+            </div>
+            <SurfacePanel
+              variant="subtle"
+              as="section"
+              id="verification"
+              className="scroll-mt-24 lg:w-[min(100%,22rem)] lg:shrink-0"
+            >
+              <h2 className="text-base font-semibold text-muted-blue-hover">
+                Profile verification
+              </h2>
+              <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                SMS adds a verified badge and usually faster review approval.
+              </p>
+              <div className="mt-3">
+                <ProfileVerification
+                  initialVerified={Boolean(user?.phoneVerified)}
+                />
+              </div>
+            </SurfacePanel>
+          </div>
 
           {bostonRentingSinceYear != null ? (
             <SurfacePanel variant="subtle" as="section">
@@ -227,29 +249,14 @@ export default async function ProfilePage({ searchParams }: Props) {
             </SurfacePanel>
           ) : null}
 
-          <section className="grid gap-5 md:grid-cols-4">
-            <SurfacePanel variant="subtle" as="div" className="md:col-span-3">
-              <h2 className="text-base font-semibold text-muted-blue-hover">
-                Saved apartments
-              </h2>
-              <div className="mt-3">
-                <ProfileBookmarks />
-              </div>
-            </SurfacePanel>
-            <SurfacePanel
-              variant="subtle"
-              as="div"
-              id="verification"
-              className="scroll-mt-24"
-            >
-              <h2 className="text-base font-semibold text-muted-blue-hover">
-                Profile verification
-              </h2>
-              <div className="mt-3">
-                <ProfileVerification initialVerified={Boolean(user?.phoneVerified)} />
-              </div>
-            </SurfacePanel>
-          </section>
+          <SurfacePanel variant="subtle" as="section">
+            <h2 className="text-base font-semibold text-muted-blue-hover">
+              Saved apartments
+            </h2>
+            <div className="mt-3">
+              <ProfileBookmarks />
+            </div>
+          </SurfacePanel>
 
           {isAdmin ? (
             <SurfacePanel variant="muted">

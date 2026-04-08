@@ -68,6 +68,10 @@ export function ProfileDisplayNameCard({ initialDisplayName }: Props) {
         This is how you&apos;ll appear in the app (for example in the header). You
         can update it any time.
       </p>
+      <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+        Your public reviews stay <span className="font-semibold text-zinc-700">fully anonymous</span>{" "}
+        — we never show this name on review cards or tie it to an address.
+      </p>
       <form className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end" onSubmit={onSubmit}>
         <div className="min-w-0 flex-1">
           <label className="mb-1.5 block text-xs font-medium text-zinc-600">
