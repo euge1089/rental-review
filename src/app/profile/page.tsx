@@ -133,10 +133,7 @@ export default async function ProfilePage({ searchParams }: Props) {
             <span className="font-medium text-zinc-900">
               {formatYearsForMessage(eligibleYearsWithoutAnyReview)}
             </span>
-            . If a year was at the same building as a review you already wrote, add it
-            when you submit for that address again; if it was a different Boston
-            apartment, use a new review for that place. Lived in more than one spot?
-            Each building helps someone new.
+            .
           </p>
           <div className="mt-4">
             <Link
