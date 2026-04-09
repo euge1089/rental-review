@@ -126,18 +126,33 @@ function CountdownDisplay({
   );
 }
 
+function ModalGiftConfetti() {
+  return (
+    <div className="pointer-events-none absolute -inset-3 overflow-visible" aria-hidden>
+      <span className="absolute left-0 top-1 h-1.5 w-1.5 rounded-full bg-pop/30" />
+      <span className="absolute left-7 top-0 h-1 w-1 rounded-full bg-muted-blue/35" />
+      <span className="absolute left-10 top-5 h-1.5 w-1.5 rounded-full bg-muted-blue/25" />
+      <span className="absolute -left-0.5 bottom-2 h-1 w-1 rounded-full bg-pop/25" />
+      <span className="absolute bottom-0 left-6 h-1 w-1 rounded-full bg-muted-blue/30" />
+      <span className="absolute -right-1 top-3 h-1 w-1 rounded-full bg-pop/20" />
+    </div>
+  );
+}
+
 function EntryProgressBar({
   used,
   cap,
   signedIn,
   loading,
   excited,
+  modalTone,
 }: {
   used: number;
   cap: number;
   signedIn: boolean;
   loading: boolean;
   excited?: boolean;
+  modalTone?: boolean;
 }) {
   const clamped = Math.min(Math.max(0, used), cap);
   const pct = cap > 0 ? (clamped / cap) * 100 : 0;
@@ -151,8 +166,14 @@ function EntryProgressBar({
     ? "h-full rounded-full bg-gradient-to-r from-pop to-pop-hover transition-[width] duration-500 ease-out"
     : "h-full rounded-full bg-muted-blue transition-[width] duration-500 ease-out";
 
+  const topRule = excited
+    ? "border-t border-pop/20 pt-3"
+    : modalTone
+      ? "border-t border-muted-blue/15 pt-4"
+      : "border-t border-zinc-100 pt-4";
+
   return (
-    <div className={`${excited ? "border-t border-pop/20 pt-3" : "border-t border-zinc-100 pt-4"}`}>
+    <div className={topRule}>
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
         <p className={labelSm}>
           Giveaway entries{" "}
@@ -275,13 +296,82 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
   const isHome = variant === "home";
   const entriesUsed = reviewCount ?? 0;
 
-  const asideSurface = isModal
-    ? "rounded-2xl border-0 bg-white shadow-none"
-    : "rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_3px_rgb(15_23_42/0.06)]";
+  const asideSurface = "rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_3px_rgb(15_23_42/0.06)]";
 
-  const innerAccent = isModal
-    ? "flex px-1 py-1 sm:px-2 sm:py-2"
-    : "flex border-l-[3px] border-l-muted-blue pl-4 pr-4 py-4 sm:pl-5 sm:pr-5 sm:py-5";
+  const innerAccent =
+    "flex border-l-[3px] border-l-muted-blue pl-4 pr-4 py-4 sm:pl-5 sm:pr-5 sm:py-5";
+
+  if (isModal) {
+    return (
+      <aside
+        className={`overflow-hidden rounded-2xl border-0 bg-transparent shadow-none ${className}`}
+        aria-label="Monthly giveaway promotion"
+      >
+        <div className="relative">
+          <div
+            className="pointer-events-none absolute inset-x-0 -top-1 h-px bg-gradient-to-r from-transparent via-muted-blue/35 to-transparent"
+            aria-hidden
+          />
+          <div className="flex gap-3 sm:gap-4">
+            <div className="relative shrink-0">
+              <div
+                className="absolute -inset-2 rounded-2xl bg-muted-blue-tint/55 ring-1 ring-muted-blue/12"
+                aria-hidden
+              />
+              <ModalGiftConfetti />
+              <div
+                className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-white/90 text-muted-blue-hover shadow-sm ring-1 ring-muted-blue/20 sm:h-[3.25rem] sm:w-[3.25rem]"
+                aria-hidden
+              >
+                <GiftIcon className="text-muted-blue-hover" width={24} height={24} />
+              </div>
+            </div>
+            <div className="min-w-0 flex-1 pt-0.5">
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-blue-hover sm:text-[0.9375rem]">
+                April giveaway
+              </p>
+              <p className="mt-1 text-[1.75rem] font-extrabold leading-none tracking-tight text-muted-blue-hover sm:text-[2.125rem]">
+                $200
+              </p>
+              <p className="mt-2 text-pretty text-sm leading-snug text-zinc-700 sm:text-[0.9375rem]">
+                Boston dining gift cards — one quick anonymous review enters you.
+              </p>
+              <Link
+                href="/submit"
+                className="mt-3 flex w-full items-center justify-center rounded-lg bg-muted-blue px-4 py-2.5 text-center text-sm font-semibold text-white shadow-sm ring-1 ring-muted-blue/20 transition hover:bg-muted-blue-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-muted-blue"
+              >
+                Submit a review
+              </Link>
+              <p className="mt-2 text-center text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
+                <span className="text-muted-blue/90">100% anonymous</span>
+                <span className="mx-1.5 text-zinc-300" aria-hidden>
+                  |
+                </span>
+                takes 2 minutes
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-muted-blue/20 bg-muted-blue-tint/80 px-3.5 py-3 shadow-[inset_0_1px_0_rgb(255_255_255/0.65)] sm:px-4 sm:py-3.5">
+            <p className="text-sm font-semibold text-muted-blue-hover">Giveaway ends in</p>
+            <div className="mt-1">
+              <CountdownDisplay endMs={GIVEAWAY_PROMO_END_MS} large />
+            </div>
+            <p className="mt-1.5 text-xs text-zinc-500">Deadline April 30 · Eastern Time</p>
+          </div>
+
+          <EntryProgressBar
+            used={entriesUsed}
+            cap={GIVEAWAY_ENTRY_CAP}
+            signedIn={signedIn}
+            loading={signedIn && countLoading}
+            excited={false}
+            modalTone
+          />
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside
@@ -292,45 +382,23 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
         <div className="min-w-0 flex-1">
           <div
             className={
-              isHome && !isModal
+              isHome
                 ? "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-8"
-                : isModal
-                  ? "flex flex-col gap-3"
-                  : "flex flex-col gap-4"
+                : "flex flex-col gap-4"
             }
           >
-            <div className={`min-w-0 flex ${isModal ? "gap-3" : "gap-3.5"}`}>
+            <div className="min-w-0 flex gap-3.5">
               <div
-                className={
-                  isModal
-                    ? "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted-blue-tint/60 text-muted-blue-hover ring-1 ring-muted-blue/15"
-                    : "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted-blue-tint/60 text-muted-blue-hover ring-1 ring-muted-blue/15"
-                }
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted-blue-tint/60 text-muted-blue-hover ring-1 ring-muted-blue/15"
                 aria-hidden
               >
-                <GiftIcon
-                  className="text-muted-blue-hover"
-                  width={isModal ? 22 : 20}
-                  height={isModal ? 22 : 20}
-                />
+                <GiftIcon className="text-muted-blue-hover" />
               </div>
-              <div className={`min-w-0 ${isModal ? "pt-0" : "pt-0.5"}`}>
-                <p
-                  className={
-                    isModal
-                      ? "text-sm font-semibold uppercase tracking-[0.14em] text-zinc-600 sm:text-[0.9375rem]"
-                      : "text-xs font-semibold uppercase tracking-[0.15em] text-zinc-500"
-                  }
-                >
+              <div className="min-w-0 pt-0.5">
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-zinc-500">
                   April giveaway
                 </p>
-                <p
-                  className={
-                    isModal
-                      ? "mt-1.5 text-pretty text-[0.9375rem] leading-relaxed text-zinc-800 sm:text-base"
-                      : "mt-1.5 text-pretty text-sm leading-relaxed text-zinc-800 sm:text-[0.9375rem]"
-                  }
-                >
+                <p className="mt-1.5 text-pretty text-sm leading-relaxed text-zinc-800 sm:text-[0.9375rem]">
                   <strong className="font-semibold text-muted-blue-hover">$200</strong>{" "}
                   in Boston restaurant gift cards will be awarded — enter by sharing an{" "}
                   <strong className="font-semibold text-muted-blue-hover">anonymous</strong>{" "}
@@ -347,11 +415,9 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
 
             <div
               className={
-                isHome && !isModal
+                isHome
                   ? "flex shrink-0 items-center gap-2.5 rounded-xl border border-zinc-100 bg-zinc-50/80 px-3.5 py-2.5 lg:flex-col lg:items-stretch lg:gap-1"
-                  : isModal
-                    ? "flex w-full flex-col gap-1 rounded-xl bg-zinc-50 px-3.5 py-2.5"
-                    : "flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-zinc-50/80 px-3.5 py-2.5"
+                  : "flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-zinc-50/80 px-3.5 py-2.5"
               }
             >
               <div className="flex items-center gap-2 text-zinc-500">
@@ -360,7 +426,7 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
                   Ends Apr 30 · ET
                 </span>
               </div>
-              <CountdownDisplay endMs={GIVEAWAY_PROMO_END_MS} large={isModal} />
+              <CountdownDisplay endMs={GIVEAWAY_PROMO_END_MS} large={false} />
             </div>
           </div>
 

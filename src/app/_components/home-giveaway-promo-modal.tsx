@@ -68,15 +68,15 @@ export function HomeGiveawayPromoModal() {
         aria-label="Close promotion"
         onClick={dismiss}
       />
-      <div className="relative z-10 w-full max-w-[min(100%,24rem)] overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_20px_50px_-12px_rgb(15_23_42/0.18)] sm:max-w-lg">
+      <div className="relative z-10 w-full max-w-[min(100%,24rem)] overflow-hidden rounded-2xl border border-zinc-200/90 bg-[#f4f5f7] shadow-[0_1px_2px_rgb(15_23_42/0.04),0_8px_24px_-4px_rgb(15_23_42/0.1),0_20px_48px_-12px_rgb(15_23_42/0.12)] ring-1 ring-zinc-900/[0.04] sm:max-w-lg">
         <button
           type="button"
-          className="absolute right-2 top-2 z-20 rounded-full bg-white p-2 text-zinc-500 ring-1 ring-zinc-200/80 transition hover:bg-zinc-50 hover:text-zinc-800"
+          className="absolute right-1.5 top-1.5 z-20 rounded-full p-1.5 text-zinc-400 transition hover:bg-zinc-200/50 hover:text-zinc-600"
           aria-label="Close"
           onClick={dismiss}
         >
           <svg
-            className="h-5 w-5"
+            className="h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -85,16 +85,16 @@ export function HomeGiveawayPromoModal() {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
+              strokeWidth={1.5}
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
         </button>
-        <div className="relative px-2 pb-2 pt-10 sm:px-3 sm:pb-3 sm:pt-11">
+        <div className="relative px-2 pb-3 pt-9 sm:px-4 sm:pb-4 sm:pt-10">
           <span id="home-giveaway-promo-title" className="sr-only">
             April giveaway promotion
           </span>
-          <GiveawayPromoStrip variant="modal" className="border-0 bg-white shadow-none ring-0" />
+          <GiveawayPromoStrip variant="modal" className="border-0 bg-transparent shadow-none ring-0" />
         </div>
       </div>
     </div>
