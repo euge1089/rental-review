@@ -128,13 +128,12 @@ function CountdownDisplay({
 
 function ModalGiftConfetti() {
   return (
-    <div className="pointer-events-none absolute -inset-3 overflow-visible" aria-hidden>
-      <span className="absolute left-0 top-1 h-1.5 w-1.5 rounded-full bg-pop/30" />
-      <span className="absolute left-7 top-0 h-1 w-1 rounded-full bg-muted-blue/35" />
-      <span className="absolute left-10 top-5 h-1.5 w-1.5 rounded-full bg-muted-blue/25" />
-      <span className="absolute -left-0.5 bottom-2 h-1 w-1 rounded-full bg-pop/25" />
-      <span className="absolute bottom-0 left-6 h-1 w-1 rounded-full bg-muted-blue/30" />
-      <span className="absolute -right-1 top-3 h-1 w-1 rounded-full bg-pop/20" />
+    <div className="pointer-events-none absolute -inset-2 overflow-visible" aria-hidden>
+      <span className="absolute left-0 top-0.5 h-1 w-1 rounded-full bg-pop/28" />
+      <span className="absolute left-5 top-0 h-1 w-1 rounded-full bg-muted-blue/32" />
+      <span className="absolute left-7 top-4 h-1 w-1 rounded-full bg-muted-blue/22" />
+      <span className="absolute bottom-1 left-0 h-0.5 w-0.5 rounded-full bg-pop/22" />
+      <span className="absolute bottom-0 left-4 h-1 w-1 rounded-full bg-muted-blue/28" />
     </div>
   );
 }
@@ -200,9 +199,8 @@ function EntryProgressBar({
                   : `${linkInlineClass} font-medium`
               }
             >
-              Sign in
-            </Link>{" "}
-            to track yours
+              Sign in to track entries
+            </Link>
           </p>
         )}
       </div>
@@ -312,21 +310,21 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
             className="pointer-events-none absolute inset-x-0 -top-1 h-px bg-gradient-to-r from-transparent via-muted-blue/35 to-transparent"
             aria-hidden
           />
-          <div className="flex gap-3 sm:gap-4">
+          <div className="flex gap-2.5 sm:gap-3">
             <div className="relative shrink-0">
               <div
-                className="absolute -inset-2 rounded-2xl bg-muted-blue-tint/55 ring-1 ring-muted-blue/12"
+                className="absolute -inset-1 rounded-xl bg-muted-blue-tint/50"
                 aria-hidden
               />
               <ModalGiftConfetti />
               <div
-                className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-white/90 text-muted-blue-hover shadow-sm ring-1 ring-muted-blue/20 sm:h-[3.25rem] sm:w-[3.25rem]"
+                className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-white/95 text-muted-blue-hover shadow-sm sm:h-11 sm:w-11"
                 aria-hidden
               >
-                <GiftIcon className="text-muted-blue-hover" width={24} height={24} />
+                <GiftIcon className="text-muted-blue-hover" width={20} height={20} />
               </div>
             </div>
-            <div className="min-w-0 flex-1 pt-0.5">
+            <div className="min-w-0 flex-1 pt-0.5 sm:pl-0.5">
               <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-blue-hover sm:text-[0.9375rem]">
                 April giveaway
               </p>
@@ -338,15 +336,13 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
               </p>
               <Link
                 href="/submit"
-                className="mt-3 flex w-full items-center justify-center rounded-lg bg-muted-blue px-4 py-2.5 text-center text-sm font-semibold text-white shadow-sm ring-1 ring-muted-blue/20 transition hover:bg-muted-blue-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-muted-blue"
+                className="mt-3 flex w-full min-h-[2.875rem] items-center justify-center rounded-lg bg-muted-blue px-4 py-3 text-center text-sm font-semibold text-white shadow-sm ring-1 ring-muted-blue/20 transition hover:bg-muted-blue-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-muted-blue"
               >
                 Submit a review
               </Link>
               <p className="mt-2 text-center text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
                 <span className="text-muted-blue/90">100% anonymous</span>
-                <span className="mx-1.5 text-zinc-300" aria-hidden>
-                  |
-                </span>
+                {", "}
                 takes 2 minutes
               </p>
             </div>

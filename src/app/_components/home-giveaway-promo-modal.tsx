@@ -68,7 +68,7 @@ export function HomeGiveawayPromoModal() {
         aria-label="Close promotion"
         onClick={dismiss}
       />
-      <div className="relative z-10 w-full max-w-[min(100%,24rem)] overflow-hidden rounded-2xl border border-zinc-200/90 bg-[#f4f5f7] shadow-[0_1px_2px_rgb(15_23_42/0.04),0_8px_24px_-4px_rgb(15_23_42/0.1),0_20px_48px_-12px_rgb(15_23_42/0.12)] ring-1 ring-zinc-900/[0.04] sm:max-w-lg">
+      <div className="relative z-10 w-full max-w-[min(100%,21.5rem)] overflow-hidden rounded-2xl border border-zinc-200/90 bg-[#f4f5f7] shadow-[0_1px_2px_rgb(15_23_42/0.04),0_8px_24px_-4px_rgb(15_23_42/0.1),0_20px_48px_-12px_rgb(15_23_42/0.12)] ring-1 ring-zinc-900/[0.04] sm:max-w-[25rem]">
         <button
           type="button"
           className="absolute right-1.5 top-1.5 z-20 rounded-full p-1.5 text-zinc-400 transition hover:bg-zinc-200/50 hover:text-zinc-600"
