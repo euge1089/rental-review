@@ -164,16 +164,8 @@ export function HomePageSections({
             />
           ) : null}
           <div className={heroInnerClass}>
-            {homeGiveawaySignedIn ? (
-              <GiveawayPromoStrip
-                variant="home"
-                className={
-                  fw ? "relative z-[1] mb-8 lg:mb-10" : "relative z-[1] mb-8"
-                }
-              />
-            ) : (
-              <HomeGiveawayPromoModal />
-            )}
+            {/* Giveaway intentionally shown only on /submit for now. */}
+            {null}
             <div
               className={
                 fw
