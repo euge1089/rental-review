@@ -8,6 +8,7 @@ import {
   AppPageShell,
   PageHeader,
 } from "@/app/_components/app-page-shell";
+import { bedroomCountToBand } from "@/lib/analytics";
 import type { AdminReviewPayload } from "@/lib/serialization";
 import { formInputCompactClass, linkMutedClass, surfaceSubtleClass } from "@/lib/ui-classes";
 
@@ -327,6 +328,9 @@ function AdminReviewsInner() {
               </div>
               <p className="mt-1 text-xs text-zinc-500">
                 Year {review.reviewYear}
+                {typeof review.bedroomCount === "number"
+                  ? ` · ${bedroomCountToBand(review.bedroomCount)}`
+                  : " · bedrooms unknown"}
                 {typeof review.monthlyRent === "number"
                   ? ` · currently $${review.monthlyRent.toLocaleString()} / month on site`
                   : " · rent not provided"}

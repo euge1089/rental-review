@@ -5,6 +5,7 @@ import {
   AppPageShell,
   PageHeader,
 } from "@/app/_components/app-page-shell";
+import { bedroomCountToBand } from "@/lib/analytics";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { linkInlineClass, surfaceSubtleClass } from "@/lib/ui-classes";
@@ -282,6 +283,9 @@ export default async function AdminDashboardPage() {
                   </div>
                   <p className="mt-1 text-[11px] text-zinc-600">
                     Year {r.reviewYear}
+                    {typeof r.bedroomCount === "number"
+                      ? ` · ${bedroomCountToBand(r.bedroomCount)}`
+                      : ""}
                     {typeof r.monthlyRent === "number"
                       ? ` · $${r.monthlyRent.toLocaleString()}/month`
                       : ""}

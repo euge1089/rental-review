@@ -50,6 +50,7 @@ export async function GET(request: Request) {
       userId: review.userId,
       reviewYear: review.reviewYear,
       monthlyRent: review.monthlyRent,
+      bedroomCount: review.bedroomCount,
       bathrooms: review.bathrooms,
       unit: review.unit,
       overallScore: review.overallScore,

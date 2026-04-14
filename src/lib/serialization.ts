@@ -12,6 +12,8 @@ export type AdminReviewPayload = {
   userId: string;
   reviewYear: number;
   monthlyRent: number | null;
+  /** 0 studio, 1–4 beds, 5 = 5+; null = unknown */
+  bedroomCount: number | null;
   bathrooms: number | null;
   unit: string | null;
   overallScore: number | null;
@@ -72,6 +74,7 @@ export function serializeReviewForAdmin(input: {
   userId: string;
   reviewYear: number;
   monthlyRent: number | null;
+  bedroomCount: number | null;
   bathrooms: number | null;
   unit: string | null;
   overallScore: number | null;
@@ -96,6 +99,7 @@ export function serializeReviewForAdmin(input: {
     userId: input.userId,
     reviewYear: input.reviewYear,
     monthlyRent: input.monthlyRent,
+    bedroomCount: input.bedroomCount,
     bathrooms: input.bathrooms,
     unit: input.unit,
     overallScore: input.overallScore,
