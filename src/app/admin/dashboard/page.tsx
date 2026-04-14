@@ -109,6 +109,9 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/users" className={linkInlineClass}>
             Users →
           </Link>
+          <Link href="/admin/retention" className={linkInlineClass}>
+            Retention emails →
+          </Link>
         </div>
       </div>
 

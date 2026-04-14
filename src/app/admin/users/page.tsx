@@ -66,6 +66,9 @@ export default async function AdminUsersPage() {
           <Link href="/admin/dashboard" className={linkMutedClass}>
             Dashboard
           </Link>
+          <Link href="/admin/retention" className={linkMutedClass}>
+            Retention emails
+          </Link>
           <Link href="/admin/reviews" className={`${linkInlineClass} font-semibold`}>
             All reviews →
           </Link>

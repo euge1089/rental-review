@@ -143,6 +143,9 @@ function AdminReviewsInner() {
           <Link href="/admin/dashboard" className={linkMutedClass}>
             Dashboard
           </Link>
+          <Link href="/admin/retention" className={linkMutedClass}>
+            Retention emails
+          </Link>
           <Link href="/admin/users" className={`${linkMutedClass} font-semibold`}>
             Users →
           </Link>
