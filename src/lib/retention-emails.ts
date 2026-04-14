@@ -246,7 +246,7 @@ export async function sendLeaseYearGapReminderEmail(
     "",
     `Thanks again for reviewing - it helps. You’re set as renting in Boston since ${args.bostonRentingSinceYear}; you can still add reviews for other lease-start years you’re eligible for (e.g. ${examples}).`,
     "",
-    "Same anonymity as before. " + privacyOneLiner(),
+    "Same anonymity as before. Your name and lease year are never published and always kept secure.",
     "",
     submit,
     "",
