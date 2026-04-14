@@ -7,6 +7,11 @@ const schema = z.object({
   action: z.enum(["APPROVED", "REJECTED"]),
 });
 
+const patchSchema = z.object({
+  /** Whole-dollar total monthly rent for the unit (not per bedroom). */
+  monthlyRent: z.number().int().min(0),
+});
+
 type Params = {
   params: Promise<{ id: string }>;
 };
@@ -53,5 +58,46 @@ export async function DELETE(_request: Request, { params }: Params) {
   }
 
   return NextResponse.json({ ok: true });
+}
+
+export async function PATCH(request: Request, { params }: Params) {
+  const auth = await requireAdminSession();
+  if (!auth.ok) return auth.response;
+
+  const { id } = await params;
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "Invalid JSON body." },
+      { status: 400 },
+    );
+  }
+
+  const parsed = patchSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, error: "Expected { monthlyRent: number } (whole dollars, ≥ 0)." },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const updated = await prisma.review.update({
+      where: { id },
+      data: { monthlyRent: parsed.data.monthlyRent },
+    });
+    return NextResponse.json({
+      ok: true,
+      reviewId: updated.id,
+      monthlyRent: updated.monthlyRent,
+    });
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "Review not found." },
+      { status: 404 },
+    );
+  }
 }
 

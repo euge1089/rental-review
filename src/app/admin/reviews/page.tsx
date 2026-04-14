@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -9,6 +10,99 @@ import {
 } from "@/app/_components/app-page-shell";
 import type { AdminReviewPayload } from "@/lib/serialization";
 import { formInputCompactClass, linkMutedClass, surfaceSubtleClass } from "@/lib/ui-classes";
+
+function AdminMonthlyRentField({
+  reviewId,
+  monthlyRent,
+  disabled,
+  onSaved,
+  onError,
+}: {
+  reviewId: string;
+  monthlyRent: number | null;
+  disabled: boolean;
+  onSaved: (monthlyRent: number) => void;
+  onError: (message: string) => void;
+}) {
+  const [value, setValue] = useState(
+    monthlyRent != null ? String(monthlyRent) : "",
+  );
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setValue(monthlyRent != null ? String(monthlyRent) : "");
+  }, [reviewId, monthlyRent]);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    const trimmed = value.trim();
+    if (trimmed === "") {
+      onError("Enter a whole-dollar amount (or 0).");
+      return;
+    }
+    const n = Number(trimmed);
+    if (!Number.isInteger(n) || n < 0) {
+      onError("Rent must be a whole number ≥ 0 (total per unit, not per room).");
+      return;
+    }
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/admin/reviews/${reviewId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ monthlyRent: n }),
+      });
+      const result = (await response.json()) as {
+        ok: boolean;
+        monthlyRent?: number | null;
+        error?: string;
+      };
+      if (!result.ok) {
+        onError(result.error ?? "Could not update rent.");
+        return;
+      }
+      if (typeof result.monthlyRent === "number") {
+        onSaved(result.monthlyRent);
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form
+      className="mt-2 flex flex-wrap items-end gap-2"
+      onSubmit={(e) => void onSubmit(e)}
+    >
+      <div>
+        <label
+          htmlFor={`admin-rent-${reviewId}`}
+          className="block text-[11px] font-medium uppercase tracking-wide text-zinc-500"
+        >
+          Monthly rent (total unit, $)
+        </label>
+        <input
+          id={`admin-rent-${reviewId}`}
+          type="number"
+          min={0}
+          step={1}
+          inputMode="numeric"
+          className={`${formInputCompactClass} mt-1 w-[8.5rem]`}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          disabled={disabled || saving}
+        />
+      </div>
+      <button
+        type="submit"
+        className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 text-xs font-semibold text-muted-blue-hover hover:bg-muted-blue-tint/40 disabled:opacity-60 sm:min-h-9"
+        disabled={disabled || saving}
+      >
+        {saving ? "Saving…" : "Save rent"}
+      </button>
+    </form>
+  );
+}
 
 function AdminReviewsInner() {
   const searchParams = useSearchParams();
@@ -134,8 +228,9 @@ function AdminReviewsInner() {
           description={
             <p className="mt-1 max-w-xl text-sm text-zinc-600">
               Search across addresses, emails, names, and review text. Approve,
-              reject, or delete any review. Use the Users page to jump here filtered
-              by account.
+              reject, delete, or correct monthly rent (whole-dollar{" "}
+              <span className="font-medium text-zinc-700">total for the unit</span>
+              ). Use the Users page to jump here filtered by account.
             </p>
           }
         />
@@ -231,11 +326,25 @@ function AdminReviewsInner() {
                 </span>
               </div>
               <p className="mt-1 text-xs text-zinc-500">
-                Year {review.reviewYear} ·{" "}
+                Year {review.reviewYear}
                 {typeof review.monthlyRent === "number"
-                  ? `$${review.monthlyRent.toLocaleString()} / month`
-                  : "Rent not provided"}
+                  ? ` · currently $${review.monthlyRent.toLocaleString()} / month on site`
+                  : " · rent not provided"}
               </p>
+              <AdminMonthlyRentField
+                reviewId={review.id}
+                monthlyRent={review.monthlyRent}
+                disabled={updatingId === review.id || deletingId === review.id}
+                onSaved={(monthlyRent) => {
+                  setReviews((current) =>
+                    current.map((r) =>
+                      r.id === review.id ? { ...r, monthlyRent } : r,
+                    ),
+                  );
+                  setStatusMessage("Rent updated.");
+                }}
+                onError={(message) => setStatusMessage(message)}
+              />
               {review.body ? (
                 <p className="mt-2 leading-6">{review.body}</p>
               ) : (
