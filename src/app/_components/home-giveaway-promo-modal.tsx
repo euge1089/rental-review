@@ -7,7 +7,7 @@ import { modalBackdropClass } from "@/lib/ui-classes";
 
 /**
  * Once per browser session: the promo is offered on the first visit to the home page only.
- * Navigating away and back without closing still counts — we set this when we open the modal.
+ * Navigating away and back without closing still counts - we set this when we open the modal.
  */
 const SESSION_FIRST_HOME_VISIT_KEY = "rr_home_giveaway_promo_first_home_done";
 

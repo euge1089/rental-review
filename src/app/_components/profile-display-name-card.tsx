@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { formInputClass } from "@/lib/ui-classes";
 
 const ANONYMOUS_COPY =
-  "Your public reviews stay fully anonymous — we never show this name on review cards or tie it to an address.";
+  "Your public reviews stay fully anonymous - we never show this name on review cards or tie it to an address.";
 
 type Props = {
   initialDisplayName: string | null;

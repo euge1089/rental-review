@@ -313,7 +313,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* Intro — always readable */}
+      {/* Intro - always readable */}
       <section
         className={`${surfaceElevatedClass} p-4 sm:p-6 md:p-8`}
       >
@@ -338,7 +338,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           className={`flex flex-col gap-10 ${explorerLocked ? "pointer-events-none select-none blur-md" : ""}`}
           aria-hidden={explorerLocked}
         >
-      {/* Filters — elevated slab like hero / sign-in panels */}
+      {/* Filters - elevated slab like hero / sign-in panels */}
       <section
         className={`${surfaceElevatedClass} space-y-5 p-4 sm:space-y-6 sm:p-6 md:p-8`}
       >
@@ -540,7 +540,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
               </h2>
               <p className="mt-2 max-w-2xl text-sm text-zinc-600">
                 Based on reviews that match what you picked. One apartment can be higher
-                or lower than these — they&apos;re averages and ranges, not guarantees.
+                or lower than these - they&apos;re averages and ranges, not guarantees.
               </p>
             </div>
 
@@ -552,7 +552,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 <p className="mt-2 text-2xl font-semibold tabular-nums text-muted-blue-hover">
                   {typeof snapshot.median === "number"
                     ? `$${snapshot.median.toLocaleString()}`
-                    : "—"}
+                    : "-"}
                 </p>
                 <p className="mt-1 text-xs text-zinc-500">
                   {rangeLine ?? `n = ${snapshot.n.toLocaleString()}`}
@@ -607,7 +607,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
             {lowData ? (
               <p className="mt-6 rounded-xl border border-amber-200/80 bg-amber-50/90 px-4 py-3 text-xs text-amber-900">
-                Only a few reviews so far — take these numbers as a rough idea, not a
+                Only a few reviews so far - take these numbers as a rough idea, not a
                 firm answer.
               </p>
             ) : null}

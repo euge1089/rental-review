@@ -94,7 +94,7 @@ export function ProfileReviewsGrouped({ reviews, reviewTotalCount }: Props) {
         {atCap ? (
           <span className="font-medium text-amber-800">
             {" "}
-            — at your limit; edit or remove a review to add a new address or year.
+            - at your limit; edit or remove a review to add a new address or year.
           </span>
         ) : null}
         .

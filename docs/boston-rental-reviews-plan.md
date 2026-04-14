@@ -30,7 +30,7 @@ isProject: false
 
 ## Problem and positioning
 
-**Promise:** Help Boston renters avoid bad situations and price blind spots by combining **property-level experiences**, **historical rent signals**, and **optional utility/context**—with enough **trust and anti-spam** that the signal stays credible.
+**Promise:** Help Boston renters avoid bad situations and price blind spots by combining **property-level experiences**, **historical rent signals**, and **optional utility/context**-with enough **trust and anti-spam** that the signal stays credible.
 
 **Differentiation vs generic review sites:** Hyper-local (Boston metro), **address-level** truth (not just "neighborhood vibes"), **structured data** (rent, dates, unit type), and **renter-first** norms (not landlord marketing).
 
@@ -48,10 +48,10 @@ isProject: false
 
 **Recommended pattern:**
 
-- **Public/teaser layer:** Address exists, **aggregate teaser only** (e.g. "Several reviews · rent reports available" or star band without text), or **first sentence blur**—enough to prove the site has data, not enough to replace signup.
+- **Public/teaser layer:** Address exists, **aggregate teaser only** (e.g. "Several reviews · rent reports available" or star band without text), or **first sentence blur**-enough to prove the site has data, not enough to replace signup.
 - **Authenticated layer:** Full reviews, rent charts, filters, saved addresses.
 
-**Caveat — SEO and growth:** If *everything* valuable is behind login, **organic search** may underperform. Mitigate with **indexable** marketing pages (how it works, Boston rental guides, neighborhood list pages with **non-sensitive** stats or editorial content) and/or limited public snippets. Decide explicitly: **growth via SEO** vs **growth via referrals/social** (gated works better for the latter).
+**Caveat - SEO and growth:** If *everything* valuable is behind login, **organic search** may underperform. Mitigate with **indexable** marketing pages (how it works, Boston rental guides, neighborhood list pages with **non-sensitive** stats or editorial content) and/or limited public snippets. Decide explicitly: **growth via SEO** vs **growth via referrals/social** (gated works better for the latter).
 
 ---
 
@@ -105,7 +105,7 @@ For a **simple, high-conversion** product aimed at **21–40 renters**, **mandat
 2. **Optional upgrade:** **"Verified renter"** badge if the user **chooses** to upload a **redacted** lease snippet or utility bill (manual or sampled review). Use this for **sorting weight** or a visible badge, not as a hard gate.
 3. **Revisit mandatory docs** only if data quality or abuse metrics justify it after you have real usage.
 
-**Government ID** (separate from lease/utility) can sit in the same **optional** "verified" tier: powerful for trust, but **heavy** on cost, privacy, and support—reasonable as an **upgrade**, not a default for 21–40 renters signing up in two taps.
+**Government ID** (separate from lease/utility) can sit in the same **optional** "verified" tier: powerful for trust, but **heavy** on cost, privacy, and support-reasonable as an **upgrade**, not a default for 21–40 renters signing up in two taps.
 
 **If you use ID verification at all**, treat it like lease/utility: **optional badge**, vendor-handled where possible, minimal retention. It is powerful but heavy:
 
@@ -141,7 +141,7 @@ Your intent: limit **review bombing** and **sock puppets**.
 **Clarify the rule in product terms (decision needed later):**
 
 - **Per user, per normalized address, per rolling 12 months:** One published review (edits may or may not reset clock). This is easy to explain and enforce.
-- **"Years lived in Boston" as a cap:** Risky as the *only* limiter—new residents have zero years; long-timers could spam many addresses. Better as a **profile trust signal** ("claimed 4 years in Boston") than as the sole throttle.
+- **"Years lived in Boston" as a cap:** Risky as the *only* limiter-new residents have zero years; long-timers could spam many addresses. Better as a **profile trust signal** ("claimed 4 years in Boston") than as the sole throttle.
 
 **Additional abuse controls that work well in practice:**
 
@@ -168,7 +168,7 @@ Your intent: limit **review bombing** and **sock puppets**.
 - **SLAPP / retaliation:** Document retention and user safety (optional pseudonymity for display name with verified backend identity).
 - **Terms of service:** Prohibited content, DMCA if you allow images, arbitration clause only if counsel agrees.
 
-This is a **consult-a-lawyer** area for Massachusetts-specific nuance—not something to improvise from a template alone at scale.
+This is a **consult-a-lawyer** area for Massachusetts-specific nuance-not something to improvise from a template alone at scale.
 
 ---
 
@@ -188,7 +188,7 @@ This is a **consult-a-lawyer** area for Massachusetts-specific nuance—not some
 - **Utility bands** (electric gas water) as optional structured fields.
 - **Tour checklist** PDF or shareable link from a property page ("questions to ask").
 - **Email alert** when a saved address gets a new review.
-- **Neighborhood landing pages** (SEO + browsing): median rent, top issue tags—not demographic steering.
+- **Neighborhood landing pages** (SEO + browsing): median rent, top issue tags-not demographic steering.
 
 **Trust and depth:**
 
@@ -240,4 +240,4 @@ These choices materially affect **legal review**, **DB design**, and **UX**.
 
 ## Summary
 
-The idea is **strong** if you pair **structured, address-level data** with **clear anti-spam rules**, **moderation**, and **legal groundwork**. For **21–40 renters**, optimize a **simple mobile path**: **Google OAuth**, **short forms**, and **gated** full results to drive signups—while planning **public marketing/SEO** so discovery does not die behind the wall. **Do not require** lease or utility bills for baseline reviews; offer **optional "verified renter"** (redacted docs) for credibility and sorting. Lead with **rate limits and reporting**; add **stronger verification** only as a **badge**, not a gate. Refine the "one review per year" rule to **per user per property** and use **years in Boston** as a **signal**, not the only throttle. Layer **rent/utilities aggregates**, **alerts**, and **neighborhood** content to drive repeat use beyond a single search.
+The idea is **strong** if you pair **structured, address-level data** with **clear anti-spam rules**, **moderation**, and **legal groundwork**. For **21–40 renters**, optimize a **simple mobile path**: **Google OAuth**, **short forms**, and **gated** full results to drive signups-while planning **public marketing/SEO** so discovery does not die behind the wall. **Do not require** lease or utility bills for baseline reviews; offer **optional "verified renter"** (redacted docs) for credibility and sorting. Lead with **rate limits and reporting**; add **stronger verification** only as a **badge**, not a gate. Refine the "one review per year" rule to **per user per property** and use **years in Boston** as a **signal**, not the only throttle. Layer **rent/utilities aggregates**, **alerts**, and **neighborhood** content to drive repeat use beyond a single search.

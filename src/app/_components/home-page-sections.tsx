@@ -118,7 +118,7 @@ export function HomePageSections({
   }[] = [
     { value: statReviews, label: "Renter reviews live" },
     {
-      value: bostonPropertyCount > 0 ? String(bostonPropertyCount) : "—",
+      value: bostonPropertyCount > 0 ? String(bostonPropertyCount) : "-",
       label: "Boston addresses on the map",
     },
     { value: "100%", label: "Renter-written, not broker copy" },
@@ -147,7 +147,7 @@ export function HomePageSections({
             : "mx-auto flex w-full min-w-0 max-w-6xl flex-col px-4 pb-0 pt-8 sm:px-8 sm:pt-14"
         }
       >
-        {/* Hero — elevated panel + soft depth (Elise-style clean slab) */}
+        {/* Hero - elevated panel + soft depth (Elise-style clean slab) */}
         <section className={heroSectionClass}>
           <div
             className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-muted-blue-tint/70 blur-3xl"
@@ -220,7 +220,7 @@ export function HomePageSections({
                       : "mx-auto mt-4 max-w-2xl text-pretty text-[0.875rem] leading-relaxed text-zinc-600 sm:mx-0 sm:mt-5 sm:text-[0.975rem] sm:leading-relaxed"
                   }
                 >
-                  See what landlords don&apos;t tell you — real rent increases, honest
+                  See what landlords don&apos;t tell you - real rent increases, honest
                   tenant reviews, and hidden red flags, all{" "}
                   <strong>fully anonymous</strong>.
                 </p>
@@ -291,7 +291,7 @@ export function HomePageSections({
           </div>
         </section>
 
-        {/* Stats — dark band for page rhythm */}
+        {/* Stats - dark band for page rhythm */}
         {fw ? (
           <section className="w-full overflow-hidden border-b border-white/10 bg-muted-blue-hover pt-12 pb-14 shadow-elevated lg:pt-14 lg:pb-16">
             <div className="mx-auto w-full max-w-[min(88rem,calc(100%-2rem))] px-8 sm:px-12 xl:px-20">
@@ -346,7 +346,7 @@ export function HomePageSections({
 
         <HomeDivider fw={fw} />
 
-        {/* Feature trio — top-accent cards, borderless elevation */}
+        {/* Feature trio - top-accent cards, borderless elevation */}
         <section
           className={
             fw
@@ -381,7 +381,7 @@ export function HomePageSections({
                     : "mt-3 max-w-2xl text-base leading-relaxed text-zinc-600"
                 }
               >
-                Three things listing sites won&apos;t give you — because they&apos;re not
+                Three things listing sites won&apos;t give you - because they&apos;re not
                 on your side of the lease.
               </p>
             </div>
@@ -441,7 +441,7 @@ export function HomePageSections({
                   eyebrow: "Real life",
                   lead: "Catch the red flags",
                   leadAccent: "before you tour",
-                  rest: "Heat, noise, pests, deposits — the stuff you usually learn after you've already moved in.",
+                  rest: "Heat, noise, pests, deposits - the stuff you usually learn after you've already moved in.",
                 },
                 {
                   eyebrow: "Real privacy",
@@ -504,7 +504,7 @@ export function HomePageSections({
 
         <HomeDivider fw={fw} />
 
-        {/* How it works — solid neutral blue-gray (no gradient) */}
+        {/* How it works - solid neutral blue-gray (no gradient) */}
         <section
           id="how-it-works"
           className={
@@ -533,7 +533,7 @@ export function HomePageSections({
                   : "mt-2 max-w-2xl text-base leading-relaxed text-zinc-700"
               }
             >
-              From search to signing — with better information at every step.
+              From search to signing - with better information at every step.
             </p>
             <div
               className={
@@ -546,7 +546,7 @@ export function HomePageSections({
                 {
                   n: "1",
                   title: "Sign in to unlock detail",
-                  body: "Exact rent, scores, amenities, and full review text — no paywall, just Google.",
+                  body: "Exact rent, scores, amenities, and full review text - no paywall, just Google.",
                   foot: "Takes under a minute",
                 },
                 {
@@ -571,7 +571,7 @@ export function HomePageSections({
                 {
                   n: "4",
                   title: "Share your experience",
-                  body: "Add your review and help the next person dodge a bad lease — or find a great one.",
+                  body: "Add your review and help the next person dodge a bad lease - or find a great one.",
                   foot: (
                     <Link
                       href="/submit"
@@ -731,7 +731,7 @@ export function HomePageSections({
                   }
                 >
                   Amenities from reviews: in-unit laundry, parking, pets, heat and AC,
-                  outdoor space, and more—whatever past renters checked off.
+                  outdoor space, and more - whatever past renters checked off.
                 </p>
                 <p
                   className={
@@ -752,7 +752,7 @@ export function HomePageSections({
           </SectionMaxW>
         </section>
 
-        {/* South Boston proof — dark band (matches At a glance rhythm) */}
+        {/* South Boston proof - dark band (matches At a glance rhythm) */}
         {southBostonTop.length > 0 ? (
           <section
             className={
@@ -880,7 +880,7 @@ export function HomePageSections({
 
         <HomeKeywordStrip fw={fw} />
 
-        {/* Closing CTA — dark slab + subtle highlight */}
+        {/* Closing CTA - dark slab + subtle highlight */}
         <section
           className={
             fw
@@ -920,7 +920,7 @@ export function HomePageSections({
                       : "mt-2 max-w-xl text-sm leading-relaxed text-zinc-400"
                   }
                 >
-                  Share what you paid and how it went — your review shifts the picture for
+                  Share what you paid and how it went - your review shifts the picture for
                   everyone who comes after you.
                 </p>
               </div>

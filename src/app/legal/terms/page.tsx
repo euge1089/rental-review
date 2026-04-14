@@ -79,7 +79,7 @@ export default function TermsPage() {
             <p>
               Reviews are user opinions and experiences, not professional inspections
               or legal conclusions. Final Terms often include disclaimers of warranties
-              and a liability cap—your lawyer should tailor those.
+              and a liability cap - your lawyer should tailor those.
             </p>
           </section>
 

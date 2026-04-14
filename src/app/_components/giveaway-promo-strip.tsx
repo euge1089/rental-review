@@ -107,7 +107,7 @@ function CountdownDisplay({
         className={`tabular-nums text-zinc-400 ${large ? "text-base" : "text-sm"}`}
         aria-hidden
       >
-        — · — · — · —
+        - · - · - · -
       </span>
     );
   }
@@ -332,7 +332,7 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
                 $200
               </p>
               <p className="mt-2 text-pretty text-sm leading-snug text-zinc-700 sm:text-[0.9375rem]">
-                Boston dining gift cards — one quick anonymous review enters you.
+                Boston dining gift cards - one quick anonymous review enters you.
               </p>
               <Link
                 href="/submit"
@@ -343,7 +343,7 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
               <p className="mt-2 text-center text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
                 <span className="text-muted-blue/90">100% anonymous</span>
                 {", "}
-                takes 2 minutes
+                takes about a minute
               </p>
             </div>
           </div>
@@ -396,7 +396,7 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
                 </p>
                 <p className="mt-1.5 text-pretty text-sm leading-relaxed text-zinc-800 sm:text-[0.9375rem]">
                   <strong className="font-semibold text-muted-blue-hover">$200</strong>{" "}
-                  in Boston restaurant gift cards will be awarded — enter by sharing an{" "}
+                  in Boston restaurant gift cards will be awarded - enter by sharing an{" "}
                   <strong className="font-semibold text-muted-blue-hover">anonymous</strong>{" "}
                   rental review.{" "}
                   <Link

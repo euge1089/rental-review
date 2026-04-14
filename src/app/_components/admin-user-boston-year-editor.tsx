@@ -89,7 +89,7 @@ export function AdminUserBostonYearEditor({ userId, current }: Props) {
       {current != null ? (
         <p className="text-[10px] text-zinc-500">Saved: {current}</p>
       ) : (
-        <p className="text-[10px] text-amber-700">Not set — user sees profile gate</p>
+        <p className="text-[10px] text-amber-700">Not set - user sees profile gate</p>
       )}
       {error ? (
         <p className="text-[11px] text-red-600" role="alert">

@@ -1,4 +1,4 @@
-/** Logged-out / public API: no rent, scores, unit, or full body — aligns with teaser-only positioning. */
+/** Logged-out / public API: no rent, scores, unit, or full body - aligns with teaser-only positioning. */
 export type PublicReviewPayload = {
   id: string;
   reviewTimeBucket: string;

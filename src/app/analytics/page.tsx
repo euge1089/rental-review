@@ -32,7 +32,7 @@ export default async function AnalyticsPage() {
         description={
           <>
             <p>
-              Pick a ZIP, bedrooms, and budget to see rent amounts from real reviews —
+              Pick a ZIP, bedrooms, and budget to see rent amounts from real reviews -
               useful for getting a feel for the market, not for locking in an exact
               number.
             </p>
@@ -44,7 +44,7 @@ export default async function AnalyticsPage() {
       />
       <RentExplorer userReviewCount={userReviewCount} />
       <p className="text-center text-xs leading-relaxed text-zinc-500 sm:text-left">
-        Still new — double-check rent and lease details with the landlord before you
+        Still new - double-check rent and lease details with the landlord before you
         decide.
       </p>
     </AppPageShell>

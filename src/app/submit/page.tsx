@@ -310,7 +310,7 @@ export default function SubmitReviewPage() {
           );
           window.history.replaceState(null, "", "/submit");
           setStatusMessage(
-            "We filled in your building from last time — pick your lease-start year(s) and rent for each.",
+            "We filled in your building from last time - pick your lease-start year(s) and rent for each.",
           );
           setStep(1);
           setTimeout(() => {
@@ -474,7 +474,7 @@ export default function SubmitReviewPage() {
     setAnotherYearPrefill(null);
     setStep(1);
     setStatusMessage(
-      "We kept your place details — pick lease-start year(s) and rent for each.",
+      "We kept your place details - pick lease-start year(s) and rent for each.",
     );
     setTimeout(() => persistDraft({ overall: null, landlord: null }), 0);
     requestAnimationFrame(() => {
@@ -883,7 +883,7 @@ export default function SubmitReviewPage() {
       setStatusMessage(
         result.userMessage ??
           (result.moderationStatus === "PENDING_REVIEW"
-            ? "Submitted — your review is being reviewed."
+            ? "Submitted - your review is being reviewed."
             : "Submitted successfully."),
       );
       setLastSubmittedBatchCount(
@@ -951,7 +951,7 @@ export default function SubmitReviewPage() {
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-zinc-600">
               Sign in with Google or email (new accounts get a quick verification code).
-              You won&apos;t lose anything you already typed — it&apos;s saved on this device
+              You won&apos;t lose anything you already typed - it&apos;s saved on this device
               and comes back after you sign in.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -1041,7 +1041,7 @@ export default function SubmitReviewPage() {
           description={
             <>
               <p>
-                What the public sees is anonymous — your name never appears on the
+                What the public sees is anonymous - your name never appears on the
                 review.
               </p>
               <p className="mt-2.5 sm:mt-3">
@@ -1064,8 +1064,8 @@ export default function SubmitReviewPage() {
             {step === 1
               ? "You're a couple clicks away from unlocking the full database of real renter reviews in Boston."
               : step === 2
-                ? "Nice — keep going. The full Boston review database is almost yours."
-                : "Last step — finish here and you're in."}
+                ? "Nice - keep going. The full Boston review database is almost yours."
+                : "Last step - finish here and you're in."}
           </p>
           <p className="text-sm font-medium text-emerald-800/90">
             Step {step} of 3
@@ -1126,7 +1126,7 @@ export default function SubmitReviewPage() {
                 <p className="text-sm leading-relaxed text-zinc-600">
                   The years you select here are{" "}
                   <span className="font-semibold text-zinc-700">not shown exactly</span>{" "}
-                  on the public review — only a broad timeframe.
+                  on the public review - only a broad timeframe.
                 </p>
                 {typeof bostonFloor === "number" ? (
                   <p className="text-sm leading-relaxed text-zinc-600">
@@ -1258,7 +1258,7 @@ export default function SubmitReviewPage() {
                   </p>
                   <p className="mt-1 text-sm leading-relaxed text-zinc-500">
                     {PRODUCT_POLICY.reviews.leaseStartYearRule} Choose every year you
-                    want a review for — rent can differ each year.
+                    want a review for - rent can differ each year.
                   </p>
                   <p className="mt-1.5 text-sm font-medium text-zinc-600">
                     Please enter total unit monthly rent (not per room).
@@ -1352,7 +1352,7 @@ export default function SubmitReviewPage() {
                   Amenities at your place
                 </p>
                 <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">
-                  Tap the ones that fit — tap again to turn off. Skip anything you&apos;re
+                  Tap the ones that fit - tap again to turn off. Skip anything you&apos;re
                   unsure about.
                 </p>
               </div>
@@ -1389,7 +1389,7 @@ export default function SubmitReviewPage() {
                 How was it, really?
               </h2>
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
-                Tap two scores. Add a few words if you want — even a short note helps.
+                Tap two scores. Add a few words if you want - even a short note helps.
               </p>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />
@@ -1400,7 +1400,7 @@ export default function SubmitReviewPage() {
                   Tap a number from 1 (rough) to 10 (great)
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-zinc-500">
-                  Go with your gut — there are no wrong answers.
+                  Go with your gut - there are no wrong answers.
                 </p>
               </div>
               <ScoreScale
@@ -1428,7 +1428,7 @@ export default function SubmitReviewPage() {
                 id="step2-scores-hint"
                 className="rounded-xl border border-muted-blue/30 bg-muted-blue-tint/50 px-4 py-3.5 text-sm font-medium leading-snug text-muted-blue-hover sm:text-[0.9375rem]"
               >
-                Tap a number (1–10) for <strong>both</strong> questions above — then
+                Tap a number (1–10) for <strong>both</strong> questions above - then
                 Continue below will work.
               </p>
             ) : null}
@@ -1442,7 +1442,7 @@ export default function SubmitReviewPage() {
                 id="reviewText"
                 name="reviewText"
                 rows={6}
-                placeholder="Noise, management, repairs, neighbors, tips for someone new — whatever feels fair to share."
+                placeholder="Noise, management, repairs, neighbors, tips for someone new - whatever feels fair to share."
                 className={formTextareaClass}
               />
               <p className="text-sm leading-relaxed text-zinc-500">
@@ -1463,7 +1463,7 @@ export default function SubmitReviewPage() {
                 Send it
               </h2>
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
-                Check the box — that&apos;s the last thing.
+                Check the box - that&apos;s the last thing.
               </p>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />
@@ -1483,7 +1483,7 @@ export default function SubmitReviewPage() {
             </label>
 
             <p className="rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/30 p-4 text-sm leading-relaxed text-zinc-700 sm:p-5">
-              Same as up top: what goes live stays anonymous — no name on the card.
+              Same as up top: what goes live stays anonymous - no name on the card.
             </p>
         </div>
 
@@ -1565,7 +1565,7 @@ export default function SubmitReviewPage() {
               </p>
               <p className="mt-2 text-sm leading-relaxed text-zinc-600">
                 We&apos;ll keep your address, unit, ZIP, bedrooms, bathrooms, and
-                amenity taps — pick lease-start year(s) and rent for each.
+                amenity taps - pick lease-start year(s) and rent for each.
               </p>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <button
@@ -1746,7 +1746,7 @@ export default function SubmitReviewPage() {
             <p className="mt-3 rounded-xl border border-emerald-200/70 bg-emerald-50/80 px-3 py-2 text-sm leading-relaxed text-emerald-950">
               You earned 1 giveaway entry.{" "}
               <span className="font-semibold">$200</span> in Boston restaurant gift
-              cards will be awarded — each approved review adds another chance to win.
+              cards will be awarded - each approved review adds another chance to win.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <button

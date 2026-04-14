@@ -25,13 +25,13 @@ body {
   --accent-teal-tint: #ccfbf1;
   --accent-coral: #e07a5f;
   --accent-coral-tint: #fce8e3;
-  /* Single “pop” accent — use sparingly for primary actions & highlights */
+  /* Single “pop” accent - use sparingly for primary actions & highlights */
   --pop: #db7837;
   --pop-hover: #c56a2f;
   --pop-tint: #fdf6f0;
 }
 
-/* Soft elevation — clean B2B landing depth (inspired by modern SaaS e.g. EliseAI) */
+/* Soft elevation - clean B2B landing depth (inspired by modern SaaS e.g. EliseAI) */
 @utility shadow-elevated {
   box-shadow:
     0 1px 2px rgb(15 23 42 / 0.04),

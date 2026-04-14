@@ -332,7 +332,7 @@ export default function SubmitReviewPage() {
           );
           window.history.replaceState(null, "", "/submit");
           setStatusMessage(
-            "We filled in your building from last time — pick your lease-start year(s) and rent for each.",
+            "We filled in your building from last time - pick your lease-start year(s) and rent for each.",
           );
           setStep(1);
           setTimeout(() => {
@@ -496,7 +496,7 @@ export default function SubmitReviewPage() {
     setAnotherYearPrefill(null);
     setStep(1);
     setStatusMessage(
-      "We kept your place details — pick lease-start year(s) and rent for each.",
+      "We kept your place details - pick lease-start year(s) and rent for each.",
     );
     setTimeout(() => persistDraft({ overall: null, landlord: null }), 0);
     requestAnimationFrame(() => {
@@ -899,7 +899,7 @@ export default function SubmitReviewPage() {
       setStatusMessage(
         result.userMessage ??
           (result.moderationStatus === "PENDING_REVIEW"
-            ? "Submitted — your review is being reviewed."
+            ? "Submitted - your review is being reviewed."
             : "Submitted successfully."),
       );
       setLastSubmittedBatchCount(
@@ -964,7 +964,7 @@ export default function SubmitReviewPage() {
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-zinc-600">
               Sign in with Google or email (new accounts get a quick verification code).
-              You won&apos;t lose anything you already typed — it&apos;s saved on this device
+              You won&apos;t lose anything you already typed - it&apos;s saved on this device
               and comes back after you sign in.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -1084,7 +1084,7 @@ export default function SubmitReviewPage() {
           description={
             <>
               <p>
-                There&apos;s no rush — we&apos;ll guide you through three simple parts:
+                There&apos;s no rush - we&apos;ll guide you through three simple parts:
                 your place, how living there felt, and a quick check before you send it.
               </p>
               <p className="mt-3 text-zinc-500 sm:mt-4">
@@ -1102,7 +1102,7 @@ export default function SubmitReviewPage() {
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-base font-medium tracking-tight text-emerald-950">
             {step === 3
-              ? "Last step — you've got this"
+              ? "Last step - you've got this"
               : "Take it one step at a time"}
           </p>
           <p className="text-sm font-medium text-emerald-800/90">
@@ -1298,7 +1298,7 @@ export default function SubmitReviewPage() {
                   </p>
                   <p className="mt-1 text-sm leading-relaxed text-zinc-500">
                     {PRODUCT_POLICY.reviews.leaseStartYearRule} Choose every year you
-                    want a review for — rent can differ each year.
+                    want a review for - rent can differ each year.
                   </p>
                 </div>
                 {leaseYearOptions.length === 0 ? (
@@ -1378,7 +1378,7 @@ export default function SubmitReviewPage() {
                           </span>
                           ) might belong to a{" "}
                           <span className="font-medium">different</span> Boston
-                          building — you&apos;ll submit that place as a separate review
+                          building - you&apos;ll submit that place as a separate review
                           after this one.
                         </>
                       ) : (
@@ -1427,7 +1427,7 @@ export default function SubmitReviewPage() {
                   Amenities at your place
                 </p>
                 <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">
-                  Tap the ones that fit — tap again to turn off. Skip anything you&apos;re
+                  Tap the ones that fit - tap again to turn off. Skip anything you&apos;re
                   unsure about.
                 </p>
               </div>
@@ -1467,7 +1467,7 @@ export default function SubmitReviewPage() {
                 How was it, really?
               </h2>
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
-                Two quick number ratings, then a written part only if you want — even a
+                Two quick number ratings, then a written part only if you want - even a
                 few sentences help the next renter a lot. If you picked multiple
                 lease-start years in step 1, these answers count for every year you
                 selected.
@@ -1481,7 +1481,7 @@ export default function SubmitReviewPage() {
                   Tap a number from 1 (rough) to 10 (great)
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-zinc-500">
-                  Go with your gut — there are no wrong answers.
+                  Go with your gut - there are no wrong answers.
                 </p>
               </div>
               <ScoreScale
@@ -1509,7 +1509,7 @@ export default function SubmitReviewPage() {
                 id="step2-scores-hint"
                 className="rounded-xl border border-muted-blue/30 bg-muted-blue-tint/50 px-4 py-3.5 text-sm font-medium leading-snug text-muted-blue-hover sm:text-[0.9375rem]"
               >
-                Tap a number (1–10) for <strong>both</strong> questions above — then
+                Tap a number (1–10) for <strong>both</strong> questions above - then
                 Continue below will work.
               </p>
             ) : null}
@@ -1523,7 +1523,7 @@ export default function SubmitReviewPage() {
                 id="reviewText"
                 name="reviewText"
                 rows={6}
-                placeholder="Noise, management, repairs, neighbors, tips for someone new — whatever feels fair to share."
+                placeholder="Noise, management, repairs, neighbors, tips for someone new - whatever feels fair to share."
                 className={formTextareaClass}
               />
               <p className="text-sm leading-relaxed text-zinc-500">
@@ -1549,7 +1549,7 @@ export default function SubmitReviewPage() {
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
                 Read the anonymity note below, then check the box to confirm your lease
                 attestation. If you chose more than one lease-start year in step 1, that
-                confirmation applies to each year. Phone verification is optional — you
+                confirmation applies to each year. Phone verification is optional - you
                 can add it anytime on your profile for a verified badge and usually
                 quicker approval.
               </p>
@@ -1653,7 +1653,7 @@ export default function SubmitReviewPage() {
               </p>
               <p className="mt-2 text-sm leading-relaxed text-zinc-600">
                 We&apos;ll keep your address, unit, ZIP, bedrooms, bathrooms, and
-                amenity taps — pick lease-start year(s) and rent for each.
+                amenity taps - pick lease-start year(s) and rent for each.
               </p>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <button
@@ -1822,7 +1822,7 @@ export default function SubmitReviewPage() {
             >
               {lastSubmittedBatchCount > 1 ? (
                 <>
-                  All {lastSubmittedBatchCount} reviews are in — same ratings and story
+                  All {lastSubmittedBatchCount} reviews are in - same ratings and story
                   for each lease year you picked. You just made the next Boston renter
                   way harder to rip off.
                 </>

@@ -100,7 +100,7 @@ export default function PropertiesPage() {
               )}
               {loggedIn === false ? (
                 <p className="mt-2 text-xs text-zinc-500">
-                  Search below only filters these preview cards—not every address we have
+                  Search below only filters these preview cards - not every address we have
                   on file.
                 </p>
               ) : loggedIn === true ? (
@@ -156,7 +156,7 @@ export default function PropertiesPage() {
         isLoggedOutBrowse ? (
           <p className="text-sm text-zinc-600">
             {query.trim()
-              ? "No preview address matches that search. It only looks at these 8 cards—not the full database."
+              ? "No preview address matches that search. It only looks at these 8 cards - not the full database."
               : "No preview addresses to show yet."}{" "}
             <Link
               href={`/signin?callbackUrl=${propertiesCallback}`}

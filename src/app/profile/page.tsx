@@ -258,7 +258,7 @@ export default async function ProfilePage({ searchParams }: Props) {
                 <span className="font-medium text-zinc-800">
                   {bostonRentingSinceYear}
                 </span>{" "}
-                or later. If that year is wrong, contact us — only an admin can change
+                or later. If that year is wrong, contact us - only an admin can change
                 it.
               </p>
             </SurfacePanel>

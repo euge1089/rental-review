@@ -150,7 +150,7 @@ export default async function AdminRetentionPage() {
           <p className="mt-1 text-2xl font-semibold text-zinc-900">
             {totalSent > 0
               ? `${((totalClicks / totalSent) * 100).toFixed(1)}%`
-              : "—"}
+              : "-"}
           </p>
           <p className="mt-1 text-[11px] text-zinc-500">
             Clicks ÷ sends (not unique users across campaigns).
@@ -183,7 +183,7 @@ export default async function AdminRetentionPage() {
                   const sent = sendMap.get(campaign) ?? 0;
                   const clicks = clickMap.get(campaign) ?? 0;
                   const rate =
-                    sent > 0 ? `${((clicks / sent) * 100).toFixed(1)}%` : "—";
+                    sent > 0 ? `${((clicks / sent) * 100).toFixed(1)}%` : "-";
                   return (
                     <tr
                       key={campaign}

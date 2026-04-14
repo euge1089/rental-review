@@ -30,7 +30,7 @@ export function ProfileAddAnotherLeaseYearButton({
       disabled={disabled}
       title={
         disabled
-          ? "You’re at your review limit — remove or edit a review on your profile to add another."
+          ? "You’re at your review limit - remove or edit a review on your profile to add another."
           : "Open the form with this address pre-filled; choose a different lease-start year."
       }
       onClick={handleClick}

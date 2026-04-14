@@ -50,21 +50,25 @@ function profilePrefsUrl(): string {
 /** Sign-off line. Override with RETENTION_EMAIL_SIGNER_NAME; defaults to Ben. */
 function emailSignOff(): string {
   const name = process.env.RETENTION_EMAIL_SIGNER_NAME?.trim() || "Ben";
-  return `— ${name}\nRent Review Boston`;
+  return `- ${name}\nRent Review Boston`;
 }
 
 /**
- * Optional override for the opening “why I built this” line.
- * Default mentions “this month” — change via RETENTION_EMAIL_LAUNCH_LINE or edit when it’s no longer accurate.
+ * Optional override for the “why I built this” bit (first no-review email only).
+ * Default mentions timing - change via RETENTION_EMAIL_LAUNCH_LINE or edit when it’s no longer accurate.
  */
-function founderLaunchLine(): string {
+function founderHook(): string {
   const custom = process.env.RETENTION_EMAIL_LAUNCH_LINE?.trim();
   if (custom) return custom;
-  return `I launched Rent Review Boston ${RETENTION_LAUNCH_TIMING} to help build a community-run renter information database here — the kind of detail you wish you had before signing a lease.`;
+  return `I built Rent Review Boston ${RETENTION_LAUNCH_TIMING} so people could share real rent and honest building notes - the stuff listings skip.`;
 }
 
-function privacyReassuranceShort(): string {
-  return "On the public site, your name doesn’t appear on the review, and lease timing is shown in broad buckets (not your exact lease-start year), so a landlord or management company can’t realistically tell who wrote what.";
+function privacyOneLiner(): string {
+  return "Your name isn’t on the public review, and lease timing is broad (not your exact year), so it’s not obvious who wrote what.";
+}
+
+function giveawayPs(): string {
+  return "P.S. We give away a couple hundred dollars worth of Boston gift cards on the last day of every month. We don’t have too many users yet, so odds are pretty good. Official rules are on the submit page.";
 }
 
 export async function findUsersForNoReviewReminder(): Promise<
@@ -180,21 +184,21 @@ export async function sendNoReviewReminderEmail(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const submit = retentionCtaUrl(userId, RETENTION_CAMPAIGN_NO_REVIEW);
   const prefs = profilePrefsUrl();
-  const subject = "Saw you joined Rent Review Boston — quick ask?";
+  const subject = "Quick one-minute favor? (Rent Review Boston)";
   const text = [
-    "Hey —",
+    "Hey -",
     "",
-    `${founderLaunchLine()} I saw you made an account — thank you for that.`,
+    "Thanks for signing up.",
     "",
-    "No pressure at all, but it would mean a lot if you’d leave a review when you have a minute. It’s quick (about a minute or two).",
+    founderHook(),
     "",
-    privacyReassuranceShort(),
+    "If you can spare about a minute, a short anonymous review helps the next renter. " + privacyOneLiner(),
     "",
-    `Submit a review: ${submit}`,
+    submit,
     "",
-    "P.S. We sometimes run a small giveaway for people who submit — if it’s active, you’ll see it on the submit page. Official rules always win over anything in an email.",
+    giveawayPs(),
     "",
-    `Don’t want these reminders? You can turn them off here: ${prefs}`,
+    `Reminders off anytime: ${prefs}`,
     "",
     emailSignOff(),
   ].join("\n");
@@ -208,19 +212,19 @@ export async function sendNoReviewFollowupReminderEmail(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const submit = retentionCtaUrl(userId, RETENTION_CAMPAIGN_NO_REVIEW_FOLLOWUP);
   const prefs = profilePrefsUrl();
-  const subject = "Following up — quick Boston review?";
+  const subject = "Bump: one-minute review?";
   const text = [
-    "Hey —",
+    "Hey -",
     "",
-    `I emailed you ${noReviewFollowupHumanTimePhrase()} about Rent Review Boston. Not sure you saw it, so I’ll keep this short.`,
+    `I nudged you ${noReviewFollowupHumanTimePhrase()} - sending a short bump in case it got buried.`,
     "",
-    "If you can spare a couple of minutes, a quick anonymous review really helps the next renter. Same privacy as before: your name doesn’t show on the public review, and lease timing is only shown in broad buckets.",
+    "Still hoping you’ll drop a quick anonymous review when you can. " + privacyOneLiner(),
     "",
-    `Submit a review: ${submit}`,
+    submit,
     "",
-    "P.S. We sometimes run a small giveaway for people who submit — if it’s active, you’ll see it on the submit page. Official rules always win over anything in an email.",
+    giveawayPs(),
     "",
-    `Don’t want these reminders? ${prefs}`,
+    `Reminders off: ${prefs}`,
     "",
     emailSignOff(),
   ].join("\n");
@@ -236,23 +240,19 @@ export async function sendLeaseYearGapReminderEmail(
   const submit = retentionCtaUrl(userId, RETENTION_CAMPAIGN_LEASE_YEAR_GAP);
   const prefs = profilePrefsUrl();
   const examples = formatYearExamples(args.missingLeaseStartYears);
-  const subject = "Thanks for reviewing — maybe one more lease year?";
+  const subject = "You could add another lease year?";
   const text = [
-    "Hey —",
+    "Hey -",
     "",
-    `I’m the one behind Rent Review Boston — I launched it ${RETENTION_LAUNCH_TIMING}. Thanks again for already leaving a review; personally, that means a lot, and it’s what makes the database useful for the next person hunting in Boston.`,
+    `Thanks again for reviewing - it helps. You’re set as renting in Boston since ${args.bostonRentingSinceYear}; you can still add reviews for other lease-start years you’re eligible for (e.g. ${examples}).`,
     "",
-    `Your profile says you started renting here in ${args.bostonRentingSinceYear}. From what I can see on our side, there are still lease-start years you’re allowed to write about that don’t have a review on your account yet — for example: ${examples}.`,
+    "Same anonymity as before. " + privacyOneLiner(),
     "",
-    "If that matches your situation (another lease year at the same place, a different address, etc.), you can add those as separate reviews. Same deal as before:",
+    submit,
     "",
-    privacyReassuranceShort(),
+    giveawayPs(),
     "",
-    `Add a review: ${submit}`,
-    "",
-    "P.S. If a giveaway is running, you’ll see it on the submit page — official rules always apply.",
-    "",
-    `Rather not get emails like this? ${prefs}`,
+    `Fewer emails: ${prefs}`,
     "",
     emailSignOff(),
   ].join("\n");

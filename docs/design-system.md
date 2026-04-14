@@ -1,4 +1,4 @@
-# Rent Review Boston — design system
+# Rent Review Boston - design system
 
 This document mirrors the **home page** visual language so other routes stay consistent. Implementation lives in `src/app/globals.css` (CSS variables + utilities), `src/lib/ui-classes.ts` (shared Tailwind class strings), and `src/app/_components/app-page-shell.tsx` (layout primitives).
 
@@ -6,20 +6,20 @@ This document mirrors the **home page** visual language so other routes stay con
 
 | Token | Hex / role |
 |--------|------------|
-| **muted-blue** | `#5c6b7f` — nav labels, secondary text, links |
-| **muted-blue-hover** | `#152a45` — headlines, emphasis, primary button hover |
-| **muted-blue-soft** | `#7a8899` — tertiary |
-| **muted-blue-tint** | `#eef1f5` — soft fills, hover chips |
-| **pop** | `#db7837` — sparing accent (CTAs, highlights) |
+| **muted-blue** | `#5c6b7f` - nav labels, secondary text, links |
+| **muted-blue-hover** | `#152a45` - headlines, emphasis, primary button hover |
+| **muted-blue-soft** | `#7a8899` - tertiary |
+| **muted-blue-tint** | `#eef1f5` - soft fills, hover chips |
+| **pop** | `#db7837` - sparing accent (CTAs, highlights) |
 | **pop-hover** | `#c56a2f` |
-| **pop-tint** | `#fdf6f0` — hero glows only |
+| **pop-tint** | `#fdf6f0` - hero glows only |
 | **Accent teal / coral** | Reserved for illustrations / future use |
 
 ## Page canvas
 
-- **App background:** `#f5f5f6` (`bg-[#f5f5f6]`) — set on the main content wrapper in root layout so every page matches the home shell.
-- **Section band (neutral):** `#e4e9ef` — “How it works” style bands.
-- **Dark marketing slab:** `muted-blue-hover` gradient stack — community CTA only.
+- **App background:** `#f5f5f6` (`bg-[#f5f5f6]`) - set on the main content wrapper in root layout so every page matches the home shell.
+- **Section band (neutral):** `#e4e9ef` - “How it works” style bands.
+- **Dark marketing slab:** `muted-blue-hover` gradient stack - community CTA only.
 
 ## Typography
 
@@ -30,9 +30,9 @@ This document mirrors the **home page** visual language so other routes stay con
 
 ## Surfaces (cards & forms)
 
-- **Elevated panel:** `rounded-3xl border border-zinc-100 bg-white shadow-elevated` with padding `p-6 sm:p-8` — primary content blocks, sign-in card, modals.
-- **Subtle panel:** `rounded-2xl border border-zinc-200/80 bg-white` — nested sections, list tiles, profile sub-cards.
-- **Inset / muted:** `rounded-2xl border border-muted-blue/20 bg-[#e4e9ef]/50` — optional callouts.
+- **Elevated panel:** `rounded-3xl border border-zinc-100 bg-white shadow-elevated` with padding `p-6 sm:p-8` - primary content blocks, sign-in card, modals.
+- **Subtle panel:** `rounded-2xl border border-zinc-200/80 bg-white` - nested sections, list tiles, profile sub-cards.
+- **Inset / muted:** `rounded-2xl border border-muted-blue/20 bg-[#e4e9ef]/50` - optional callouts.
 
 `shadow-elevated` is defined in `globals.css` (soft double shadow, no harsh black drop).
 
@@ -46,17 +46,17 @@ Reserve **pop** for high-intent moments (e.g. hero secondary emphasis), not ever
 
 ## Form controls
 
-- **Default input:** full width, `rounded-xl`, `border-zinc-200`, `bg-white`, focus `border-muted-blue/40` + `ring-2 ring-muted-blue/20` — see `formInputClass` in `ui-classes.ts`.
-- **Compact (dense forms):** `formInputCompactClass` — same treatment, `h-10` + horizontal padding aligned to submit flow.
+- **Default input:** full width, `rounded-xl`, `border-zinc-200`, `bg-white`, focus `border-muted-blue/40` + `ring-2 ring-muted-blue/20` - see `formInputClass` in `ui-classes.ts`.
+- **Compact (dense forms):** `formInputCompactClass` - same treatment, `h-10` + horizontal padding aligned to submit flow.
 
 ## Modals / overlays
 
 - **Backdrop:** `bg-zinc-900/45 backdrop-blur-[2px]` (align with hero sign-up).
-- **Dialog:** `rounded-3xl border border-zinc-100 bg-white shadow-elevated` — same as elevated panel.
+- **Dialog:** `rounded-3xl border border-zinc-100 bg-white shadow-elevated` - same as elevated panel.
 
 ## Spacing & width
 
-- **Content column (full-width, home-aligned):** `max-w-[min(88rem,calc(100%-2rem))]` + `px-8 sm:px-12 xl:px-20` — shared by home `SectionMaxW`, `AppPageShell`, site header nav, and footer (`appContentMaxWidthClass` / `appContentPaddingXClass` in `ui-classes.ts`).
+- **Content column (full-width, home-aligned):** `max-w-[min(88rem,calc(100%-2rem))]` + `px-8 sm:px-12 xl:px-20` - shared by home `SectionMaxW`, `AppPageShell`, site header nav, and footer (`appContentMaxWidthClass` / `appContentPaddingXClass` in `ui-classes.ts`).
 - **Narrow flows (e.g. sign-in):** same outer shell; an inner wrapper uses `max-w-xl` so the form stays readable.
 - **Vertical rhythm:** `py-10 sm:py-12` on standard app pages; home uses its own section spacing.
 

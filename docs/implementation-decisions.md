@@ -20,7 +20,7 @@ This document captures confirmed product decisions so engineering can proceed wi
 - **Submit UX:** signed-out users see an auth overlay on `/submit` and cannot use the multi-step form until signed in; draft persists in `localStorage` and restores after Google return.
 - Post–sign-in **optional** modal nudges SMS on Profile (`sessionStorage` key `sms-prompt-dismissed` when dismissed).
 - **Bedrooms:** `Review.bedroomCount` (0 = studio, 1–4 = count, 5 = 5+); Rent Explorer and property rent stats prefer this over unit-string inference when set.
-- **Fully anonymous display:** `Review.displayFullyAnonymous` — public label is fixed “Anonymous renter” (no masked initials); admins still see account email internally.
+- **Fully anonymous display:** `Review.displayFullyAnonymous` - public label is fixed “Anonymous renter” (no masked initials); admins still see account email internally.
 
 ## Product Rules To Encode
 

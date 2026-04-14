@@ -8,7 +8,7 @@ Files in this folder
 ----------------------
   submit-page.tsx     Full copy of src/app/submit/page.tsx at 140b393
 
-Restore in your repo (recommended — uses git)
+Restore in your repo (recommended - uses git)
 -----------------------------------------------
 From repo root:
 

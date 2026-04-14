@@ -94,7 +94,7 @@ function normalizeStreetLineTokens(line: string): string[] {
   return trimmed.split(" ").filter(Boolean);
 }
 
-/** Lowercase, expanded suffixes, single spaces — used only for matching keys. */
+/** Lowercase, expanded suffixes, single spaces - used only for matching keys. */
 function normalizeStreetLineForKey(line: string): string {
   const tokens = normalizeStreetLineTokens(line);
   const expanded = expandStreetSuffix(tokens);

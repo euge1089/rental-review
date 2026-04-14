@@ -20,7 +20,7 @@ export const PRODUCT_POLICY = {
     pendingNamesUserMessage:
       "Submitted. Your review is queued for moderation because names were detected.",
     pendingManualReviewMessage:
-      "Thanks — we’ll review your review within about 5 business days. Verify your phone on Profile for faster approval next time.",
+      "Thanks - we’ll review your review within about 5 business days. Verify your phone on Profile for faster approval next time.",
   },
   access: {
     loggedOutMode: "teaser-only",

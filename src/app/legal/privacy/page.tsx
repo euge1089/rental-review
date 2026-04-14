@@ -118,7 +118,7 @@ export default function PrivacyPage() {
             </h2>
             <p>
               State that the service is not directed at children under 13 (or under
-              16, per counsel) and that you do not knowingly collect their data—aligned
+              16, per counsel) and that you do not knowingly collect their data - aligned
               with your Terms age rule.
             </p>
           </section>

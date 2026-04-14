@@ -6,7 +6,7 @@ import { surfaceElevatedClass } from "@/lib/ui-classes";
 type Rung = {
   need: number;
   title: string;
-  /** Inside the orange badge — no "reviews" (e.g. `0`, `1+`, `5+`). */
+  /** Inside the orange badge - no "reviews" (e.g. `0`, `1+`, `5+`). */
   bubbleLabel: string;
   /** Subtitle under the tier name. */
   subtitle: string;
@@ -159,7 +159,7 @@ export function ProfileContributorLadder({
 
       {remaining === 0 ? (
         <p className="mt-4 text-center text-[11px] text-zinc-500">
-          Max slots in use — edit or remove a review on your profile to free one.
+          Max slots in use - edit or remove a review on your profile to free one.
         </p>
       ) : null}
     </aside>

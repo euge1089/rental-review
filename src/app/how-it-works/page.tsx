@@ -24,7 +24,7 @@ export default function HowItWorksPage() {
             Browse
           </Link>{" "}
           page, or paste a Boston street address into the search box. Logged-out visitors
-          see teasers only—proof that reviews and rent data exist, without the full text.
+          see teasers only - proof that reviews and rent data exist, without the full text.
         </p>
       </SurfacePanel>
 

@@ -208,7 +208,7 @@ export async function POST(request: Request) {
         ? `${count} reviews submitted. ${userMessage ?? "Thanks for sharing."}`
         : (userMessage ??
           (moderationStatus === "PENDING_REVIEW"
-            ? "Submitted — your review is being reviewed."
+            ? "Submitted - your review is being reviewed."
             : "Submitted successfully."));
 
     return NextResponse.json({

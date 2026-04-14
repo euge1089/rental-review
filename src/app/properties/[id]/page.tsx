@@ -114,7 +114,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             </h2>
             <p className="max-w-2xl text-sm leading-relaxed text-zinc-600">
               Approximate monthly rent by bedroom band from approved reviews. Use this
-              to sanity-check an asking price — not as an appraisal.
+              to sanity-check an asking price - not as an appraisal.
             </p>
           </div>
 
@@ -182,7 +182,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             No reviews here yet
           </p>
           <p className="max-w-md text-sm text-zinc-600">
-            Be the first to share a lease-year snapshot for this address — it helps the
+            Be the first to share a lease-year snapshot for this address - it helps the
             next person negotiating rent.
           </p>
           <Link
@@ -317,7 +317,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                                 : "bg-zinc-50 text-zinc-500 ring-1 ring-zinc-200/80"
                             }`}
                           >
-                            <span aria-hidden>{amenity.value ? "✓" : "—"}</span>
+                            <span aria-hidden>{amenity.value ? "✓" : "-"}</span>
                             {amenity.label}
                           </span>
                         ))}

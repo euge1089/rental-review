@@ -138,7 +138,7 @@ export function ProfileOnboardingOverlay({
               <div>
                 <p className="font-medium text-zinc-900">Share your first review</p>
                 <p className="mt-1 text-zinc-600">
-                  Tell neighbors what it was like renting your place—rent, building,
+                  Tell neighbors what it was like renting your place - rent, building,
                   landlord, the works.
                 </p>
                 <Link

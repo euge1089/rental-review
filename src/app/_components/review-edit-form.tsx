@@ -115,7 +115,7 @@ export function ReviewEditForm({ reviewId, minLeaseStartYear, initial }: Props) 
     setStatusMessage(
       result.userMessage ??
         (result.moderationStatus === "PENDING_REVIEW"
-          ? "Updated — your review is being reviewed."
+          ? "Updated - your review is being reviewed."
           : "Review updated successfully."),
     );
 
