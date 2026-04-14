@@ -16,11 +16,11 @@ import {
 export const dynamic = "force-dynamic";
 
 function authorize(request: Request): boolean {
-  const secret = process.env.CRON_SECRET;
+  const secret = process.env.CRON_SECRET?.trim();
   if (!secret || secret.length < 8) return false;
-  const auth = request.headers.get("authorization");
+  const auth = request.headers.get("authorization")?.trim();
   if (auth === `Bearer ${secret}`) return true;
-  return request.headers.get("x-cron-secret") === secret;
+  return (request.headers.get("x-cron-secret")?.trim() ?? "") === secret;
 }
 
 export async function GET(request: Request) {
