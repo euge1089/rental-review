@@ -1061,9 +1061,11 @@ export default function SubmitReviewPage() {
       >
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-base font-medium tracking-tight text-emerald-950">
-            {step === 3
-              ? "Last step — you've got this"
-              : "Take it one step at a time"}
+            {step === 1
+              ? "You're a couple clicks away from unlocking the full database of real renter reviews in Boston."
+              : step === 2
+                ? "Nice — keep going. The full Boston review database is almost yours."
+                : "Last step — finish here and you're in."}
           </p>
           <p className="text-sm font-medium text-emerald-800/90">
             Step {step} of 3
