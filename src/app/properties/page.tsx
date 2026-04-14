@@ -7,6 +7,7 @@ import {
   AppPageShell,
   PageHeader,
 } from "@/app/_components/app-page-shell";
+import { GiveawayPromoStrip } from "@/app/_components/giveaway-promo-strip";
 import { formInputCompactClass, surfaceSubtleClass } from "@/lib/ui-classes";
 
 type PropertySummary = {
@@ -78,6 +79,7 @@ export default function PropertiesPage() {
 
   return (
     <AppPageShell gapClass="gap-6">
+      <GiveawayPromoStrip variant="home" />
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <PageHeader
           eyebrow="Browse"

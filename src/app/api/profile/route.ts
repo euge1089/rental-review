@@ -11,10 +11,15 @@ const patchSchema = z
   .object({
     displayName: z.string().max(120).optional(),
     bostonRentingSinceYear: z.number().int().optional(),
+    retentionEmailsOptOut: z.boolean().optional(),
   })
-  .refine((d) => d.displayName !== undefined || d.bostonRentingSinceYear !== undefined, {
-    message: "No updates.",
-  });
+  .refine(
+    (d) =>
+      d.displayName !== undefined ||
+      d.bostonRentingSinceYear !== undefined ||
+      d.retentionEmailsOptOut !== undefined,
+    { message: "No updates." },
+  );
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -30,6 +35,7 @@ export async function GET() {
       displayName: true,
       bostonRentingSinceYear: true,
       phoneVerified: true,
+      retentionEmailsOptOut: true,
     },
   });
 
@@ -76,7 +82,11 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ ok: false, error: "User not found." }, { status: 404 });
   }
 
-  const data: { displayName?: string | null; bostonRentingSinceYear?: number } = {};
+  const data: {
+    displayName?: string | null;
+    bostonRentingSinceYear?: number;
+    retentionEmailsOptOut?: boolean;
+  } = {};
 
   if (parsed.displayName !== undefined) {
     const trimmed = parsed.displayName.trim();
@@ -103,15 +113,24 @@ export async function PATCH(request: Request) {
     data.bostonRentingSinceYear = parsed.bostonRentingSinceYear;
   }
 
+  if (parsed.retentionEmailsOptOut !== undefined) {
+    data.retentionEmailsOptOut = parsed.retentionEmailsOptOut;
+  }
+
   const updated = await prisma.user.update({
     where: { email },
     data,
-    select: { displayName: true, bostonRentingSinceYear: true },
+    select: {
+      displayName: true,
+      bostonRentingSinceYear: true,
+      retentionEmailsOptOut: true,
+    },
   });
 
   return NextResponse.json({
     ok: true,
     displayName: updated.displayName,
     bostonRentingSinceYear: updated.bostonRentingSinceYear,
+    retentionEmailsOptOut: updated.retentionEmailsOptOut,
   });
 }

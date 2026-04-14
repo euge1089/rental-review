@@ -7,6 +7,7 @@ import {
 } from "@/app/_components/app-page-shell";
 import { ProfileBookmarks } from "@/app/_components/profile-bookmarks";
 import { ProfileDisplayNameCard } from "@/app/_components/profile-display-name-card";
+import { ProfileRetentionEmailPrefs } from "@/app/_components/profile-retention-email-prefs";
 import { ProfileOnboardingOverlay } from "@/app/_components/profile-onboarding-overlay";
 import {
   ProfileReviewsGrouped,
@@ -60,6 +61,7 @@ export default async function ProfilePage({ searchParams }: Props) {
       phoneVerified: true,
       displayName: true,
       bostonRentingSinceYear: true,
+      retentionEmailsOptOut: true,
     },
   });
 
@@ -203,8 +205,11 @@ export default async function ProfilePage({ searchParams }: Props) {
           }
         >
           <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch lg:gap-6">
-            <div className="min-w-0 flex-1 lg:flex lg:h-full lg:min-h-0 lg:flex-col">
+            <div className="min-w-0 flex-1 space-y-5 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:space-y-5">
               <ProfileDisplayNameCard initialDisplayName={displayName} />
+              <ProfileRetentionEmailPrefs
+                initialOptOut={user?.retentionEmailsOptOut ?? false}
+              />
             </div>
             <div className="lg:flex lg:h-full lg:min-h-0 lg:w-[min(100%,22rem)] lg:shrink-0 lg:flex-col">
               <SurfacePanel

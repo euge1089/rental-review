@@ -8,7 +8,6 @@ import {
   PageHeader,
 } from "@/app/_components/app-page-shell";
 import { BostonRentingYearPickForm } from "@/app/_components/boston-renting-year-pick-form";
-import { GiveawayPromoStrip } from "@/app/_components/giveaway-promo-strip";
 import {
   BATHROOM_SUBMIT_OPTIONS,
   BEDROOM_SUBMIT_OPTIONS,
@@ -932,7 +931,6 @@ export default function SubmitReviewPage() {
 
   return (
     <AppPageShell gapClass="gap-6" className="relative">
-      <GiveawayPromoStrip variant="submit" />
       {sessionUser === "loading" ? (
         <p className="text-sm text-zinc-500">Checking sign-in…</p>
       ) : null}
@@ -1043,12 +1041,24 @@ export default function SubmitReviewPage() {
           description={
             <>
               <p>
-                There&apos;s no rush — we&apos;ll guide you through three simple parts:
-                your place, how living there felt, and a quick check before you send it.
+                What the public sees is{" "}
+                <span className="font-semibold text-zinc-800">anonymous</span> — your
+                name never appears on the review.
               </p>
-              <p className="mt-3 text-zinc-500 sm:mt-4">
-                Your draft saves on this device, so you can step away and pick up where
-                you left off.
+              <p className="mt-2.5 sm:mt-3">
+                We don&apos;t publish exact lease-start years, only a{" "}
+                <span className="font-semibold text-zinc-800">rough time band</span>, so
+                it&apos;s much harder for a landlord or manager to guess who wrote it.
+              </p>
+              <p className="mt-2.5 text-sm leading-snug text-zinc-600 sm:mt-3 sm:text-base sm:leading-snug">
+                Most people finish in about a minute.{" "}
+                <Link
+                  href="/legal/privacy"
+                  className="font-medium text-muted-blue hover:underline"
+                >
+                  How we handle your data
+                </Link>
+                .
               </p>
             </>
           }
@@ -1057,18 +1067,16 @@ export default function SubmitReviewPage() {
 
       <section
         className={`rounded-2xl border border-emerald-200/60 bg-gradient-to-b from-emerald-50/95 to-emerald-50/80 p-5 text-emerald-950 shadow-[0_1px_2px_rgb(6_78_59/0.06)] sm:p-6 ${formSurfaceBlocked ? "pointer-events-none opacity-40" : ""}`}
+        aria-label="Form progress"
       >
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-base font-medium tracking-tight text-emerald-950">
-            {step === 3
-              ? "Last step — you've got this"
-              : "Take it one step at a time"}
-          </p>
-          <p className="text-sm font-medium text-emerald-800/90">
-            Step {step} of 3
-          </p>
-        </div>
-        <div className="mt-4 flex gap-1.5">
+        <p className="text-sm font-medium leading-snug text-emerald-950 sm:text-base">
+          {step === 1
+            ? "You’re in the right place — we only use your answers to show an anonymous review."
+            : step === 2
+              ? "Two number taps, then you’re basically finished."
+              : "Confirm the box below and you’re done."}
+        </p>
+        <div className="mt-4 flex gap-1.5" aria-hidden>
           {[1, 2, 3].map((s) => (
             <div
               key={s}
@@ -1078,26 +1086,6 @@ export default function SubmitReviewPage() {
             />
           ))}
         </div>
-        <ul className="mt-5 grid gap-3 text-sm leading-snug sm:grid-cols-3 sm:gap-4">
-          <li
-            className={`rounded-xl bg-white/60 px-3 py-2.5 sm:px-3.5 ${step === 1 ? "font-semibold text-emerald-950 ring-1 ring-emerald-300/50" : "text-emerald-900/75"}`}
-          >
-            <span className="text-emerald-700/80">1 · </span>
-            Your Property
-          </li>
-          <li
-            className={`rounded-xl bg-white/60 px-3 py-2.5 sm:px-3.5 ${step === 2 ? "font-semibold text-emerald-950 ring-1 ring-emerald-300/50" : "text-emerald-900/75"}`}
-          >
-            <span className="text-emerald-700/80">2 · </span>
-            Your Experience
-          </li>
-          <li
-            className={`rounded-xl bg-white/60 px-3 py-2.5 sm:px-3.5 ${step === 3 ? "font-semibold text-emerald-950 ring-1 ring-emerald-300/50" : "text-emerald-900/75"}`}
-          >
-            <span className="text-emerald-700/80">3 · </span>
-            Submit
-          </li>
-        </ul>
       </section>
 
       <form
@@ -1116,16 +1104,14 @@ export default function SubmitReviewPage() {
           aria-hidden={step !== 1}
         >
             <div id="submit-step-1" className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-blue">
-                Step 1
-              </p>
               <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
                 Where did you live?
               </h2>
               <div className="max-w-2xl space-y-2 pt-0.5">
                 <p className="text-sm leading-relaxed text-zinc-600">
-                  Public reviews are <span className="font-semibold">fully anonymous</span>.
-                  We do not show the exact year you lived at each property.
+                  The years you select here are{" "}
+                  <span className="font-semibold text-zinc-700">not shown exactly</span>{" "}
+                  on the public review — only a broad timeframe.
                 </p>
                 {typeof bostonFloor === "number" ? (
                   <p className="text-sm leading-relaxed text-zinc-600">
@@ -1384,15 +1370,11 @@ export default function SubmitReviewPage() {
           aria-hidden={step !== 2}
         >
             <div id="submit-step-2" className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-blue">
-                Step 2
-              </p>
               <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
                 How was it, really?
               </h2>
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
-                Two quick number ratings, then a written part only if you want — even a
-                few sentences help the next renter a lot.
+                Tap two scores. Add a few words if you want — even a short note helps.
               </p>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />
@@ -1462,15 +1444,11 @@ export default function SubmitReviewPage() {
           aria-hidden={step !== 3}
         >
             <div id="submit-step-3" className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-blue">
-                Step 3
-              </p>
               <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
-                One last look
+                Send it
               </h2>
               <p className="max-w-2xl text-base leading-relaxed text-zinc-600 sm:text-[1.0625rem] sm:leading-[1.65]">
-                Please check the box below to confirm your lease attestation before you
-                submit.
+                Check the box — that&apos;s the last thing.
               </p>
             </div>
             <div className="h-px w-full bg-zinc-200/90" />
@@ -1490,8 +1468,7 @@ export default function SubmitReviewPage() {
             </label>
 
             <p className="rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/30 p-4 text-sm leading-relaxed text-zinc-700 sm:p-5">
-              Your public review is fully anonymous by default. We never show your name
-              on review cards.
+              Same as up top: what goes live stays anonymous — no name on the card.
             </p>
         </div>
 
@@ -1555,9 +1532,6 @@ export default function SubmitReviewPage() {
                     : "Submit review"}
             </button>
           </div>
-          <p className="max-w-md text-sm leading-relaxed text-zinc-500">
-            Need a break? Your answers stay on this device until you send the review.
-          </p>
         </div>
 
         {showAnotherYearCta && anotherYearPrefill ? (

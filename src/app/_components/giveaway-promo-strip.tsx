@@ -9,7 +9,7 @@ import { linkInlineClass } from "@/lib/ui-classes";
 /** Max entries we show in the promo bar (matches your giveaway cap story). */
 const GIVEAWAY_ENTRY_CAP = 5;
 
-type Variant = "home" | "submit" | "modal";
+type Variant = "home" | "modal";
 
 type Props = {
   variant?: Variant;

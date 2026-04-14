@@ -29,11 +29,39 @@ model User {
   /// Required to sign in with email/password; Google sign-in sets this on upsert.
   emailVerifiedAt DateTime?
   phoneVerified   Boolean   @default(false)
+  /// When true, skip retention / reminder emails (transactional auth email still sent).
+  retentionEmailsOptOut Boolean @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   reviews         Review[]
   bookmarks       Bookmark[]
   reviewReports   ReviewReport[]
+  retentionEmailLogs RetentionEmailLog[]
+  retentionEmailClicks RetentionEmailClick[]
+}
+
+/// First click on a tracked retention CTA link (per user + campaign).
+model RetentionEmailClick {
+  id        String   @id @default(cuid())
+  userId    String
+  campaign  String
+  clickedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, campaign])
+  @@index([campaign, clickedAt])
+}
+
+/// One send per (user, campaign) so cron retries stay idempotent.
+model RetentionEmailLog {
+  id        String   @id @default(cuid())
+  userId    String
+  campaign  String
+  sentAt    DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, campaign])
+  @@index([campaign, sentAt])
 }
 
 /// One-time email verification codes (sign-up). Rows removed after success or expiry.
