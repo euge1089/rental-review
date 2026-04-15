@@ -112,7 +112,7 @@ export function ProfileRetentionEmailPrefs({
         <span>
           <span className="font-medium">Opt out of activity summary emails</span>
           <span className="mt-0.5 block text-zinc-600">
-            When off (default), we send at most one email per day (around 6pm Eastern)
+            When off (default), we send at most one email per day (evening Eastern Time)
             summarizing helpful votes on your reviews and new private messages. Turn
             this on to skip that digest.
           </span>

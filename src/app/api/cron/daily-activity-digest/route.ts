@@ -15,15 +15,7 @@ function authorize(request: Request): boolean {
   return (request.headers.get("x-cron-secret")?.trim() ?? "") === secret;
 }
 
-/** 6pm America/New_York — cron should run hourly; we no-op outside that window. */
-function isDigestHourInEastern(): boolean {
-  const hourStr = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    hour: "numeric",
-    hour12: false,
-  }).format(new Date());
-  return hourStr === "18";
-}
+/** Vercel Hobby: crons must run at most once per day (hourly schedules fail deploy). */
 
 export async function GET(request: Request) {
   return handle(request);
@@ -36,14 +28,6 @@ export async function POST(request: Request) {
 async function handle(request: Request) {
   if (!authorize(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
-  }
-
-  if (!isDigestHourInEastern()) {
-    return NextResponse.json({
-      ok: true,
-      skipped: true,
-      reason: "Outside6pm Eastern window for this run.",
-    });
   }
 
   if (!process.env.RESEND_API_KEY && process.env.NODE_ENV === "production") {
