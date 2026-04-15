@@ -93,15 +93,15 @@ export default function RootLayout({
           <nav
             className={`mx-auto flex w-full min-w-0 ${appContentMaxWidthClass} flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2 ${appContentPaddingXClass}`}
           >
-            <div className="flex min-w-0 items-center justify-between gap-3 sm:justify-start">
+            <div className="flex min-w-0 items-center justify-center sm:justify-start">
               <Link
                 href="/"
                 className="inline-flex min-h-11 min-w-0 items-baseline gap-1.5 rounded-md py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-muted-blue-hover"
               >
-                <span className="text-base font-semibold tracking-tight text-muted-blue-hover sm:text-lg">
+                <span className="text-[calc(1rem+2pt)] font-semibold tracking-tight text-muted-blue-hover sm:text-lg">
                   Rent Review
                 </span>
-                <span className="text-base font-bold tracking-tight text-muted-blue sm:text-lg">
+                <span className="text-[calc(1rem+2pt)] font-bold tracking-tight text-muted-blue sm:text-lg">
                   Boston
                 </span>
               </Link>
