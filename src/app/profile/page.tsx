@@ -112,42 +112,6 @@ export default async function ProfilePage({ searchParams }: Props) {
         reviewCount={reviews.length}
         bostonRentingSinceYear={bostonRentingSinceYear}
       />
-      {bostonRentingSinceYear != null &&
-      eligibleYearsWithoutAnyReview.length > 0 ? (
-        <SurfacePanel
-          variant="subtle"
-          as="section"
-          className="border border-muted-blue/20 bg-gradient-to-b from-muted-blue-tint/50 to-muted-blue-tint/25"
-        >
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-blue">
-            Grow your impact
-          </p>
-          <p className="mt-2 text-base font-semibold leading-snug text-muted-blue-hover">
-            You still have lease years to cover
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-zinc-700">
-            We don&apos;t see a review yet for every lease-start year you&apos;re allowed
-            to share since{" "}
-            <span className="font-medium text-zinc-900">
-              {bostonRentingSinceYear}
-            </span>
-            . Examples:{" "}
-            <span className="font-medium text-zinc-900">
-              {formatYearsForMessage(eligibleYearsWithoutAnyReview)}
-            </span>
-            .
-          </p>
-          <div className="mt-4">
-            <Link
-              href="/submit"
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-muted-blue-hover"
-            >
-              Add a review
-            </Link>
-          </div>
-        </SurfacePanel>
-      ) : null}
-
       <PageHeader
         eyebrow="Profile"
         title="Your reviews and saved apartments"
@@ -171,24 +135,43 @@ export default async function ProfilePage({ searchParams }: Props) {
           </div>
         }
       />
-      <SurfacePanel variant="muted" as="section">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-base font-semibold text-muted-blue-hover">
-              Ready to help the next renter?
-            </h2>
-            <p className="mt-1 text-sm leading-relaxed text-zinc-600">
-              Phone verified and profile set? You&apos;re ready to share a review.
-            </p>
+      {bostonRentingSinceYear != null &&
+      eligibleYearsWithoutAnyReview.length > 0 ? (
+        <SurfacePanel
+          variant="subtle"
+          as="section"
+          className="border border-muted-blue/20 bg-gradient-to-b from-muted-blue-tint/50 to-muted-blue-tint/25"
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-blue">
+                Grow your impact
+              </p>
+              <p className="mt-2 text-base font-semibold leading-snug text-muted-blue-hover">
+                Ready to help the next renter?
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-700">
+                We don&apos;t see a review yet for every lease-start year you&apos;re allowed
+                to share since{" "}
+                <span className="font-medium text-zinc-900">
+                  {bostonRentingSinceYear}
+                </span>
+                . Examples:{" "}
+                <span className="font-medium text-zinc-900">
+                  {formatYearsForMessage(eligibleYearsWithoutAnyReview)}
+                </span>
+                .
+              </p>
+            </div>
+            <Link
+              href="/submit"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-muted-blue-hover"
+            >
+              Add a review
+            </Link>
           </div>
-          <Link
-            href="/submit"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-6 py-2.5 text-sm font-semibold text-white shadow-[0_10px_28px_-8px_rgb(21_42_69/0.35)] transition hover:bg-muted-blue-hover"
-          >
-            Write a review
-          </Link>
-        </div>
-      </SurfacePanel>
+        </SurfacePanel>
+      ) : null}
 
       <div
         className={

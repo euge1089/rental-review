@@ -30,9 +30,10 @@ export default async function AnalyticsPage() {
         eyebrow="Boston Rent Explorer"
         title="Boston Rent Intelligence and Analytics"
         description="Explore verified renter data across neighborhoods, compare price ranges, and spot patterns in amenities and recency."
+        descriptionClassName="max-w-2xl text-[1.04rem] leading-relaxed text-zinc-600"
       />
       <RentExplorer userReviewCount={userReviewCount} />
-      <p className="text-center text-xs leading-relaxed text-zinc-500 sm:text-left">
+      <p className="text-center text-[13px] leading-relaxed text-zinc-500 sm:text-left">
         Still new - double-check rent and lease details with the landlord before you
         decide.
       </p>

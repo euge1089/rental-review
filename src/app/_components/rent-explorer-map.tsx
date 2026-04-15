@@ -80,7 +80,7 @@ export function RentExplorerMap({
 
   if (!hasToken) {
     return (
-      <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-[1.04rem] text-amber-900">
         Set `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` to enable the map.
       </div>
     );
@@ -126,7 +126,7 @@ export function RentExplorerMap({
                 type="button"
                 onMouseEnter={() => setHoveredPropertyId(marker.propertyId)}
                 onMouseLeave={() => setHoveredPropertyId(null)}
-                className={`grid place-items-center rounded-full border text-[11px] font-semibold shadow-sm transition ${
+                className={`grid place-items-center rounded-full border text-xs font-semibold shadow-sm transition ${
                   selected
                     ? "border-muted-blue-hover bg-muted-blue-hover text-white"
                     : "border-white bg-muted-blue text-white hover:bg-muted-blue-hover"
@@ -149,7 +149,7 @@ export function RentExplorerMap({
             offset={18}
             className="z-30"
           >
-            <div className="min-w-[13rem] space-y-1.5 text-xs text-zinc-700">
+            <div className="min-w-[14rem] space-y-1.5 text-sm text-zinc-700">
               <div className="flex items-start justify-between gap-2">
                 <p className="font-semibold text-muted-blue-hover">
                   {activeMarker.addressLine1}
@@ -184,7 +184,7 @@ export function RentExplorerMap({
               </p>
               <Link
                 href={`/properties/${activeMarker.propertyId}`}
-                className="inline-block text-[11px] font-semibold text-muted-blue hover:text-muted-blue-hover hover:underline"
+                className="inline-block text-[13px] font-semibold text-muted-blue hover:text-muted-blue-hover hover:underline"
               >
                 View Property
               </Link>
@@ -193,7 +193,7 @@ export function RentExplorerMap({
         ) : null}
       </Map>
       {isLoading ? (
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-white/85 px-3 py-2 text-center text-xs font-medium text-zinc-600">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-white/85 px-3 py-2 text-center text-sm font-medium text-zinc-600">
           Updating map…
         </div>
       ) : null}
