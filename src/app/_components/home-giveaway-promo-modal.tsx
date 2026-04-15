@@ -12,22 +12,17 @@ import { modalBackdropClass } from "@/lib/ui-classes";
 const SESSION_FIRST_HOME_VISIT_KEY = "rr_home_giveaway_promo_first_home_done";
 
 export function HomeGiveawayPromoModal() {
-  const [open, setOpen] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
+  const [open, setOpen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    if (!isGiveawayPromoActive()) return false;
+    return window.sessionStorage.getItem(SESSION_FIRST_HOME_VISIT_KEY) !== "1";
+  });
 
   const dismiss = useCallback(() => {
     if (typeof window !== "undefined") {
       window.sessionStorage.setItem(SESSION_FIRST_HOME_VISIT_KEY, "1");
     }
     setOpen(false);
-  }, []);
-
-  useEffect(() => {
-    setHydrated(true);
-    if (!isGiveawayPromoActive()) return;
-    if (typeof window === "undefined") return;
-    if (window.sessionStorage.getItem(SESSION_FIRST_HOME_VISIT_KEY) === "1") return;
-    setOpen(true);
   }, []);
 
   /** After paint so React Strict Mode’s remount doesn’t see storage set before the real mount. */
@@ -53,7 +48,7 @@ export function HomeGiveawayPromoModal() {
     };
   }, [open, dismiss]);
 
-  if (!hydrated || !open) return null;
+  if (!open) return null;
 
   return (
     <div

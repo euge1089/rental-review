@@ -101,6 +101,35 @@ npx prisma migrate dev
 npx prisma studio
 ```
 
+Automated quality checks:
+
+```bash
+npm run test:run
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Current automated coverage includes:
+
+- `src/lib/policy.test.ts` (review year + bathroom policy helpers)
+- `src/lib/normalize-address.test.ts` (address normalization/display formatting)
+- `src/app/api/reviews/duplicate-check/route.test.ts` (auth gate + Boston gating + duplicate year detection)
+- `src/app/api/reviews/batch/route.test.ts` (submit guardrails: auth required, Boston-only, duplicate years rejected)
+- `src/app/api/reviews/public/route.test.ts` (teaser-only payload protection for public API)
+- `src/app/api/auth/register/route.test.ts` (existing-account conflict + new-user verification flow)
+- `src/app/api/auth/verify-email/route.test.ts` (incorrect-code handling + successful account verification)
+- `src/app/api/auth/resend-verification/route.test.ts` (password gate + resend flow)
+- `src/app/api/admin/reviews/route.test.ts` (admin authorization guard + authorized response path)
+- `src/app/api/admin/users/route.test.ts` (admin authorization guard + authorized response path)
+- `src/app/api/reviews/[id]/route.test.ts` (owner-only edit/delete authorization for review mutations)
+- `src/app/api/reviews/[id]/report/route.test.ts` (report auth requirement + duplicate-report protection + success path)
+- `src/app/api/bookmarks/route.test.ts` (bookmark auth + validation + create/delete behavior)
+- `src/app/api/profile/route.test.ts` (profile auth + immutable Boston start-year rule + update path)
+- `src/app/api/reviews/my-count/route.test.ts` (review quota count and at-cap behavior)
+- `src/app/api/moderation/check/route.test.ts` (moderation decision + detected names response shape)
+- `src/app/api/reviews/duplicate-check/route.test.ts` (adds rate-limit and invalid-input edge coverage)
+
 ### Testing the Core Flows Locally
 
 1. **Sign in** with a Google account via `/signin`.

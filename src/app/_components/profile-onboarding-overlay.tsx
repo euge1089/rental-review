@@ -25,34 +25,23 @@ export function ProfileOnboardingOverlay({
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const [dismissedThisSession, setDismissedThisSession] = useState(false);
+
+  const missingName = !displayName?.trim();
+  const persistedDismissed =
+    typeof window !== "undefined" &&
+    window.localStorage.getItem(STORAGE_KEY) === "1";
+  const open =
+    bostonRentingSinceYear != null &&
+    (fromSignup || (missingName && !dismissedThisSession && !persistedDismissed));
 
   const handleDismiss = useCallback(() => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(STORAGE_KEY, "1");
     }
-    setOpen(false);
+    setDismissedThisSession(true);
     router.replace(pathname ?? "/profile");
   }, [router, pathname]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (bostonRentingSinceYear == null) {
-      setOpen(false);
-      return;
-    }
-    const dismissed = window.localStorage.getItem(STORAGE_KEY) === "1";
-    const missingName = !displayName?.trim();
-    if (!fromSignup && !missingName) {
-      setOpen(false);
-      return;
-    }
-    if (fromSignup || (missingName && !dismissed)) {
-      setOpen(true);
-    } else {
-      setOpen(false);
-    }
-  }, [fromSignup, displayName, bostonRentingSinceYear]);
 
   useEffect(() => {
     if (!open) return;
@@ -70,7 +59,7 @@ export function ProfileOnboardingOverlay({
 
   if (!open) return null;
 
-  const showNameStep = !displayName?.trim();
+  const showNameStep = missingName;
   const showReviewStep = reviewCount === 0;
 
   return (

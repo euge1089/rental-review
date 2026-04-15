@@ -88,29 +88,14 @@ function CountdownDisplay({
   endMs: number;
   large?: boolean;
 }) {
-  const [now, setNow] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    setNow(Date.now());
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, []);
 
-  const parts = useMemo(() => {
-    if (now == null) return null;
-    return formatRemaining(endMs - now);
-  }, [now, endMs]);
-
-  if (parts == null) {
-    return (
-      <span
-        className={`tabular-nums text-zinc-400 ${large ? "text-base" : "text-sm"}`}
-        aria-hidden
-      >
-        - · - · - · -
-      </span>
-    );
-  }
+  const parts = useMemo(() => formatRemaining(endMs - now), [now, endMs]);
 
   const { days, hours, minutes, seconds } = parts;
   return (
