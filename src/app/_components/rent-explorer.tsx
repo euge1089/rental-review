@@ -403,61 +403,24 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* Intro - always readable */}
-      <section
-        className={`${surfaceElevatedClass} p-4 sm:p-6 md:p-8`}
-      >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-blue">
-              Your search
-            </p>
-            <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
-              Where are you looking?
-            </h2>
-            <p className="max-w-xl text-sm leading-relaxed text-zinc-600">
-              Start with a Boston ZIP and rough budget. We&apos;ll show what renters
-              reported, then you can narrow with optional filters.
-            </p>
-          </div>
-        </div>
-      </section>
-
       <div className="relative flex flex-col gap-10">
         <div
           className={`flex flex-col gap-10 ${explorerLocked ? "pointer-events-none select-none blur-md" : ""}`}
           aria-hidden={explorerLocked}
         >
-      {MAP_ENABLED ? (
-        <section className="space-y-3">
-          <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-blue">
-              Interactive map
-            </p>
-            <p className="text-sm text-zinc-600">
-              Move the map to load points in view. Filters below apply to both map and list.
-            </p>
-          </div>
-          <RentExplorerMap
-            markers={mapMarkers}
-            selectedPropertyId={selectedPropertyId}
-            isLoading={isMapLoading}
-            onMarkerClick={(propertyId) => setSelectedPropertyId(propertyId)}
-            onBoundsChange={(bounds) => {
-              setMapBounds(bounds);
-            }}
-          />
-          {mapError ? (
-            <p className="text-sm text-red-600" role="alert">
-              {mapError}
-            </p>
-          ) : null}
-        </section>
-      ) : null}
-      {/* Filters - elevated slab like hero / sign-in panels */}
-      <section
-        className={`${surfaceElevatedClass} space-y-5 p-4 sm:space-y-6 sm:p-6 md:p-8`}
-      >
+      {/* Search + filters */}
+      <section className={`${surfaceElevatedClass} space-y-5 p-4 sm:space-y-6 sm:p-6 md:p-8`}>
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-blue">
+            Your search
+          </p>
+          <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
+            Where are you looking?
+          </h2>
+          <p className="overflow-x-auto whitespace-nowrap text-sm leading-relaxed text-zinc-600">
+            Start with a Boston ZIP and rough budget. We&apos;ll show what renters reported, then you can narrow with optional filters.
+          </p>
+        </div>
         <div className="space-y-5">
           <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
             <div className="grid gap-1.5">
@@ -539,9 +502,6 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 />
               </div>
             </div>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={handleUpdate}
@@ -643,6 +603,33 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           </p>
         ) : null}
       </section>
+
+      {MAP_ENABLED ? (
+        <section className="space-y-3">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-blue">
+              Interactive map
+            </p>
+            <p className="text-sm text-zinc-600">
+              Move the map to load points in view. Filters above apply to both map and list.
+            </p>
+          </div>
+          <RentExplorerMap
+            markers={mapMarkers}
+            selectedPropertyId={selectedPropertyId}
+            isLoading={isMapLoading}
+            onMarkerClick={(propertyId) => setSelectedPropertyId(propertyId)}
+            onBoundsChange={(bounds) => {
+              setMapBounds(bounds);
+            }}
+          />
+          {mapError ? (
+            <p className="text-sm text-red-600" role="alert">
+              {mapError}
+            </p>
+          ) : null}
+        </section>
+      ) : null}
 
       {snapshot ? (
         <>

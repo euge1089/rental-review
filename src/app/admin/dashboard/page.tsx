@@ -34,7 +34,15 @@ export default async function AdminDashboardPage() {
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  const [userCount, reviewStats, propertyStats, recentReviews, emptyProperties] =
+  const [
+    userCount,
+    reviewStats,
+    propertyStats,
+    recentReviews,
+    emptyProperties,
+    geocodeStats,
+    geocodeRecent,
+  ] =
     await Promise.all([
       prisma.user.count(),
       prisma.review.groupBy({
@@ -73,6 +81,25 @@ export default async function AdminDashboardPage() {
         },
         orderBy: { createdAt: "desc" },
       }),
+      prisma.property.groupBy({
+        by: ["geocodeStatus"],
+        _count: { _all: true },
+      }),
+      prisma.property.findMany({
+        select: {
+          id: true,
+          addressLine1: true,
+          city: true,
+          state: true,
+          postalCode: true,
+          geocodeStatus: true,
+          geocodedAt: true,
+          geocodeError: true,
+          updatedAt: true,
+        },
+        orderBy: [{ updatedAt: "desc" }],
+        take: 20,
+      }),
     ] as const);
 
   const totalReviews = reviewStats.reduce(
@@ -86,8 +113,15 @@ export default async function AdminDashboardPage() {
     reviewStats.find((r) => r.moderationStatus === "APPROVED")?._count._all ?? 0;
   const rejectedCount =
     reviewStats.find((r) => r.moderationStatus === "REJECTED")?._count._all ?? 0;
-
-  const totalProperties = propertyStats.length;
+  const geocodeSuccessCount =
+    geocodeStats.find((g) => g.geocodeStatus === "SUCCESS")?._count._all ?? 0;
+  const geocodeFailedCount =
+    geocodeStats.find((g) => g.geocodeStatus === "FAILED")?._count._all ?? 0;
+  const geocodePendingCount =
+    geocodeStats.find((g) => g.geocodeStatus === "PENDING")?._count._all ?? 0;
+  const geocodeNotStartedCount =
+    geocodeStats.find((g) => g.geocodeStatus === "NOT_STARTED")?._count._all ?? 0;
+  const geocodeTotalCount = geocodeStats.reduce((sum, g) => sum + g._count._all, 0);
 
   const reportedCount = await prisma.review.count({
     where: {
@@ -151,6 +185,94 @@ export default async function AdminDashboardPage() {
             {reportedCount}
           </p>
         </div>
+        <div className={`${surfaceSubtleClass} p-4 text-sm shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}>
+          <p className="text-xs text-zinc-500">Rejected</p>
+          <p className="mt-1 text-2xl font-semibold text-rose-700">{rejectedCount}</p>
+        </div>
+      </section>
+
+      <section className={`${surfaceSubtleClass} space-y-4 p-5 text-sm shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}>
+        <div>
+          <h2 className="text-base font-semibold text-muted-blue-hover">
+            Geocoding health
+          </h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            Tracks which properties were geocoded for the Rent Explorer map.
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="rounded-xl border border-zinc-200/70 bg-white/85 p-3">
+            <p className="text-[11px] text-zinc-500">Total properties</p>
+            <p className="mt-1 text-lg font-semibold text-zinc-900">{geocodeTotalCount}</p>
+          </div>
+          <div className="rounded-xl border border-zinc-200/70 bg-emerald-50/80 p-3">
+            <p className="text-[11px] text-zinc-500">Geocoded (SUCCESS)</p>
+            <p className="mt-1 text-lg font-semibold text-emerald-700">
+              {geocodeSuccessCount}
+            </p>
+          </div>
+          <div className="rounded-xl border border-zinc-200/70 bg-amber-50/80 p-3">
+            <p className="text-[11px] text-zinc-500">Queued (PENDING)</p>
+            <p className="mt-1 text-lg font-semibold text-amber-700">
+              {geocodePendingCount}
+            </p>
+          </div>
+          <div className="rounded-xl border border-zinc-200/70 bg-zinc-50 p-3">
+            <p className="text-[11px] text-zinc-500">Not started</p>
+            <p className="mt-1 text-lg font-semibold text-zinc-700">
+              {geocodeNotStartedCount}
+            </p>
+          </div>
+          <div className="rounded-xl border border-zinc-200/70 bg-rose-50/80 p-3">
+            <p className="text-[11px] text-zinc-500">Failed</p>
+            <p className="mt-1 text-lg font-semibold text-rose-700">
+              {geocodeFailedCount}
+            </p>
+          </div>
+        </div>
+
+        {geocodeRecent.length > 0 ? (
+          <ul className="space-y-2 text-xs">
+            {geocodeRecent.map((p) => (
+              <li
+                key={p.id}
+                className="rounded-xl border border-zinc-200/70 bg-white/85 px-3 py-2"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-semibold text-muted-blue-hover">
+                    {p.addressLine1}
+                    <span className="ml-1 font-normal text-zinc-600">
+                      ({p.city}, {p.state} {p.postalCode ?? ""})
+                    </span>
+                  </p>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${
+                      p.geocodeStatus === "SUCCESS"
+                        ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                        : p.geocodeStatus === "FAILED"
+                          ? "bg-rose-50 text-rose-700 ring-rose-200"
+                          : p.geocodeStatus === "PENDING"
+                            ? "bg-amber-50 text-amber-700 ring-amber-200"
+                            : "bg-zinc-100 text-zinc-600 ring-zinc-200"
+                    }`}
+                  >
+                    {p.geocodeStatus}
+                  </span>
+                </div>
+                <p className="mt-1 text-[11px] text-zinc-500">
+                  Updated {p.updatedAt.toLocaleString()}
+                  {p.geocodedAt ? ` · Geocoded ${p.geocodedAt.toLocaleString()}` : ""}
+                </p>
+                {p.geocodeStatus === "FAILED" && p.geocodeError ? (
+                  <p className="mt-1 text-[11px] text-rose-700">{p.geocodeError}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-zinc-600">No geocoding rows yet.</p>
+        )}
       </section>
 
       {emptyProperties.length > 0 ? (
