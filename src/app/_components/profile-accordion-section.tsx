@@ -107,19 +107,19 @@ export function ProfileAccordionSection({
           <h2 className="text-base font-semibold text-muted-blue-hover">
             {title}
           </h2>
-          <div className="mt-2 flex min-h-[3.25rem] items-start gap-2">
-            <button
-              type="button"
-              onClick={() => setExpanded(true)}
-              className="group flex min-h-0 w-full min-w-0 flex-1 items-start gap-2 rounded-lg text-left outline-none ring-muted-blue/40 focus-visible:ring-2"
-              aria-expanded={false}
-              aria-label={`Expand ${title}`}
-            >
-              <span className="min-w-0 flex-1 text-sm leading-snug text-zinc-700">
-                {summary}
-              </span>
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="group mt-2 flex min-h-[4.5rem] w-full flex-1 flex-col justify-between gap-3 rounded-lg text-left outline-none ring-muted-blue/40 focus-visible:ring-2"
+            aria-expanded={false}
+            aria-label={`Expand ${title}`}
+          >
+            <span className="min-w-0 flex-1 text-sm leading-snug text-zinc-700">
+              {summary}
+            </span>
+            <span className="flex justify-end pt-1">
               <span
-                className={`mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full border text-zinc-500 transition group-hover:text-zinc-700 ${
+                className={`inline-flex size-8 shrink-0 items-center justify-center rounded-full border text-zinc-500 transition group-hover:text-zinc-700 ${
                   collapsedTone === "emerald"
                     ? "border-emerald-200/80 bg-white/80 group-hover:border-emerald-300"
                     : "border-zinc-200/90 bg-white/90 group-hover:border-zinc-300"
@@ -128,8 +128,8 @@ export function ProfileAccordionSection({
               >
                 <ChevronDown className="size-4" />
               </span>
-            </button>
-          </div>
+            </span>
+          </button>
         </>
       ) : (
         <>

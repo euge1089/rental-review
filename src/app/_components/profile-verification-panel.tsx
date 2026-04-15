@@ -15,7 +15,7 @@ export function ProfileVerificationPanel({ initialVerified }: Props) {
   return (
     <ProfileAccordionSection
       id="verification"
-      title="Profile verification"
+      title="SMS Verification"
       summary={summary}
       defaultExpanded={!initialVerified}
       collapsedTone={initialVerified ? "emerald" : "neutral"}

@@ -80,7 +80,7 @@ export function ProfileRetentionEmailPrefs({
   return (
     <ProfileAccordionSection
       id="email-preferences"
-      title="Email preferences"
+      title="Email Preferences"
       summary={SUMMARY}
       defaultExpanded={false}
       collapsedTone="neutral"

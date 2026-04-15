@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { ProfileAccordionSection } from "@/app/_components/profile-accordion-section";
 import { formInputClass } from "@/lib/ui-classes";
 
-const ANONYMOUS_COPY =
-  "Your public reviews stay fully anonymous - we never show this name on review cards or tie it to an address.";
+const PROFILE_NAME_COPY =
+  "Add/Update your name to complete your profile, this will never be shared with anyone else";
 
 type Props = {
   initialDisplayName: string | null;
@@ -70,14 +70,14 @@ export function ProfileDisplayNameCard({ initialDisplayName }: Props) {
   return (
     <ProfileAccordionSection
       id="profile-display-name"
-      title="Your name"
-      summary={ANONYMOUS_COPY}
-      collapsedTone="emerald"
+      title="Your Name"
+      summary={PROFILE_NAME_COPY}
+      collapsedTone="neutral"
       expandedTone="neutral"
       expanded={expanded}
       onExpandedChange={setExpanded}
     >
-      <p className="text-sm leading-relaxed text-zinc-600">{ANONYMOUS_COPY}</p>
+      <p className="text-sm leading-relaxed text-zinc-600">{PROFILE_NAME_COPY}</p>
       <form
         className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end"
         onSubmit={onSubmit}
