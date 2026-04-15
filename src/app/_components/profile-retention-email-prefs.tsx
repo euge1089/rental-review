@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 
 type Props = {
   initialOptOut: boolean;
+  embedded?: boolean;
 };
 
-export function ProfileRetentionEmailPrefs({ initialOptOut }: Props) {
+export function ProfileRetentionEmailPrefs({
+  initialOptOut,
+  embedded = false,
+}: Props) {
   const router = useRouter();
   const [optOut, setOptOut] = useState(initialOptOut);
   const [loading, setLoading] = useState(false);
@@ -40,15 +44,10 @@ export function ProfileRetentionEmailPrefs({ initialOptOut }: Props) {
     }
   }
 
-  return (
-    <section
-      id="email-preferences"
-      className="scroll-mt-24 rounded-2xl border border-zinc-200/80 bg-white p-5 sm:p-6"
-    >
-      <h2 className="text-base font-semibold text-muted-blue-hover">
-        Email reminders
-      </h2>
-      <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+  const content = (
+    <>
+      <p className="text-sm font-semibold text-muted-blue-hover">Email reminders</p>
+      <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">
         Occasional nudges if you haven&apos;t submitted a review yet, or if you may
         still have lease-start years to cover. Account and security emails are
         separate.
@@ -74,6 +73,19 @@ export function ProfileRetentionEmailPrefs({ initialOptOut }: Props) {
           {error}
         </p>
       ) : null}
+    </>
+  );
+
+  if (embedded) {
+    return <div id="email-preferences">{content}</div>;
+  }
+
+  return (
+    <section
+      id="email-preferences"
+      className="scroll-mt-24 rounded-2xl border border-zinc-200/80 bg-white p-5 sm:p-6"
+    >
+      {content}
     </section>
   );
 }

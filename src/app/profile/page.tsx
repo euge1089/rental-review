@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import {
   AppPageShell,
-  PageHeader,
   SurfacePanel,
 } from "@/app/_components/app-page-shell";
 import { ProfileBookmarks } from "@/app/_components/profile-bookmarks";
@@ -14,7 +13,6 @@ import {
   type ProfileReviewForList,
 } from "@/app/_components/profile-reviews-grouped";
 import { ProfileBostonYearGate } from "@/app/_components/profile-boston-year-gate";
-import { ProfileContributorLadder } from "@/app/_components/profile-contributor-ladder";
 import { ProfileVerification } from "@/app/_components/profile-verification";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -41,11 +39,17 @@ export default async function ProfilePage({ searchParams }: Props) {
   if (!email) {
     return (
       <AppPageShell gapClass="gap-6">
-        <PageHeader
-          eyebrow="Profile"
-          title="Your profile"
-          description="You need to sign in to see your reviews and saved apartments."
-        />
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-blue">
+            Profile
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-muted-blue-hover">
+            Your profile
+          </h1>
+          <p className="text-sm text-zinc-600">
+            You need to sign in to see your reviews and saved apartments.
+          </p>
+        </div>
         <SurfacePanel variant="subtle">
           <Link href="/signin" className={`${linkInlineClass} text-sm`}>
             Sign in →
@@ -85,6 +89,18 @@ export default async function ProfilePage({ searchParams }: Props) {
   ]);
 
   const displayName = user?.displayName ?? null;
+  const rankRungs = [
+    { need: 0, title: "Getting Started" },
+    { need: 1, title: "Contributor" },
+    { need: 2, title: "Verified" },
+    { need: 3, title: "Established" },
+    { need: 4, title: "Insider" },
+    { need: 5, title: "Veteran Contributor" },
+  ] as const;
+  const currentRank =
+    [...rankRungs].reverse().find((r) => reviewTotalCount >= r.need)?.title ??
+    rankRungs[0].title;
+  const nextRung = rankRungs.find((r) => r.need > reviewTotalCount) ?? null;
 
   const allowedLeaseYearsForProfile =
     bostonRentingSinceYear != null
@@ -102,7 +118,7 @@ export default async function ProfilePage({ searchParams }: Props) {
   }
 
   return (
-    <AppPageShell>
+    <AppPageShell gapClass="gap-8">
       {bostonRentingSinceYear == null ? (
         <ProfileBostonYearGate yearChoices={bostonYearChoices} />
       ) : null}
@@ -112,74 +128,37 @@ export default async function ProfilePage({ searchParams }: Props) {
         reviewCount={reviews.length}
         bostonRentingSinceYear={bostonRentingSinceYear}
       />
-      {bostonRentingSinceYear != null &&
-      eligibleYearsWithoutAnyReview.length > 0 ? (
-        <SurfacePanel
-          variant="subtle"
-          as="section"
-          className="border border-muted-blue/20 bg-gradient-to-b from-muted-blue-tint/50 to-muted-blue-tint/25"
-        >
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-blue">
-            Grow your impact
-          </p>
-          <p className="mt-2 text-base font-semibold leading-snug text-muted-blue-hover">
-            You still have lease years to cover
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-zinc-700">
-            We don&apos;t see a review yet for every lease-start year you&apos;re allowed
-            to share since{" "}
-            <span className="font-medium text-zinc-900">
-              {bostonRentingSinceYear}
-            </span>
-            . Examples:{" "}
-            <span className="font-medium text-zinc-900">
-              {formatYearsForMessage(eligibleYearsWithoutAnyReview)}
-            </span>
-            .
-          </p>
-          <div className="mt-4">
-            <Link
-              href="/submit"
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-muted-blue-hover"
-            >
-              Add a review
-            </Link>
-          </div>
-        </SurfacePanel>
-      ) : null}
-
-      <PageHeader
-        eyebrow="Profile"
-        title="Your reviews and saved apartments"
-        description={
-          <div className="flex flex-wrap items-center gap-2">
-            <span>
-              Signed in as{" "}
-              <span className="font-medium text-zinc-800">
-                {displayName?.trim() ? displayName.trim() : email}
-              </span>
-              {displayName?.trim() ? (
-                <span className="text-zinc-500"> ({email})</span>
-              ) : null}
-              .
-            </span>
-            {user?.phoneVerified ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-600/15">
-                SMS verified
-              </span>
-            ) : null}
-          </div>
-        }
-      />
-      <SurfacePanel variant="muted" as="section">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-base font-semibold text-muted-blue-hover">
-              Ready to help the next renter?
-            </h2>
-            <p className="mt-1 text-sm leading-relaxed text-zinc-600">
-              Phone verified and profile set? You&apos;re ready to share a review.
+      <SurfacePanel
+        variant="subtle"
+        as="section"
+        className="border border-zinc-200/80 bg-gradient-to-b from-muted-blue-tint/45 to-white p-6 sm:p-7"
+      >
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-blue">
+              Profile
             </p>
+            <h1 className="text-2xl font-semibold tracking-tight text-muted-blue-hover sm:text-3xl">
+              Your profile
+            </h1>
+            <p className="text-sm leading-relaxed text-zinc-600">
+              Manage your reviews, saved apartments, and account details.
+            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {user?.phoneVerified ? (
+                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200/80">
+                  SMS Verified
+                </span>
+              ) : (
+                <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-600 ring-1 ring-zinc-200/80">
+                  Not verified
+                </span>
+              )}
+              <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-zinc-700 ring-1 ring-zinc-200/80">
+                {reviewTotalCount} of {PRODUCT_POLICY.reviews.maxReviewsPerUser} review
+                slots used
+              </span>
+            </div>
           </div>
           <Link
             href="/submit"
@@ -188,88 +167,121 @@ export default async function ProfilePage({ searchParams }: Props) {
             Write a review
           </Link>
         </div>
+        {bostonRentingSinceYear != null &&
+        eligibleYearsWithoutAnyReview.length > 0 ? (
+          <p className="mt-4 border-t border-zinc-200/70 pt-3 text-xs text-zinc-600">
+            You can still add reviews for lease-start years:{" "}
+            <span className="font-medium text-zinc-800">
+              {formatYearsForMessage(eligibleYearsWithoutAnyReview)}
+            </span>
+            .
+          </p>
+        ) : null}
       </SurfacePanel>
 
-      <div
-        className={
-          bostonRentingSinceYear != null
-            ? "flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,1fr)_19.5rem]"
-            : "space-y-5"
-        }
-      >
-        <div
-          className={
-            bostonRentingSinceYear != null
-              ? "order-2 min-w-0 space-y-5 lg:order-1"
-              : "space-y-5"
-          }
-        >
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch lg:gap-6">
-            <div className="min-w-0 flex-1 space-y-5 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:space-y-5">
-              <ProfileDisplayNameCard initialDisplayName={displayName} />
-              <ProfileRetentionEmailPrefs
-                initialOptOut={user?.retentionEmailsOptOut ?? false}
-              />
-            </div>
-            <div className="lg:flex lg:h-full lg:min-h-0 lg:w-[min(100%,22rem)] lg:shrink-0 lg:flex-col">
-              <SurfacePanel
-                variant="subtle"
-                as="section"
-                id="verification"
-                className={`scroll-mt-24 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col ${
-                  user?.phoneVerified
-                    ? "!border-emerald-200/70 !bg-emerald-50/50 px-4 py-3.5 sm:px-5 sm:py-4 md:px-5 md:py-4"
-                    : ""
-                }`}
-              >
-              <h2 className="text-base font-semibold text-muted-blue-hover">
-                Profile verification
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8">
+        <div className="space-y-6">
+          <ProfileReviewsGrouped
+            reviews={reviews as ProfileReviewForList[]}
+            reviewTotalCount={reviewTotalCount}
+          />
+
+          <SurfacePanel variant="subtle" as="section" className="space-y-3">
+            <div>
+              <h2 className="text-lg font-semibold text-muted-blue-hover">
+                Saved apartments
               </h2>
-              {!user?.phoneVerified ? (
-                <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                  After SMS verification, your reviews can show SMS verified and are
-                  often approved faster.
-                </p>
-              ) : null}
-              <div
-                className={`min-h-0 lg:flex-1 lg:flex lg:flex-col ${
-                  user?.phoneVerified ? "mt-2" : "mt-3"
-                }`}
-              >
-                <ProfileVerification
-                  initialVerified={Boolean(user?.phoneVerified)}
+            </div>
+            <ProfileBookmarks />
+          </SurfacePanel>
+        </div>
+
+        <div className="space-y-6">
+          <SurfacePanel variant="subtle" as="section" className="space-y-4">
+            <h2 className="text-lg font-semibold text-muted-blue-hover">
+              Account & preferences
+            </h2>
+            <div className="space-y-4 divide-y divide-zinc-200/70">
+              <div className="pb-4">
+                <ProfileDisplayNameCard
+                  initialDisplayName={displayName}
+                  embedded
                 />
               </div>
-            </SurfacePanel>
+              <div className="pt-4">
+                <p className="text-sm font-semibold text-muted-blue-hover">
+                  Profile verification
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">
+                  {user?.phoneVerified
+                    ? "Verified via SMS. Reviews from verified users are shown as SMS verified and are usually approved more quickly."
+                    : "Verify via SMS to get the SMS verified badge and speed up approval for new submissions."}
+                </p>
+                <div className="mt-3">
+                  <ProfileVerification
+                    initialVerified={Boolean(user?.phoneVerified)}
+                  />
+                </div>
+              </div>
+              <div className="pt-4">
+                <ProfileRetentionEmailPrefs
+                  initialOptOut={user?.retentionEmailsOptOut ?? false}
+                  embedded
+                />
+              </div>
+              {bostonRentingSinceYear != null ? (
+                <div className="pt-4">
+                  <p className="text-sm font-semibold text-muted-blue-hover">
+                    Boston renting history
+                  </p>
+                  <p className="mt-1.5 text-sm text-zinc-600">
+                    First rented in Boston:{" "}
+                    <span className="font-semibold text-zinc-800">
+                      {bostonRentingSinceYear}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    If this is incorrect, contact support. Admin edit only.
+                  </p>
+                </div>
+              ) : null}
             </div>
-          </div>
+          </SurfacePanel>
 
-          {bostonRentingSinceYear != null ? (
-            <SurfacePanel variant="subtle" as="section">
-              <h2 className="text-base font-semibold text-muted-blue-hover">
-                Boston renting history
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-                You told us you first rented in Boston in{" "}
-                <span className="font-semibold text-zinc-800">
-                  {bostonRentingSinceYear}
-                </span>
-                . Lease-start years on your reviews must be{" "}
-                <span className="font-medium text-zinc-800">
-                  {bostonRentingSinceYear}
-                </span>{" "}
-                or later. If that year is wrong, contact us - only an admin can change
-                it.
-              </p>
-            </SurfacePanel>
-          ) : null}
-
-          <SurfacePanel variant="subtle" as="section">
+          <SurfacePanel variant="subtle" as="section" className="space-y-3">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Saved apartments
+              Contributor progress
             </h2>
-            <div className="mt-3">
-              <ProfileBookmarks />
+            <div className="space-y-2 text-sm">
+              <p className="text-zinc-600">
+                Current rank:{" "}
+                <span className="font-semibold text-zinc-800">{currentRank}</span>
+              </p>
+              <p className="text-zinc-600">
+                <span className="font-semibold text-zinc-800 tabular-nums">
+                  {reviewTotalCount}
+                </span>{" "}
+                review{submissionPlural(reviewTotalCount)} submitted
+              </p>
+              <p className="text-zinc-600">
+                Next rank:{" "}
+                <span className="font-semibold text-zinc-800">
+                  {nextRung
+                    ? `${nextRung.title} at ${nextRung.need} reviews`
+                    : "Top rank unlocked"}
+                </span>
+              </p>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-zinc-200/70">
+              <div
+                className="h-full rounded-full bg-muted-blue transition-all"
+                style={{
+                  width: `${Math.min(
+                    100,
+                    (reviewTotalCount / PRODUCT_POLICY.reviews.maxReviewsPerUser) * 100,
+                  )}%`,
+                }}
+              />
             </div>
           </SurfacePanel>
 
@@ -303,21 +315,12 @@ export default async function ProfilePage({ searchParams }: Props) {
               </div>
             </SurfacePanel>
           ) : null}
-
-          <ProfileReviewsGrouped
-            reviews={reviews as ProfileReviewForList[]}
-            reviewTotalCount={reviewTotalCount}
-          />
         </div>
-
-        {bostonRentingSinceYear != null ? (
-          <ProfileContributorLadder
-            className="order-1 lg:sticky lg:top-28 lg:order-2 lg:self-start"
-            reviewCount={reviewTotalCount}
-            maxReviews={PRODUCT_POLICY.reviews.maxReviewsPerUser}
-          />
-        ) : null}
       </div>
     </AppPageShell>
   );
+}
+
+function submissionPlural(n: number): string {
+  return n === 1 ? "" : "s";
 }
