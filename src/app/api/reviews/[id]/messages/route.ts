@@ -4,13 +4,14 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { assertMessageContentAllowed } from "@/lib/message-moderation";
 import { assertCanPostMessage } from "@/lib/review-message-thread-rules";
-import { notifyNewReviewThreadMessage } from "@/lib/review-message-notifications";
+import { isEitherUserBlocking } from "@/lib/user-blocks";
 
 type Params = { params: Promise<{ id: string }> };
 
 const postSchema = z.object({
-  body: z.string().trim().min(1).max(2000),
+  body: z.string().trim().min(1).max(100),
 });
 
 /** Asker: load the thread they started on this review (if any). */
@@ -48,6 +49,13 @@ export async function GET(_request: Request, { params }: Params) {
     return NextResponse.json(
       { ok: false, error: "Use your inbox for conversations about your reviews." },
       { status: 400 },
+    );
+  }
+
+  if (await isEitherUserBlocking(user.id, review.userId)) {
+    return NextResponse.json(
+      { ok: false, error: "Messaging isn’t available with this renter." },
+      { status: 403 },
     );
   }
 
@@ -112,9 +120,14 @@ export async function POST(request: Request, { params }: Params) {
   const parsed = postSchema.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json(
-      { ok: false, error: "Message must be 1–2000 characters." },
+      { ok: false, error: "Message must be 1–100 characters." },
       { status: 400 },
     );
+  }
+
+  const moderated = assertMessageContentAllowed(parsed.data.body);
+  if (!moderated.ok) {
+    return NextResponse.json({ ok: false, error: moderated.error }, { status: 400 });
   }
 
   const review = await prisma.review.findUnique({
@@ -136,6 +149,13 @@ export async function POST(request: Request, { params }: Params) {
     return NextResponse.json(
       { ok: false, error: "You can’t message yourself about your own review." },
       { status: 400 },
+    );
+  }
+
+  if (await isEitherUserBlocking(user.id, review.userId)) {
+    return NextResponse.json(
+      { ok: false, error: "Messaging isn’t available with this renter." },
+      { status: 403 },
     );
   }
 
@@ -183,12 +203,6 @@ export async function POST(request: Request, { params }: Params) {
       select: { id: true, body: true, createdAt: true, senderUserId: true },
     });
 
-    void notifyNewReviewThreadMessage({
-      threadId: existing.id,
-      senderUserId: user.id,
-      messagePreview: parsed.data.body,
-    });
-
     return NextResponse.json({ ok: true, threadId: existing.id, messages });
   }
 
@@ -213,12 +227,6 @@ export async function POST(request: Request, { params }: Params) {
     where: { threadId: thread.id },
     orderBy: { createdAt: "asc" },
     select: { id: true, body: true, createdAt: true, senderUserId: true },
-  });
-
-  void notifyNewReviewThreadMessage({
-    threadId: thread.id,
-    senderUserId: user.id,
-    messagePreview: parsed.data.body,
   });
 
   return NextResponse.json({

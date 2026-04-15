@@ -73,6 +73,10 @@ export default function PrivacyPage() {
                 security and debugging.
               </li>
               <li>Reports and admin actions on content.</li>
+              <li>
+                Private messages between renters (short text), block relationships, and
+                optional daily email digests summarizing message and vote activity.
+              </li>
             </ul>
           </section>
 

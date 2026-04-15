@@ -38,7 +38,7 @@ model User {
   phoneVerified   Boolean   @default(false)
   /// When true, skip retention / reminder emails (transactional auth email still sent).
   retentionEmailsOptOut Boolean @default(false)
-  /// When true, skip email when someone sends a private review message (default false = notifications on).
+  /// When true, skip the daily activity digest (helpful votes + new messages summary).
   messageEmailsOptOut Boolean @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -48,6 +48,10 @@ model User {
   reviewVotes     ReviewVote[]
   startedReviewThreads ReviewMessageThread[] @relation("StartedReviewThreads")
   reviewThreadMessages ReviewThreadMessage[]
+  userBlocksCreated   UserBlock[] @relation("BlockerUser")
+  userBlocksReceived  UserBlock[] @relation("BlockedUser")
+  /// Cursor for daily activity digest email (votes + messages summary).
+  lastDailyDigestSentAt DateTime?
   retentionEmailLogs RetentionEmailLog[]
   retentionEmailClicks RetentionEmailClick[]
 }
@@ -150,7 +154,7 @@ model Review {
   @@index([propertyId, createdAt])
 }
 
-/// Thumbs up (+1) or down (-1); one vote per user per review.
+/// Helpful (upvote) only; value is always 1 when present.
 model ReviewVote {
   id        String   @id @default(cuid())
   reviewId  String
@@ -197,6 +201,19 @@ model ReviewThreadMessage {
   sender User                 @relation(fields: [senderUserId], references: [id], onDelete: Cascade)
 
   @@index([threadId, createdAt])
+}
+
+model UserBlock {
+  id String   @id @default(cuid())
+  blockerId     String
+  blockedUserId String
+  createdAt     DateTime @default(now())
+
+  blocker User @relation("BlockerUser", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("BlockedUser", fields: [blockedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedUserId])
+  @@index([blockedUserId])
 }
 
 model Bookmark {

@@ -114,14 +114,14 @@ export function ReviewThreadReplyForm({
             id={`reply-${threadId ?? reviewId}`}
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            rows={3}
-            maxLength={2000}
+            rows={2}
+            maxLength={100}
             placeholder="Write a message…"
             className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm outline-none ring-muted-blue/20 placeholder:text-zinc-400 focus:border-muted-blue/40 focus:ring-2"
           />
           <p className="text-[11px] text-zinc-500">
-            After the author accepts, you can send at most two messages in a row before
-            they reply.
+            Up to 100 characters. Be respectful—harassment and sharing others&apos;
+            private contact info aren&apos;t allowed.
           </p>
           {error ? <p className="text-xs text-red-600">{error}</p> : null}
           <button

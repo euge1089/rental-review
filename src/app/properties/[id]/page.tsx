@@ -4,19 +4,12 @@ import { AppPageShell } from "@/app/_components/app-page-shell";
 import { PropertyDetailHero } from "@/app/_components/property-detail-hero";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-import {
-  bedroomCountToBand,
-  getPropertyRentStats,
-} from "@/lib/analytics";
+import { bedroomCountToBand } from "@/lib/analytics";
 import { bathroomsToPublicLabel } from "@/lib/policy";
 import { ReportReviewButton } from "@/app/_components/report-review-button";
 import { ReviewVoteButtons } from "@/app/_components/review-vote-buttons";
 import { PropertyEngagement } from "@/app/_components/property-engagement";
-import {
-  linkInlineClass,
-  linkMutedClass,
-  surfaceElevatedClass,
-} from "@/lib/ui-classes";
+import { linkMutedClass, surfaceElevatedClass } from "@/lib/ui-classes";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -35,28 +28,25 @@ export default async function PropertyDetailPage({ params }: Props) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
 
-  const [property, rentStats] = await Promise.all([
-    prisma.property.findUnique({
-      where: { id },
-      include: {
-        reviews: {
-          where: { moderationStatus: "APPROVED" },
-          orderBy: { createdAt: "desc" },
-          include: {
-            user: {
-              select: {
-                id: true,
-                displayName: true,
-                email: true,
-                phoneVerified: true,
-              },
+  const property = await prisma.property.findUnique({
+    where: { id },
+    include: {
+      reviews: {
+        where: { moderationStatus: "APPROVED" },
+        orderBy: { createdAt: "desc" },
+        include: {
+          user: {
+            select: {
+              id: true,
+              displayName: true,
+              email: true,
+              phoneVerified: true,
             },
           },
         },
       },
-    }),
-    getPropertyRentStats(id),
-  ]);
+    },
+  });
 
   if (!property) {
     return (
@@ -95,49 +85,58 @@ export default async function PropertyDetailPage({ params }: Props) {
         })
       : null;
 
-  const [voteGroups, myVoteRows] = await Promise.all([
+  const authorIds = [...new Set(property.reviews.map((r) => r.user.id))];
+
+  const [voteGroups, myVoteRows, blockedWithAuthorIds] = await Promise.all([
     reviewIds.length > 0
       ? prisma.reviewVote.groupBy({
-          by: ["reviewId", "value"],
-          where: { reviewId: { in: reviewIds } },
+          by: ["reviewId"],
+          where: { reviewId: { in: reviewIds }, value: 1 },
           _count: { _all: true },
         })
       : Promise.resolve(
           [] as {
             reviewId: string;
-            value: number;
             _count: { _all: number };
           }[],
         ),
     reviewIds.length > 0 && viewerRow
       ? prisma.reviewVote.findMany({
-          where: { userId: viewerRow.id, reviewId: { in: reviewIds } },
+          where: { userId: viewerRow.id, reviewId: { in: reviewIds }, value: 1 },
           select: { reviewId: true, value: true },
+        })
+      : Promise.resolve([]),
+    viewerRow && authorIds.length > 0
+      ? prisma.userBlock.findMany({
+          where: {
+            OR: [
+              { blockerId: viewerRow.id, blockedUserId: { in: authorIds } },
+              { blockedUserId: viewerRow.id, blockerId: { in: authorIds } },
+            ],
+          },
+          select: { blockerId: true, blockedUserId: true },
         })
       : Promise.resolve([]),
   ]);
 
-  const voteTally = new Map<string, { up: number; down: number }>();
+  const voteTally = new Map<string, number>();
   for (const rid of reviewIds) {
-    voteTally.set(rid, { up: 0, down: 0 });
+    voteTally.set(rid, 0);
   }
   for (const row of voteGroups) {
-    const cur = voteTally.get(row.reviewId);
-    if (!cur) continue;
-    if (row.value === 1) cur.up = row._count._all;
-    if (row.value === -1) cur.down = row._count._all;
+    voteTally.set(row.reviewId, row._count._all);
   }
   const myVoteByReviewId = new Map<string, number>();
   for (const v of myVoteRows) {
-    myVoteByReviewId.set(v.reviewId, v.value);
+    if (v.value === 1) myVoteByReviewId.set(v.reviewId, 1);
   }
 
-  const hasMeaningfulRentStats =
-    rentStats.length > 0 &&
-    rentStats.some(
-      (row) =>
-        row.bedroomCount !== "Unknown" && typeof row.median === "number",
+  const blockedWithAuthor = new Set<string>();
+  for (const b of blockedWithAuthorIds) {
+    blockedWithAuthor.add(
+      b.blockerId === viewerRow?.id ? b.blockedUserId : b.blockerId,
     );
+  }
 
   return (
     <AppPageShell gapClass="gap-8 sm:gap-10">
@@ -147,86 +146,18 @@ export default async function PropertyDetailPage({ params }: Props) {
         state={property.state}
         postalCode={property.postalCode}
         reviewCount={property.reviews.length}
+        engagementSlot={
+          isSignedIn ? (
+            <PropertyEngagement
+              propertyId={property.id}
+              addressLine1={property.addressLine1}
+              city={property.city}
+              state={property.state}
+              postalCode={property.postalCode}
+            />
+          ) : null
+        }
       />
-
-      {hasMeaningfulRentStats ? (
-        <section
-          className={`${surfaceElevatedClass} relative overflow-hidden p-5 sm:p-7 md:p-8`}
-        >
-          <div
-            className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-muted-blue/25 to-transparent"
-            aria-hidden
-          />
-          <div className="pointer-events-none absolute -right-24 top-12 h-56 w-56 rounded-full bg-accent-teal-tint/40 blur-3xl" />
-
-          <div className="relative space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-blue">
-              Rent signals
-            </p>
-            <h2 className="text-lg font-semibold tracking-tight text-muted-blue-hover sm:text-xl">
-              What other renters have paid here
-            </h2>
-            <p className="max-w-2xl text-sm leading-relaxed text-zinc-600">
-              Approximate monthly rent by bedroom band from approved reviews. Use this
-              to sanity-check an asking price - not as an appraisal.
-            </p>
-          </div>
-
-          <div className="relative mt-6 grid gap-3 sm:grid-cols-2">
-            {rentStats.map((row) => (
-              <div
-                key={row.bedroomCount}
-                className="group flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-zinc-100 bg-gradient-to-br from-white to-muted-blue-tint/30 px-4 py-3.5 transition hover:border-muted-blue/20 hover:shadow-elevated-hover"
-              >
-                <span className="shrink-0 text-sm font-semibold text-muted-blue-hover">
-                  {row.bedroomCount}
-                </span>
-                {typeof row.median === "number" ? (
-                  isSignedIn ? (
-                    <span className="min-w-0 text-right text-sm tabular-nums text-zinc-800">
-                      <span className="font-semibold text-muted-blue-hover">
-                        ${row.median.toLocaleString()}
-                      </span>
-                      <span className="text-zinc-500"> / mo</span>
-                      {typeof row.min === "number" && typeof row.max === "number" ? (
-                        <span className="mt-0.5 block text-xs font-normal text-zinc-400">
-                          Range ${row.min.toLocaleString()}–$
-                          {row.max.toLocaleString()}
-                        </span>
-                      ) : null}
-                    </span>
-                  ) : (
-                    <span className="text-right text-xs text-zinc-400">
-                      Sign in for amounts
-                    </span>
-                  )
-                ) : (
-                  <span className="text-xs text-zinc-400">Not enough data</span>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {!isSignedIn && (
-            <p className="relative mt-4 text-sm text-zinc-500">
-              <Link href="/signin" className={linkInlineClass}>
-                Sign in
-              </Link>{" "}
-              to unlock exact rent figures for this building.
-            </p>
-          )}
-        </section>
-      ) : null}
-
-      {isSignedIn ? (
-        <PropertyEngagement
-          propertyId={property.id}
-          addressLine1={property.addressLine1}
-          city={property.city}
-          state={property.state}
-          postalCode={property.postalCode}
-        />
-      ) : null}
 
       {property.reviews.length === 0 ? (
         <div
@@ -320,7 +251,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                             </span>
                           ) : null}
                         </p>
-                        <p className="text-xs text-zinc-600">
+                        <p className="text-sm text-zinc-600">
                           Time period {privacyYearBucket}
                           {typeof review.monthlyRent === "number"
                             ? ` · $${review.monthlyRent.toLocaleString()}/mo`
@@ -331,7 +262,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                           {bathPublicLabel ? ` · ${bathPublicLabel}` : ""}
                         </p>
                         <div className="flex flex-wrap items-center gap-2 pt-1">
-                          <span className="text-xs text-zinc-500">By {maskedName}</span>
+                          <span className="text-sm text-zinc-500">By {maskedName}</span>
                           {review.user.phoneVerified && (
                             <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200/80">
                               SMS verified
@@ -344,12 +275,12 @@ export default async function PropertyDetailPage({ params }: Props) {
                         typeof review.landlordScore === "number") && (
                         <div className="flex shrink-0 flex-wrap gap-2">
                           {typeof review.overallScore === "number" ? (
-                            <span className="rounded-full bg-muted-blue-tint px-3 py-1 text-xs font-semibold tabular-nums text-muted-blue-hover ring-1 ring-zinc-200/60">
+                            <span className="rounded-full bg-muted-blue-tint px-3.5 py-1.5 text-sm font-semibold tabular-nums text-muted-blue-hover ring-1 ring-zinc-200/60 sm:text-base sm:px-4 sm:py-2">
                               Overall {review.overallScore}/10
                             </span>
                           ) : null}
                           {typeof review.landlordScore === "number" ? (
-                            <span className="rounded-full bg-accent-teal-tint px-3 py-1 text-xs font-semibold tabular-nums text-teal-900 ring-1 ring-teal-200/60">
+                            <span className="rounded-full bg-accent-teal-tint px-3.5 py-1.5 text-sm font-semibold tabular-nums text-teal-900 ring-1 ring-teal-200/60 sm:text-base sm:px-4 sm:py-2">
                               Landlord {review.landlordScore}/10
                             </span>
                           ) : null}
@@ -365,7 +296,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                         {amenities.map((amenity) => (
                           <span
                             key={amenity.key}
-                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${
                               amenity.value
                                 ? "bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200/70"
                                 : "bg-zinc-50 text-zinc-500 ring-1 ring-zinc-200/80"
@@ -392,32 +323,25 @@ export default async function PropertyDetailPage({ params }: Props) {
                       {viewerRow && viewerRow.id !== review.user.id ? (
                         <ReviewVoteButtons
                           reviewId={review.id}
-                          initialUp={voteTally.get(review.id)?.up ?? 0}
-                          initialDown={voteTally.get(review.id)?.down ?? 0}
-                          initialMyVote={
-                            (() => {
-                              const v = myVoteByReviewId.get(review.id);
-                              return v === 1 || v === -1 ? v : null;
-                            })()
-                          }
+                          initialUp={voteTally.get(review.id) ?? 0}
+                          initialMyVote={myVoteByReviewId.get(review.id) ?? null}
+                          disabled={blockedWithAuthor.has(review.user.id)}
                         />
                       ) : (
                         <p className="text-xs text-zinc-500">
                           <span className="font-semibold tabular-nums text-zinc-700">
-                            {voteTally.get(review.id)?.up ?? 0}
+                            {voteTally.get(review.id) ?? 0}
                           </span>{" "}
-                          helpful ·{" "}
-                          <span className="font-semibold tabular-nums text-zinc-700">
-                            {voteTally.get(review.id)?.down ?? 0}
-                          </span>{" "}
-                          not helpful
+                          marked helpful
                           {viewerRow?.id === review.user.id
                             ? " (others can vote on your review)"
                             : null}
                         </p>
                       )}
                       <div className="flex flex-wrap items-center gap-3">
-                        {viewerRow && viewerRow.id !== review.user.id ? (
+                        {viewerRow &&
+                        viewerRow.id !== review.user.id &&
+                        !blockedWithAuthor.has(review.user.id) ? (
                           <Link
                             href={`/messages/review/${review.id}`}
                             className="inline-flex min-h-10 items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
@@ -477,7 +401,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                               </span>
                             ) : null}
                           </p>
-                          <p className="text-xs text-zinc-600">
+                          <p className="text-sm text-zinc-600">
                             Time period {privacyYearBucket}
                             {review.bedroomCount != null
                               ? ` · ${bedroomCountToBand(review.bedroomCount)}`
@@ -485,7 +409,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                             {bathPublicLabel ? ` · ${bathPublicLabel}` : ""}
                           </p>
                           <div className="flex flex-wrap items-center gap-2 pt-1">
-                            <span className="text-xs text-zinc-500">By {maskedName}</span>
+                            <span className="text-sm text-zinc-500">By {maskedName}</span>
                             {review.user.phoneVerified && (
                               <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200/80">
                                 SMS verified
@@ -494,8 +418,8 @@ export default async function PropertyDetailPage({ params }: Props) {
                           </div>
                         </div>
                         <div className="flex shrink-0 flex-wrap gap-2">
-                          <span className="h-7 w-28 rounded-full bg-zinc-200/90 ring-1 ring-zinc-200/80" />
-                          <span className="h-7 w-32 rounded-full bg-zinc-200/90 ring-1 ring-zinc-200/80" />
+                          <span className="h-9 w-32 rounded-full bg-zinc-200/90 ring-1 ring-zinc-200/80" />
+                          <span className="h-9 w-36 rounded-full bg-zinc-200/90 ring-1 ring-zinc-200/80" />
                         </div>
                       </div>
 

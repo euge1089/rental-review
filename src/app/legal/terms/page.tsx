@@ -85,6 +85,22 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
+              Private messages, blocking, and harassment
+            </h2>
+            <p>
+              The service may allow short private messages between renters about
+              published reviews. You must not use messages—or any part of the
+              service—to harass, threaten, intimidate, or coerce anyone, including the
+              author of a review. Do not share another person&apos;s private contact
+              information without permission. Users may block other accounts; blocking
+              limits messaging and voting between those accounts. Automated filters may
+              block some language, which is not a guarantee of safety—report concerns
+              and seek help in emergencies through local authorities.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-semibold text-muted-blue-hover">
               Reporting, takedowns, and repeat infringement
             </h2>
             <p>

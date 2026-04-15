@@ -4,11 +4,12 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { isEitherUserBlocking } from "@/lib/user-blocks";
 
 type Params = { params: Promise<{ id: string }> };
 
 const schema = z.object({
-  value: z.union([z.literal(1), z.literal(-1), z.literal(0)]),
+  value: z.union([z.literal(1), z.literal(0)]),
 });
 
 export async function POST(request: Request, { params }: Params) {
@@ -60,6 +61,13 @@ export async function POST(request: Request, { params }: Params) {
     );
   }
 
+  if (await isEitherUserBlocking(user.id, review.userId)) {
+    return NextResponse.json(
+      { ok: false, error: "You can’t vote on this review while someone is blocked." },
+      { status: 403 },
+    );
+  }
+
   const { value } = parsed.data;
 
   if (value === 0) {
@@ -71,23 +79,15 @@ export async function POST(request: Request, { params }: Params) {
       where: {
         reviewId_userId: { reviewId, userId: user.id },
       },
-      create: { reviewId, userId: user.id, value },
-      update: { value },
+      create: { reviewId, userId: user.id, value: 1 },
+      update: { value: 1 },
     });
   }
 
-  const tallies = await prisma.reviewVote.groupBy({
-    by: ["value"],
-    where: { reviewId },
+  const upRow = await prisma.reviewVote.aggregate({
+    where: { reviewId, value: 1 },
     _count: { _all: true },
   });
-
-  let up = 0;
-  let down = 0;
-  for (const row of tallies) {
-    if (row.value === 1) up = row._count._all;
-    if (row.value === -1) down = row._count._all;
-  }
 
   const mine = await prisma.reviewVote.findUnique({
     where: { reviewId_userId: { reviewId, userId: user.id } },
@@ -96,8 +96,7 @@ export async function POST(request: Request, { params }: Params) {
 
   return NextResponse.json({
     ok: true,
-    up,
-    down,
-    myVote: mine?.value ?? null,
+    up: upRow._count._all,
+    myVote: mine?.value === 1 ? 1 : null,
   });
 }

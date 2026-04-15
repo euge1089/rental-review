@@ -79,8 +79,7 @@ export function AskerReviewMessagesClient({
     statusNote = (
       <p className="rounded-xl border border-muted-blue/20 bg-muted-blue-tint/40 px-3 py-2 text-sm text-zinc-700">
         Waiting for the review author to accept. You&apos;ll be able to send more after
-        they accept (up to two messages in a row before they reply). This page checks for
-        updates every few seconds.
+        they accept. This page checks for updates every few seconds.
       </p>
     );
   }

@@ -110,10 +110,11 @@ export function ProfileRetentionEmailPrefs({
           onChange={(e) => onMessageOptOutChange(e.target.checked)}
         />
         <span>
-          <span className="font-medium">Opt out of direct message emails</span>
+          <span className="font-medium">Opt out of activity summary emails</span>
           <span className="mt-0.5 block text-zinc-600">
-            When off (default), we email you when another renter messages you about a
-            review. Turn this on to stop those notifications only.
+            When off (default), we send at most one email per day (around 6pm Eastern)
+            summarizing helpful votes on your reviews and new private messages. Turn
+            this on to skip that digest.
           </span>
         </span>
       </label>

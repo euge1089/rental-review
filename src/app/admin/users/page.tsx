@@ -46,6 +46,48 @@ export default async function AdminUsersPage() {
     },
   });
 
+  const userIds = users.map((u) => u.id);
+
+  const [receivedRows, sentGroups, voteGroups] = await Promise.all([
+    userIds.length > 0
+      ? prisma.$queryRaw<Array<{ userId: string; c: number }>>`
+          SELECT rid AS "userId", COUNT(*)::int AS c FROM (
+            SELECT
+              CASE
+                WHEN m."senderUserId" = t."starterUserId" THEN r."userId"
+                ELSE t."starterUserId"
+              END AS rid
+            FROM "ReviewThreadMessage" m
+            INNER JOIN "ReviewMessageThread" t ON m."threadId" = t.id
+            INNER JOIN "Review" r ON t."reviewId" = r.id
+          ) sub
+          GROUP BY rid
+        `
+      : Promise.resolve([]),
+    userIds.length > 0
+      ? prisma.reviewThreadMessage.groupBy({
+          by: ["senderUserId"],
+          where: { senderUserId: { in: userIds } },
+          _count: { _all: true },
+        })
+      : Promise.resolve([]),
+    userIds.length > 0
+      ? prisma.reviewVote.groupBy({
+          by: ["userId"],
+          where: { userId: { in: userIds }, value: 1 },
+          _count: { _all: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const dmReceived = new Map(receivedRows.map((r) => [r.userId, r.c]));
+  const dmSent = new Map(
+    sentGroups.map((s) => [s.senderUserId, s._count._all]),
+  );
+  const helpfulVotesCast = new Map(
+    voteGroups.map((v) => [v.userId, v._count._all]),
+  );
+
   const cap = PRODUCT_POLICY.reviews.maxReviewsPerUser;
 
   return (
@@ -87,6 +129,9 @@ export default async function AdminUsersPage() {
             const atCap = u._count.reviews >= cap;
             const isSelf =
               email != null && u.email.toLowerCase() === email.toLowerCase();
+            const nRecv = dmReceived.get(u.id) ?? 0;
+            const nSent = dmSent.get(u.id) ?? 0;
+            const nVotes = helpfulVotesCast.get(u.id) ?? 0;
             return (
               <li key={u.id}>
                 <div
@@ -104,6 +149,9 @@ export default async function AdminUsersPage() {
                       {u.phoneVerified ? (
                         <span className="ml-2 text-emerald-700">· Phone verified</span>
                       ) : null}
+                    </p>
+                    <p className="mt-1 text-[11px] text-zinc-500">
+                      DMs sent {nSent} · received {nRecv} · helpful votes cast {nVotes}
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-col flex-wrap items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end sm:gap-3">

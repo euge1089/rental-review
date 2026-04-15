@@ -5,6 +5,10 @@ import {
   PageHeader,
   SurfacePanel,
 } from "@/app/_components/app-page-shell";
+import {
+  ProfileBlockedRenters,
+  type BlockedRow,
+} from "@/app/_components/profile-blocked-renters";
 import { ProfileBookmarks } from "@/app/_components/profile-bookmarks";
 import { ProfileDisplayNameCard } from "@/app/_components/profile-display-name-card";
 import { ProfileRetentionEmailPrefs } from "@/app/_components/profile-retention-email-prefs";
@@ -58,6 +62,7 @@ export default async function ProfilePage({ searchParams }: Props) {
   const user = await prisma.user.findUnique({
     where: { email },
     select: {
+      id: true,
       phoneVerified: true,
       displayName: true,
       bostonRentingSinceYear: true,
@@ -65,6 +70,23 @@ export default async function ProfilePage({ searchParams }: Props) {
       messageEmailsOptOut: true,
     },
   });
+
+  const blockedRenters: BlockedRow[] = user
+    ? (
+        await prisma.userBlock.findMany({
+          where: { blockerId: user.id },
+          orderBy: { createdAt: "desc" },
+          select: {
+            blockedUserId: true,
+            blocked: { select: { email: true, displayName: true } },
+          },
+        })
+      ).map((row) => ({
+        blockedUserId: row.blockedUserId,
+        email: row.blocked.email,
+        displayName: row.blocked.displayName,
+      }))
+    : [];
 
   const bostonYearChoices = getBostonRentingSinceYearChoices();
   const bostonRentingSinceYear = user?.bostonRentingSinceYear ?? null;
@@ -195,6 +217,18 @@ export default async function ProfilePage({ searchParams }: Props) {
                 initialOptOut={user?.retentionEmailsOptOut ?? false}
                 initialMessageEmailsOptOut={user?.messageEmailsOptOut ?? false}
               />
+              <SurfacePanel variant="subtle" as="section" id="blocked-renters">
+                <h2 className="text-base font-semibold text-muted-blue-hover">
+                  Blocked renters
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                  Accounts you block can&apos;t message you or vote on your reviews, and
+                  you can&apos;t message or vote on theirs.
+                </p>
+                <div className="mt-4">
+                  <ProfileBlockedRenters initialBlocks={blockedRenters} />
+                </div>
+              </SurfacePanel>
             </div>
             <div className="lg:flex lg:h-full lg:min-h-0 lg:w-[min(100%,22rem)] lg:shrink-0 lg:flex-col">
               <SurfacePanel

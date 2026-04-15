@@ -6,10 +6,12 @@ import {
   AppPageShell,
   PageHeader,
 } from "@/app/_components/app-page-shell";
+import { BlockRenterButton } from "@/app/_components/block-renter-button";
 import { ReviewThreadAuthorActions } from "@/app/_components/review-thread-author-actions";
 import { ReviewThreadReplyForm } from "@/app/_components/review-thread-reply-form";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isEitherUserBlocking } from "@/lib/user-blocks";
 import { linkMutedClass } from "@/lib/ui-classes";
 
 type Props = { params: Promise<{ threadId: string }> };
@@ -64,11 +66,20 @@ export default async function MessageThreadPage({ params }: Props) {
   const accepted = Boolean(thread.acceptedAt);
   const pending = !accepted && !declined;
   const viewerIsAuthor = thread.review.userId === user.id;
+  const otherUserId = viewerIsAuthor ? thread.starterUserId : thread.review.userId;
+  const conversationBlocked = await isEitherUserBlocking(user.id, otherUserId);
 
-  const allowComposer = !declined && accepted;
+  const allowComposer = !declined && accepted && !conversationBlocked;
 
   let statusNote: ReactNode = null;
-  if (declined) {
+  if (conversationBlocked) {
+    statusNote = (
+      <p className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
+        Messaging isn&apos;t available in this conversation because someone is blocked.
+        You can manage blocks from your profile.
+      </p>
+    );
+  } else if (declined) {
     statusNote = (
       <p className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
         This conversation was declined. No further messages can be sent.
@@ -114,6 +125,12 @@ export default async function MessageThreadPage({ params }: Props) {
 
       {pending && viewerIsAuthor ? (
         <ReviewThreadAuthorActions threadId={threadId} />
+      ) : null}
+
+      {!conversationBlocked ? (
+        <div className="max-w-md">
+          <BlockRenterButton blockedUserId={otherUserId} />
+        </div>
       ) : null}
 
       <ReviewThreadReplyForm

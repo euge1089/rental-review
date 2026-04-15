@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { notifyThreadDeclined } from "@/lib/review-message-notifications";
 
 type Params = { params: Promise<{ threadId: string }> };
 
@@ -29,12 +28,8 @@ export async function POST(_request: Request, { params }: Params) {
     },
     select: {
       id: true,
-      starterUserId: true,
       acceptedAt: true,
       declinedAt: true,
-      review: {
-        select: { property: { select: { addressLine1: true } } },
-      },
     },
   });
 
@@ -56,12 +51,6 @@ export async function POST(_request: Request, { params }: Params) {
   await prisma.reviewMessageThread.update({
     where: { id: thread.id },
     data: { declinedAt: new Date() },
-  });
-
-  void notifyThreadDeclined({
-    threadId: thread.id,
-    starterUserId: thread.starterUserId,
-    propertyAddress: thread.review.property.addressLine1,
   });
 
   return NextResponse.json({ ok: true });

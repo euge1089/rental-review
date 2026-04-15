@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 /* eslint-disable react-hooks/set-state-in-effect */
 
@@ -137,48 +137,26 @@ export function PropertyEngagement(props: Props) {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-zinc-100 bg-white p-5 shadow-elevated sm:p-6">
-      <div
-        className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-pop/35 to-transparent sm:inset-x-8"
-        aria-hidden
-      />
-      <div className="pointer-events-none absolute -right-16 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-muted-blue-tint/70 blur-3xl" />
-      <div className="relative flex min-w-0 flex-wrap items-center justify-between gap-4 text-sm text-zinc-700">
-        <div className="min-w-0 flex-1 space-y-2">
-          <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-blue">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent-teal" aria-hidden />
-            Your toolkit
-          </p>
-          <p className="font-semibold text-muted-blue-hover">
-            Stay organized for this apartment
-          </p>
-          <p className="text-xs leading-relaxed text-zinc-600 sm:text-sm">
-            Save this address for later and bring a focused question list to your next
-            showing.
-          </p>
-        </div>
-        <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
-          <button
-            type="button"
-            onClick={toggleBookmark}
-            className={`inline-flex min-h-11 flex-1 items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold transition sm:min-h-0 sm:flex-none sm:px-5 sm:text-sm ${
-              isBookmarked
-                ? "bg-muted-blue-hover text-white shadow-[0_8px_24px_-10px_rgb(21_42_69/0.45)] hover:bg-[#1a3555]"
-                : "border border-zinc-200 bg-white text-muted-blue-hover hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
-            }`}
-            disabled={isSaving}
-          >
-            {isBookmarked ? "★ Saved" : "☆ Save apartment"}
-          </button>
-          <Link
-            href="/tour-checklist"
-            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-pop/40 hover:bg-pop-tint/50 sm:min-h-0 sm:flex-none sm:px-5"
-          >
-            Tour checklist
-          </Link>
-        </div>
-      </div>
-    </section>
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      <button
+        type="button"
+        onClick={toggleBookmark}
+        className={`inline-flex min-h-10 items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition sm:min-h-0 sm:px-5 ${
+          isBookmarked
+            ? "bg-muted-blue-hover text-white shadow-[0_8px_24px_-10px_rgb(21_42_69/0.45)] hover:bg-[#1a3555]"
+            : "border border-zinc-200/90 bg-white text-muted-blue-hover shadow-sm hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+        }`}
+        disabled={isSaving}
+      >
+        {isBookmarked ? "★ Saved" : "☆ Save apartment"}
+      </button>
+      <Link
+        href="/tour-checklist"
+        className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-200/90 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover shadow-sm transition hover:border-pop/40 hover:bg-pop-tint/50 sm:px-5"
+      >
+        Tour checklist
+      </Link>
+    </div>
   );
 }
 

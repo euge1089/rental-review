@@ -6,8 +6,10 @@ import {
   PageHeader,
 } from "@/app/_components/app-page-shell";
 import { AskerReviewMessagesClient } from "@/app/_components/asker-review-messages-client";
+import { BlockRenterButton } from "@/app/_components/block-renter-button";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isEitherUserBlocking } from "@/lib/user-blocks";
 import { linkMutedClass, surfaceElevatedClass } from "@/lib/ui-classes";
 
 type Props = { params: Promise<{ reviewId: string }> };
@@ -44,6 +46,35 @@ export default async function MessageAboutReviewPage({ params }: Props) {
 
   if (!review || review.moderationStatus !== "APPROVED") {
     notFound();
+  }
+
+  const blockedWithAuthor = await isEitherUserBlocking(user.id, review.userId);
+
+  if (blockedWithAuthor) {
+    return (
+      <AppPageShell gapClass="gap-6">
+        <PageHeader
+          eyebrow="Private message"
+          title="Messaging isn’t available"
+          description={
+            <span className="text-sm text-zinc-600">
+              You can&apos;t message this renter right now (someone may be blocked). You
+              can change blocks from your profile.
+            </span>
+          }
+        />
+        <div className={`${surfaceElevatedClass} p-6`}>
+          <p className="text-sm text-zinc-600">
+            <Link
+              href={`/properties/${review.property.id}`}
+              className={linkMutedClass}
+            >
+              ← Back to {review.property.addressLine1}
+            </Link>
+          </p>
+        </div>
+      </AppPageShell>
+    );
   }
 
   if (review.userId === user.id) {
@@ -110,10 +141,9 @@ export default async function MessageAboutReviewPage({ params }: Props) {
             <span className="font-medium text-zinc-800">
               {review.property.addressLine1}
             </span>
-            . Only you and the review author can read this thread. Keep it respectful;
-            don&apos;t use this to harass or share personal contact info. The author
-            must accept before the conversation continues; you can send at most two
-            messages in a row before they reply.
+            . Only you and the review author can read this thread. Keep it respectful:
+            no harassment or personal contact info. Messages are short (100 characters)
+            and the author must accept before the conversation continues.
           </span>
         }
       />
@@ -127,6 +157,10 @@ export default async function MessageAboutReviewPage({ params }: Props) {
           Inbox
         </Link>
       </p>
+
+      <div className="max-w-md">
+        <BlockRenterButton blockedUserId={review.userId} />
+      </div>
 
       <AskerReviewMessagesClient
         reviewId={reviewId}
