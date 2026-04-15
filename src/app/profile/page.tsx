@@ -19,7 +19,7 @@ import {
 } from "@/app/_components/profile-reviews-grouped";
 import { ProfileBostonYearGate } from "@/app/_components/profile-boston-year-gate";
 import { ProfileContributorLadder } from "@/app/_components/profile-contributor-ladder";
-import { ProfileVerification } from "@/app/_components/profile-verification";
+import { ProfileVerificationPanel } from "@/app/_components/profile-verification-panel";
 import { authOptions } from "@/lib/auth";
 import { messagesUiEnabled } from "@/lib/feature-flags";
 import { prisma } from "@/lib/prisma";
@@ -212,60 +212,31 @@ export default async function ProfilePage({ searchParams }: Props) {
               : "space-y-5"
           }
         >
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch lg:gap-6">
-            <div className="min-w-0 flex-1 space-y-5 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:space-y-5">
-              <ProfileDisplayNameCard initialDisplayName={displayName} />
-              <ProfileRetentionEmailPrefs
-                initialOptOut={user?.retentionEmailsOptOut ?? false}
-                initialMessageEmailsOptOut={user?.messageEmailsOptOut ?? false}
-              />
-              {messagesUiEnabled ? (
-                <SurfacePanel variant="subtle" as="section" id="blocked-renters">
-                  <h2 className="text-base font-semibold text-muted-blue-hover">
-                    Blocked renters
-                  </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-                    Accounts you block can&apos;t message you or vote on your reviews, and
-                    you can&apos;t message or vote on theirs.
-                  </p>
-                  <div className="mt-4">
-                    <ProfileBlockedRenters initialBlocks={blockedRenters} />
-                  </div>
-                </SurfacePanel>
-              ) : null}
-            </div>
-            <div className="lg:flex lg:h-full lg:min-h-0 lg:w-[min(100%,22rem)] lg:shrink-0 lg:flex-col">
-              <SurfacePanel
-                variant="subtle"
-                as="section"
-                id="verification"
-                className={`scroll-mt-24 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col ${
-                  user?.phoneVerified
-                    ? "!border-emerald-200/70 !bg-emerald-50/50 px-4 py-3.5 sm:px-5 sm:py-4 md:px-5 md:py-4"
-                    : ""
-                }`}
-              >
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-6">
+            <ProfileDisplayNameCard initialDisplayName={displayName} />
+            <ProfileRetentionEmailPrefs
+              initialOptOut={user?.retentionEmailsOptOut ?? false}
+              initialMessageEmailsOptOut={user?.messageEmailsOptOut ?? false}
+            />
+            <ProfileVerificationPanel
+              initialVerified={Boolean(user?.phoneVerified)}
+            />
+          </div>
+
+          {messagesUiEnabled ? (
+            <SurfacePanel variant="subtle" as="section" id="blocked-renters">
               <h2 className="text-base font-semibold text-muted-blue-hover">
-                Profile verification
+                Blocked renters
               </h2>
-              {!user?.phoneVerified ? (
-                <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                  After SMS verification, your reviews can show SMS verified and are
-                  often approved faster.
-                </p>
-              ) : null}
-              <div
-                className={`min-h-0 lg:flex-1 lg:flex lg:flex-col ${
-                  user?.phoneVerified ? "mt-2" : "mt-3"
-                }`}
-              >
-                <ProfileVerification
-                  initialVerified={Boolean(user?.phoneVerified)}
-                />
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                Accounts you block can&apos;t message you or vote on your reviews, and
+                you can&apos;t message or vote on theirs.
+              </p>
+              <div className="mt-4">
+                <ProfileBlockedRenters initialBlocks={blockedRenters} />
               </div>
             </SurfacePanel>
-            </div>
-          </div>
+          ) : null}
 
           <SurfacePanel variant="subtle" as="section">
             <h2 className="text-base font-semibold text-muted-blue-hover">
