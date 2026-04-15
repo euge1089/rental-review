@@ -89,6 +89,7 @@ Set these in `.env` (and `.env.local` for local dev as needed):
   - `MAPBOX_GEOCODING_TOKEN` (server geocode backfill)
 - **Scheduled jobs**
   - `CRON_SECRET` (required for `/api/cron/*` routes, including property geocoding backfill)
+  - On Vercel Hobby, cron is daily-only. Use manual `POST /api/cron/property-geocoding` triggers for faster catch-up when needed.
 
 ### Development
 
