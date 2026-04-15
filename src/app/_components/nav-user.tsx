@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { SignOutOverlay } from "@/app/_components/sign-out-overlay";
+import { messagesUiEnabled } from "@/lib/feature-flags";
 
 type Props = {
   adminEmail?: string;
@@ -32,12 +33,14 @@ export function NavUser({ adminEmail }: Props) {
 
   return (
     <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2 text-sm">
-      <Link
-        href="/messages"
-        className="inline-flex min-h-11 items-center rounded-full px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80 hover:bg-muted-blue-tint sm:min-h-0 sm:py-1"
-      >
-        Messages
-      </Link>
+      {messagesUiEnabled ? (
+        <Link
+          href="/messages"
+          className="inline-flex min-h-11 items-center rounded-full px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80 hover:bg-muted-blue-tint sm:min-h-0 sm:py-1"
+        >
+          Messages
+        </Link>
+      ) : null}
       <Link
         href="/profile"
         className="flex min-h-11 min-w-0 max-w-[min(100%,14rem)] items-center gap-2 rounded-full px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80 hover:bg-muted-blue-tint sm:min-h-0 sm:max-w-[18rem] sm:gap-4 sm:py-1 md:max-w-none"

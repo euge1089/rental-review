@@ -10,6 +10,7 @@ import { bathroomsToPublicLabel } from "@/lib/policy";
 import { ReportReviewButton } from "@/app/_components/report-review-button";
 import { ReviewVoteButtons } from "@/app/_components/review-vote-buttons";
 import { PropertyEngagement } from "@/app/_components/property-engagement";
+import { messagesUiEnabled } from "@/lib/feature-flags";
 import { linkMutedClass, surfaceElevatedClass } from "@/lib/ui-classes";
 
 type Props = {
@@ -399,7 +400,8 @@ export default async function PropertyDetailPage({ params }: Props) {
                         </p>
                       )}
                       <div className="flex flex-wrap items-center gap-3">
-                        {viewerRow &&
+                        {messagesUiEnabled &&
+                        viewerRow &&
                         viewerRow.id !== review.user.id &&
                         !blockedWithAuthor.has(review.user.id) ? (
                           <Link

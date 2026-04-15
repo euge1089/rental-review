@@ -21,6 +21,7 @@ import { ProfileBostonYearGate } from "@/app/_components/profile-boston-year-gat
 import { ProfileContributorLadder } from "@/app/_components/profile-contributor-ladder";
 import { ProfileVerification } from "@/app/_components/profile-verification";
 import { authOptions } from "@/lib/auth";
+import { messagesUiEnabled } from "@/lib/feature-flags";
 import { prisma } from "@/lib/prisma";
 import {
   getBostonRentingSinceYearChoices,
@@ -71,22 +72,23 @@ export default async function ProfilePage({ searchParams }: Props) {
     },
   });
 
-  const blockedRenters: BlockedRow[] = user
-    ? (
-        await prisma.userBlock.findMany({
-          where: { blockerId: user.id },
-          orderBy: { createdAt: "desc" },
-          select: {
-            blockedUserId: true,
-            blocked: { select: { email: true, displayName: true } },
-          },
-        })
-      ).map((row) => ({
-        blockedUserId: row.blockedUserId,
-        email: row.blocked.email,
-        displayName: row.blocked.displayName,
-      }))
-    : [];
+  const blockedRenters: BlockedRow[] =
+    user && messagesUiEnabled
+      ? (
+          await prisma.userBlock.findMany({
+            where: { blockerId: user.id },
+            orderBy: { createdAt: "desc" },
+            select: {
+              blockedUserId: true,
+              blocked: { select: { email: true, displayName: true } },
+            },
+          })
+        ).map((row) => ({
+          blockedUserId: row.blockedUserId,
+          email: row.blocked.email,
+          displayName: row.blocked.displayName,
+        }))
+      : [];
 
   const bostonYearChoices = getBostonRentingSinceYearChoices();
   const bostonRentingSinceYear = user?.bostonRentingSinceYear ?? null;
@@ -217,18 +219,20 @@ export default async function ProfilePage({ searchParams }: Props) {
                 initialOptOut={user?.retentionEmailsOptOut ?? false}
                 initialMessageEmailsOptOut={user?.messageEmailsOptOut ?? false}
               />
-              <SurfacePanel variant="subtle" as="section" id="blocked-renters">
-                <h2 className="text-base font-semibold text-muted-blue-hover">
-                  Blocked renters
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-                  Accounts you block can&apos;t message you or vote on your reviews, and
-                  you can&apos;t message or vote on theirs.
-                </p>
-                <div className="mt-4">
-                  <ProfileBlockedRenters initialBlocks={blockedRenters} />
-                </div>
-              </SurfacePanel>
+              {messagesUiEnabled ? (
+                <SurfacePanel variant="subtle" as="section" id="blocked-renters">
+                  <h2 className="text-base font-semibold text-muted-blue-hover">
+                    Blocked renters
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                    Accounts you block can&apos;t message you or vote on your reviews, and
+                    you can&apos;t message or vote on theirs.
+                  </p>
+                  <div className="mt-4">
+                    <ProfileBlockedRenters initialBlocks={blockedRenters} />
+                  </div>
+                </SurfacePanel>
+              ) : null}
             </div>
             <div className="lg:flex lg:h-full lg:min-h-0 lg:w-[min(100%,22rem)] lg:shrink-0 lg:flex-col">
               <SurfacePanel
