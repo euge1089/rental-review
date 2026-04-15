@@ -1,8 +1,9 @@
 "use client";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useMemo } from "react";
-import Map, { Marker, NavigationControl } from "react-map-gl/mapbox";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import Map, { Marker, NavigationControl, Popup } from "react-map-gl/mapbox";
 import type { LngLatBounds } from "mapbox-gl";
 
 export type ExplorerMapBounds = {
@@ -65,11 +66,17 @@ export function RentExplorerMap({
 }: RentExplorerMapProps) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
   const hasToken = token.trim().length > 0;
+  const [hoveredPropertyId, setHoveredPropertyId] = useState<string | null>(null);
 
   const sortedMarkers = useMemo(
     () => [...markers].sort((a, b) => a.reviewCount - b.reviewCount),
     [markers],
   );
+  const activeMarker = useMemo(() => {
+    const activePropertyId = selectedPropertyId ?? hoveredPropertyId;
+    if (!activePropertyId) return null;
+    return sortedMarkers.find((marker) => marker.propertyId === activePropertyId) ?? null;
+  }, [hoveredPropertyId, selectedPropertyId, sortedMarkers]);
 
   if (!hasToken) {
     return (
@@ -94,6 +101,7 @@ export function RentExplorerMap({
           const bounds = event.target.getBounds();
           if (bounds) onBoundsChange(toBounds(bounds));
         }}
+        onClick={() => onMarkerClick("")}
         maxBounds={[
           [-71.25, 42.22],
           [-70.92, 42.43],
@@ -116,6 +124,8 @@ export function RentExplorerMap({
             >
               <button
                 type="button"
+                onMouseEnter={() => setHoveredPropertyId(marker.propertyId)}
+                onMouseLeave={() => setHoveredPropertyId(null)}
                 className={`grid place-items-center rounded-full border text-[11px] font-semibold shadow-sm transition ${
                   selected
                     ? "border-muted-blue-hover bg-muted-blue-hover text-white"
@@ -129,6 +139,58 @@ export function RentExplorerMap({
             </Marker>
           );
         })}
+        {activeMarker ? (
+          <Popup
+            longitude={activeMarker.longitude}
+            latitude={activeMarker.latitude}
+            closeButton={false}
+            closeOnClick={false}
+            anchor="top"
+            offset={18}
+            className="z-30"
+          >
+            <div className="min-w-[13rem] space-y-1.5 text-xs text-zinc-700">
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-semibold text-muted-blue-hover">
+                  {activeMarker.addressLine1}
+                </p>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setHoveredPropertyId(null);
+                    onMarkerClick("");
+                  }}
+                  className="inline-flex h-5 w-5 items-center justify-center rounded-full text-sm leading-none text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+                  aria-label="Close map tooltip"
+                >
+                  ×
+                </button>
+              </div>
+              <p className="text-zinc-600">
+                {activeMarker.city}, {activeMarker.state} {activeMarker.postalCode ?? ""}
+              </p>
+              <p>
+                {activeMarker.reviewCount} review
+                {activeMarker.reviewCount === 1 ? "" : "s"}
+              </p>
+              <p>
+                Median rent:{" "}
+                <span className="font-semibold text-zinc-900">
+                  {typeof activeMarker.medianRent === "number"
+                    ? `$${activeMarker.medianRent.toLocaleString()}`
+                    : "n/a"}
+                </span>
+              </p>
+              <Link
+                href={`/properties/${activeMarker.propertyId}`}
+                className="inline-block text-[11px] font-semibold text-muted-blue hover:text-muted-blue-hover hover:underline"
+              >
+                View Property
+              </Link>
+            </div>
+          </Popup>
+        ) : null}
       </Map>
       {isLoading ? (
         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-white/85 px-3 py-2 text-center text-xs font-medium text-zinc-600">

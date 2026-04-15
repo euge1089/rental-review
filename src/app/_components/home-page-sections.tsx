@@ -169,7 +169,7 @@ export function HomePageSections({
             <div
               className={
                 fw
-                  ? "relative grid items-center gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12 xl:gap-20"
+                  ? "relative grid items-center gap-10 lg:grid-cols-[1fr_1fr] lg:gap-10 xl:gap-14"
                   : "relative grid items-stretch gap-9 lg:grid-cols-[minmax(0,3fr)_minmax(0,1fr)] lg:gap-9 lg:gap-x-14"
               }
             >
@@ -261,7 +261,7 @@ export function HomePageSections({
               <div
                 className={
                   fw
-                    ? "hidden animate-hero-drift relative mx-auto w-full max-w-[224px] flex-col justify-center lg:flex lg:mx-0 lg:max-w-[min(100%,304px)] lg:justify-self-end"
+                    ? "hidden animate-hero-drift relative mx-auto w-full max-w-[260px] flex-col justify-center lg:flex lg:mx-0 lg:max-w-[min(100%,360px)] lg:justify-self-end"
                     : "hidden animate-hero-drift w-full max-w-[184px] shrink-0 flex-col justify-center justify-self-center pl-2 sm:max-w-[202px] lg:flex lg:mx-0 lg:max-w-[min(100%,184px)] lg:justify-self-end lg:pl-6"
                 }
                 aria-hidden
@@ -279,7 +279,7 @@ export function HomePageSections({
                     fill
                     sizes={
                       fw
-                        ? "(max-width: 1024px) 224px, 304px"
+                        ? "(max-width: 1024px) 260px, 360px"
                         : "(max-width: 640px) 184px, 202px"
                     }
                     className="object-cover object-[70%_center] [filter:brightness(1.08)_saturate(1.02)_contrast(1.02)]"
