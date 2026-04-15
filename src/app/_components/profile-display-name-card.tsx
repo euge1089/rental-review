@@ -10,13 +10,9 @@ const ANONYMOUS_COPY =
 
 type Props = {
   initialDisplayName: string | null;
-  embedded?: boolean;
 };
 
-export function ProfileDisplayNameCard({
-  initialDisplayName,
-  embedded = false,
-}: Props) {
+export function ProfileDisplayNameCard({ initialDisplayName }: Props) {
   const router = useRouter();
   const [value, setValue] = useState(initialDisplayName ?? "");
   const [saved, setSaved] = useState<string | null>(initialDisplayName);
@@ -71,11 +67,20 @@ export function ProfileDisplayNameCard({
   const dirty = value.trim() !== (saved ?? "").trim();
   const showCollapsed = hasSavedName && !expanded;
 
-  const content = (
-    <>
+  return (
+    <section
+      id="profile-display-name"
+      className={`scroll-mt-24 rounded-2xl border shadow-[0_1px_2px_rgb(15_23_42/0.04)] lg:flex lg:min-h-0 lg:flex-1 lg:flex-col ${
+        showCollapsed
+          ? "border-emerald-200/70 bg-emerald-50/50 px-4 py-3.5 sm:px-5 sm:py-4"
+          : "border-zinc-200/80 bg-white p-5 sm:p-6"
+      }`}
+    >
       {showCollapsed ? (
         <>
-          <p className="text-sm font-semibold text-muted-blue-hover">Your name or Privacy</p>
+          <h2 className="text-base font-semibold text-muted-blue-hover">
+            Your name
+          </h2>
           <div className="mt-2 flex items-start gap-2">
             <button
               type="button"
@@ -109,7 +114,9 @@ export function ProfileDisplayNameCard({
         </>
       ) : (
         <>
-          <p className="text-sm font-semibold text-muted-blue-hover">Your name or Privacy</p>
+          <h2 className="text-base font-semibold text-muted-blue-hover">
+            Your name
+          </h2>
           <p className="mt-2 text-sm leading-relaxed text-zinc-600">
             {ANONYMOUS_COPY}
           </p>
@@ -158,23 +165,6 @@ export function ProfileDisplayNameCard({
           ) : null}
         </>
       )}
-    </>
-  );
-
-  if (embedded) {
-    return <div id="profile-display-name">{content}</div>;
-  }
-
-  return (
-    <section
-      id="profile-display-name"
-      className={`scroll-mt-24 rounded-2xl border shadow-[0_1px_2px_rgb(15_23_42/0.04)] lg:flex lg:min-h-0 lg:flex-1 lg:flex-col ${
-        showCollapsed
-          ? "border-emerald-200/70 bg-emerald-50/50 px-4 py-3.5 sm:px-5 sm:py-4"
-          : "border-zinc-200/80 bg-white p-5 sm:p-6"
-      }`}
-    >
-      {content}
     </section>
   );
 }
