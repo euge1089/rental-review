@@ -405,9 +405,6 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
       }
       setPage(nextPage);
       setHasSearched(true);
-      if (!append && data.items.length > 0 && selectedPropertyId == null) {
-        setSelectedPropertyId(data.items[0]?.propertyId ?? null);
-      }
     } catch {
       setError("Couldn't load this page. Try again.");
     } finally {
@@ -442,9 +439,6 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
         return;
       }
       setMapMarkers(data.markers);
-      if (data.markers.length > 0 && selectedPropertyId == null) {
-        setSelectedPropertyId(data.markers[0]?.propertyId ?? null);
-      }
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return;
       setMapError("Couldn't load map points.");
