@@ -389,11 +389,6 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
         ? `Based on ${snapshot.n} review${snapshot.n === 1 ? "" : "s"}`
         : null;
 
-  let friendlyLine: string | null = null;
-  if (snapshot && typeof snapshot.median === "number") {
-    friendlyLine = `If listings are coming in far above $${snapshot.median.toLocaleString()}, that can be a sign the asking price is high for this slice of the market.`;
-  }
-
   const noMatches = hasSearched && items.length === 0;
 
   const selectClass = `${formSelectCompactClass} min-w-0`;
@@ -604,6 +599,108 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
         ) : null}
       </section>
 
+      {snapshot ? (
+        <>
+          <section className="rounded-3xl border border-zinc-200/90 bg-muted-blue-tint px-5 py-5 sm:px-6 sm:py-6">
+            <div className="mb-4 border-b border-zinc-200/80 pb-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-blue">
+                Summary
+              </p>
+              <h2 className="mt-1 text-lg font-semibold tracking-tight text-muted-blue-hover sm:text-xl">
+                Market analytics for your filters
+              </h2>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-blue">
+                  Typical rent
+                </p>
+                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover">
+                  {typeof snapshot.median === "number"
+                    ? `$${snapshot.median.toLocaleString()}`
+                    : "-"}
+                </p>
+                <p className="mt-1 text-xs text-zinc-500">
+                  {rangeLine ?? `n = ${snapshot.n.toLocaleString()}`}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-blue">
+                  Range
+                </p>
+                <p className="mt-1.5 text-lg font-semibold tabular-nums text-muted-blue-hover">
+                  {typeof snapshot.min === "number" &&
+                  typeof snapshot.max === "number"
+                    ? `$${snapshot.min.toLocaleString()}–$${snapshot.max.toLocaleString()}`
+                    : "Not enough to show"}
+                </p>
+                <p className="mt-1 text-xs text-zinc-500">
+                  From {snapshot.n.toLocaleString()} review
+                  {snapshot.n === 1 ? "" : "s"} that matched.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-blue">
+                  Recent reviews
+                </p>
+                <p className="mt-1.5 text-lg font-semibold text-muted-blue-hover">
+                  {snapshot.recentCount.toLocaleString()}
+                </p>
+                <p className="mt-1 text-xs text-zinc-500">
+                  Posted in the {formatTimeWindowLabel(timeWindow)} you selected.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-blue">
+                  Amenities
+                </p>
+                {snapshot.n > 0 ? (
+                  <>
+                    <p className="mt-1.5 text-sm font-semibold text-muted-blue-hover">
+                      Laundry {snapshot.amenityPercentages.hasInUnitLaundry}% · Parking{" "}
+                      {snapshot.amenityPercentages.hasParking}%
+                    </p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Out of reviews that matched your search, how often people said
+                      they had these.
+                    </p>
+                  </>
+                ) : (
+                  <p className="mt-1.5 text-xs text-zinc-500">Not enough data yet.</p>
+                )}
+              </div>
+            </div>
+
+            {lowData ? (
+              <p className="mt-4 rounded-xl border border-amber-200/80 bg-amber-50/90 px-4 py-2.5 text-xs text-amber-900">
+                Only a few reviews so far - take these numbers as a rough idea, not a
+                firm answer.
+              </p>
+            ) : null}
+            <p className="mt-3 text-xs text-zinc-600">
+              Based on reviews that match what you picked. One apartment can be higher
+              or lower than these - they&apos;re averages and ranges, not guarantees.
+            </p>
+          </section>
+
+          {/* Rent range bar */}
+          {typeof snapshot.median === "number" &&
+            snapshot.min != null &&
+            snapshot.max != null && (
+              <section
+                className={`${surfaceSubtleClass} p-6 shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:p-8`}
+              >
+                <RentRangeBand
+                  min={snapshot.min}
+                  median={snapshot.median}
+                  max={snapshot.max}
+                />
+              </section>
+            )}
+        </>
+      ) : null}
+
       {MAP_ENABLED ? (
         <section className="space-y-3">
           <div className="space-y-1">
@@ -629,111 +726,6 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             </p>
           ) : null}
         </section>
-      ) : null}
-
-      {snapshot ? (
-        <>
-          <section className="rounded-3xl border border-zinc-200/90 bg-muted-blue-tint px-6 py-8 sm:px-8 sm:py-10">
-            <div className="mb-8 border-b border-zinc-200/80 pb-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-blue">
-                Summary
-              </p>
-              <h2 className="mt-2 text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
-                Numbers for your search
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-                Based on reviews that match what you picked. One apartment can be higher
-                or lower than these - they&apos;re averages and ranges, not guarantees.
-              </p>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-blue">
-                  Typical rent
-                </p>
-                <p className="mt-2 text-2xl font-semibold tabular-nums text-muted-blue-hover">
-                  {typeof snapshot.median === "number"
-                    ? `$${snapshot.median.toLocaleString()}`
-                    : "-"}
-                </p>
-                <p className="mt-1 text-xs text-zinc-500">
-                  {rangeLine ?? `n = ${snapshot.n.toLocaleString()}`}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-blue">
-                  Range
-                </p>
-                <p className="mt-2 text-lg font-semibold tabular-nums text-muted-blue-hover">
-                  {typeof snapshot.min === "number" &&
-                  typeof snapshot.max === "number"
-                    ? `$${snapshot.min.toLocaleString()}–$${snapshot.max.toLocaleString()}`
-                    : "Not enough to show"}
-                </p>
-                <p className="mt-1 text-xs text-zinc-500">
-                  From {snapshot.n.toLocaleString()} review
-                  {snapshot.n === 1 ? "" : "s"} that matched.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-blue">
-                  Recent reviews
-                </p>
-                <p className="mt-2 text-lg font-semibold text-muted-blue-hover">
-                  {snapshot.recentCount.toLocaleString()}
-                </p>
-                <p className="mt-1 text-xs text-zinc-500">
-                  Posted in the {formatTimeWindowLabel(timeWindow)} you selected.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-blue">
-                  Amenities
-                </p>
-                {snapshot.n > 0 ? (
-                  <>
-                    <p className="mt-2 text-sm font-semibold text-muted-blue-hover">
-                      Laundry {snapshot.amenityPercentages.hasInUnitLaundry}% · Parking{" "}
-                      {snapshot.amenityPercentages.hasParking}%
-                    </p>
-                    <p className="mt-1 text-xs text-zinc-500">
-                      Out of reviews that matched your search, how often people said
-                      they had these.
-                    </p>
-                  </>
-                ) : (
-                  <p className="mt-2 text-xs text-zinc-500">Not enough data yet.</p>
-                )}
-              </div>
-            </div>
-
-            {lowData ? (
-              <p className="mt-6 rounded-xl border border-amber-200/80 bg-amber-50/90 px-4 py-3 text-xs text-amber-900">
-                Only a few reviews so far - take these numbers as a rough idea, not a
-                firm answer.
-              </p>
-            ) : null}
-            {friendlyLine ? (
-              <p className="mt-4 text-xs text-zinc-600">{friendlyLine}</p>
-            ) : null}
-          </section>
-
-          {/* Rent range bar */}
-          {typeof snapshot.median === "number" &&
-            snapshot.min != null &&
-            snapshot.max != null && (
-              <section
-                className={`${surfaceSubtleClass} p-6 shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:p-8`}
-              >
-                <RentRangeBand
-                  min={snapshot.min}
-                  median={snapshot.median}
-                  max={snapshot.max}
-                />
-              </section>
-            )}
-        </>
       ) : null}
 
       {/* Results list */}

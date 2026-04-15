@@ -28,19 +28,8 @@ export default async function AnalyticsPage() {
     <AppPageShell gapClass="gap-6">
       <PageHeader
         eyebrow="Boston Rent Explorer"
-        title="See what other renters paid"
-        description={
-          <>
-            <p>
-              Pick a ZIP, bedrooms, and budget to see rent amounts from real reviews -
-              useful for getting a feel for the market, not for locking in an exact
-              number.
-            </p>
-            <p className="mt-2 text-xs text-zinc-500">
-              Only includes approved reviews for Boston addresses.
-            </p>
-          </>
-        }
+        title="Boston rent intelligence and analytics"
+        description="Explore verified renter data across neighborhoods, compare price ranges, and spot patterns in amenities and recency."
       />
       <RentExplorer userReviewCount={userReviewCount} />
       <p className="text-center text-xs leading-relaxed text-zinc-500 sm:text-left">
