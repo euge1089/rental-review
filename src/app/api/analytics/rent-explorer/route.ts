@@ -5,6 +5,11 @@ import { authOptions } from "@/lib/auth";
 import { normalizeEmail } from "@/lib/normalize-email";
 import { prisma } from "@/lib/prisma";
 import { summarizeRents, effectiveBedroomBand } from "@/lib/analytics";
+import {
+  buildBaseWhere,
+  matchesBedroomBand,
+  resolveTimeWindow,
+} from "@/lib/rent-explorer-filters";
 
 const bodySchema = z.object({
   zipCodes: z.array(z.string()).optional(),
@@ -68,74 +73,8 @@ export async function POST(request: Request) {
     const body = bodySchema.parse(rawBody);
 
     const filters = body;
-
-    let createdAtCutoff: Date | undefined;
-    let recentWindowMonths = 12;
-    if (filters.timeWindow !== "all") {
-      const years =
-        filters.timeWindow === "1y"
-          ? 1
-          : filters.timeWindow === "2y"
-            ? 2
-            : filters.timeWindow === "3y"
-              ? 3
-              : 10;
-      recentWindowMonths = years * 12;
-      const now = new Date();
-      createdAtCutoff = new Date(
-        now.getFullYear() - years,
-        now.getMonth(),
-        now.getDate(),
-      );
-    }
-
-    const where: import("@prisma/client").Prisma.ReviewWhereInput = {
-      moderationStatus: "APPROVED",
-      monthlyRent: { not: null },
-      property: {
-        city: "Boston",
-        ...(filters.zipCodes && filters.zipCodes.length > 0
-          ? { postalCode: { in: filters.zipCodes } }
-          : {}),
-      },
-      ...(filters.minMonthlyRent != null || filters.maxMonthlyRent != null
-        ? {
-            monthlyRent: {
-              ...(filters.minMonthlyRent != null
-                ? { gte: filters.minMonthlyRent }
-                : {}),
-              ...(filters.maxMonthlyRent != null
-                ? { lte: filters.maxMonthlyRent }
-                : {}),
-            },
-          }
-        : {}),
-      ...(createdAtCutoff
-        ? {
-            createdAt: {
-              gte: createdAtCutoff,
-            },
-          }
-        : {}),
-    };
-
-    if (filters.minBathrooms !== "Any") {
-      const minBaths =
-        filters.minBathrooms === "1"
-          ? 1
-          : filters.minBathrooms === "1.5"
-            ? 1.5
-            : 2;
-      where.bathrooms = { gte: minBaths };
-    }
-
-    const amenityFilters = filters.amenities ?? {};
-    for (const [key, value] of Object.entries(amenityFilters)) {
-      if (value) {
-        // @ts-expect-error dynamic where field
-        where[key] = true;
-      }
-    }
+    const { createdAtCutoff, recentWindowMonths } = resolveTimeWindow(filters);
+    const where = buildBaseWhere(filters, createdAtCutoff);
 
     const allMatching = await prisma.review.findMany({
       where,
@@ -153,29 +92,13 @@ export async function POST(request: Request) {
       },
     });
 
-    const bandOrder: Array<"Studio" | "1BR" | "2BR" | "3BR" | "4BR" | "5BR+"> = [
-      "Studio",
-      "1BR",
-      "2BR",
-      "3BR",
-      "4BR",
-      "5BR+",
-    ];
-
-    const minBand =
-      filters.minBedroomBand === "Any" ? undefined : filters.minBedroomBand;
-    const maxBand =
-      filters.maxBedroomBand === "Any" ? undefined : filters.maxBedroomBand;
-
     const filteredByBedroom = allMatching.filter((review) => {
-      if (!minBand && !maxBand) return true;
-      const band = effectiveBedroomBand(review.unit, review.bedroomCount);
-      if (band === "Unknown") return false;
-      const idx = bandOrder.indexOf(band as (typeof bandOrder)[number]);
-      if (idx === -1) return false;
-      if (minBand && idx < bandOrder.indexOf(minBand)) return false;
-      if (maxBand && idx > bandOrder.indexOf(maxBand)) return false;
-      return true;
+      return matchesBedroomBand(
+        review.unit,
+        review.bedroomCount,
+        filters.minBedroomBand,
+        filters.maxBedroomBand,
+      );
     });
 
     const rents = filteredByBedroom

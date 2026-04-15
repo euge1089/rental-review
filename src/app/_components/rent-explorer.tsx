@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { bathroomsToBaAbbrev } from "@/lib/policy";
 import {
@@ -9,6 +10,12 @@ import {
   surfaceElevatedClass,
   surfaceSubtleClass,
 } from "@/lib/ui-classes";
+import type { ExplorerMapBounds, ExplorerMapMarker } from "@/app/_components/rent-explorer-map";
+
+const RentExplorerMap = dynamic(
+  () => import("@/app/_components/rent-explorer-map").then((mod) => mod.RentExplorerMap),
+  { ssr: false },
+);
 
 type Snapshot = {
   median: number | null;
@@ -56,7 +63,14 @@ type ApiResponse = {
   hasMore?: boolean;
 };
 
+type MapApiResponse = {
+  ok: boolean;
+  error?: string;
+  markers?: ExplorerMapMarker[];
+};
+
 const BOSTON_ZIPS = ["02127", "02210"];
+const MAP_ENABLED = process.env.NEXT_PUBLIC_ENABLE_RENT_EXPLORER_MAP === "1";
 
 type ExplorerBedroomBand =
   | "Any"
@@ -171,11 +185,31 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [mapMarkers, setMapMarkers] = useState<ExplorerMapMarker[]>([]);
+  const [mapBounds, setMapBounds] = useState<ExplorerMapBounds | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [isMapLoading, setIsMapLoading] = useState(false);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const mapAbortRef = useRef<AbortController | null>(null);
 
   const activeAmenityFilters = useMemo(
     () => Object.values(amenities).some(Boolean),
     [amenities],
   );
+
+  function buildPayload(nextPage: number) {
+    return {
+      zipCodes: zip === "any" ? [] : [zip],
+      minBedroomBand,
+      maxBedroomBand,
+      minMonthlyRent: minRent ? Number(minRent) : undefined,
+      maxMonthlyRent: maxRent ? Number(maxRent) : undefined,
+      minBathrooms,
+      amenities,
+      timeWindow,
+      page: nextPage,
+    };
+  }
 
   async function fetchPage(nextPage: number, append: boolean) {
     setIsLoading(true);
@@ -184,17 +218,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
       const response = await fetch("/api/analytics/rent-explorer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          zipCodes: zip === "any" ? [] : [zip],
-          minBedroomBand,
-          maxBedroomBand,
-          minMonthlyRent: minRent ? Number(minRent) : undefined,
-          maxMonthlyRent: maxRent ? Number(maxRent) : undefined,
-          minBathrooms,
-          amenities,
-          timeWindow,
-          page: nextPage,
-        }),
+        body: JSON.stringify(buildPayload(nextPage)),
       });
       const data = (await response.json()) as ApiResponse;
       if (!data.ok || !data.snapshot || !data.items) {
@@ -210,6 +234,9 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
       }
       setPage(nextPage);
       setHasSearched(true);
+      if (!append && data.items.length > 0 && selectedPropertyId == null) {
+        setSelectedPropertyId(data.items[0]?.propertyId ?? null);
+      }
     } catch {
       setError("Couldn't load this page. Try again.");
     } finally {
@@ -217,8 +244,47 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
     }
   }
 
+  async function fetchMarkers(boundsOverride?: ExplorerMapBounds | null) {
+    if (!MAP_ENABLED || explorerLocked) return;
+    const bounds = boundsOverride ?? mapBounds;
+    if (!bounds) return;
+
+    mapAbortRef.current?.abort();
+    const controller = new AbortController();
+    mapAbortRef.current = controller;
+    setIsMapLoading(true);
+    setMapError(null);
+
+    try {
+      const response = await fetch("/api/analytics/rent-explorer/map", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...buildPayload(0),
+          bounds,
+        }),
+        signal: controller.signal,
+      });
+      const data = (await response.json()) as MapApiResponse;
+      if (!data.ok || !data.markers) {
+        setMapError(data.error ?? "Couldn't load map points.");
+        return;
+      }
+      setMapMarkers(data.markers);
+      if (data.markers.length > 0 && selectedPropertyId == null) {
+        setSelectedPropertyId(data.markers[0]?.propertyId ?? null);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
+      setMapError("Couldn't load map points.");
+    } finally {
+      setIsMapLoading(false);
+    }
+  }
+
   function handleUpdate() {
     void fetchPage(0, false);
+    void fetchMarkers();
   }
 
   function handleClear() {
@@ -239,16 +305,40 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
     setTimeWindow("all");
     setSnapshot(null);
     setItems([]);
+    setMapMarkers([]);
+    setSelectedPropertyId(null);
     setHasMore(false);
     setError(null);
+    setMapError(null);
     setHasSearched(false);
   }
 
   useEffect(() => {
     if (explorerLocked) return;
     void fetchPage(0, false);
+    void fetchMarkers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [explorerLocked]);
+
+  useEffect(() => {
+    if (!MAP_ENABLED || explorerLocked || !mapBounds) return;
+    const timer = window.setTimeout(() => {
+      void fetchMarkers();
+    }, 200);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    explorerLocked,
+    mapBounds,
+    zip,
+    minBedroomBand,
+    maxBedroomBand,
+    minRent,
+    maxRent,
+    minBathrooms,
+    amenities,
+    timeWindow,
+  ]);
 
   const lowData = snapshot && snapshot.n > 0 && snapshot.n < 5;
 
@@ -338,6 +428,32 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           className={`flex flex-col gap-10 ${explorerLocked ? "pointer-events-none select-none blur-md" : ""}`}
           aria-hidden={explorerLocked}
         >
+      {MAP_ENABLED ? (
+        <section className="space-y-3">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-blue">
+              Interactive map
+            </p>
+            <p className="text-sm text-zinc-600">
+              Move the map to load points in view. Filters below apply to both map and list.
+            </p>
+          </div>
+          <RentExplorerMap
+            markers={mapMarkers}
+            selectedPropertyId={selectedPropertyId}
+            isLoading={isMapLoading}
+            onMarkerClick={(propertyId) => setSelectedPropertyId(propertyId)}
+            onBoundsChange={(bounds) => {
+              setMapBounds(bounds);
+            }}
+          />
+          {mapError ? (
+            <p className="text-sm text-red-600" role="alert">
+              {mapError}
+            </p>
+          ) : null}
+        </section>
+      ) : null}
       {/* Filters - elevated slab like hero / sign-in panels */}
       <section
         className={`${surfaceElevatedClass} space-y-5 p-4 sm:space-y-6 sm:p-6 md:p-8`}
@@ -710,7 +826,12 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                     <li key={item.id} className="min-w-0">
                       <Link
                         href={`/properties/${item.propertyId}`}
-                        className="group flex h-full min-h-[7.25rem] flex-col gap-1.5 rounded-xl border border-zinc-200/90 bg-white px-3 py-3 text-zinc-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition hover:border-muted-blue/30 hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.1)] sm:min-h-[7.5rem] sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-3.5"
+                        onMouseEnter={() => setSelectedPropertyId(item.propertyId)}
+                        className={`group flex h-full min-h-[7.25rem] flex-col gap-1.5 rounded-xl border bg-white px-3 py-3 text-zinc-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition hover:border-muted-blue/30 hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.1)] sm:min-h-[7.5rem] sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-3.5 ${
+                          selectedPropertyId === item.propertyId
+                            ? "border-muted-blue/40 ring-2 ring-muted-blue/20"
+                            : "border-zinc-200/90"
+                        }`}
                       >
                         <div className="min-w-0">
                           <p className="line-clamp-2 text-sm font-semibold leading-snug text-muted-blue-hover group-hover:underline sm:text-[15px]">

@@ -8,12 +8,13 @@ Rent Review Boston is a **Next.js 16** (App Router) app that lets renters search
 - **Database**: PostgreSQL via Prisma
 - **Auth**: NextAuth (Google provider, JWT sessions)
 - **Messaging**: Twilio Verify for SMS (optional trust layer)
+- **Mapping**: Mapbox GL (optional Rent Explorer map layer)
 - **Validation**: zod for API payloads
 
 ### Core Domain Model (Prisma)
 
 - **User**: `id`, `email` (unique), `displayName`, timestamps, `reviews`
-- **Property**: `id`, `addressLine1`, `city`, `state`, optional `postalCode`, `normalizedAddress` (unique), timestamps, `reviews`
+- **Property**: `id`, `addressLine1`, `city`, `state`, optional `postalCode`, `normalizedAddress` (unique), optional geocode fields (`latitude`, `longitude`, `geocodeStatus`, `geocodeQueryAddress`), timestamps, `reviews`
 - **Review**:
   - Links `userId` + `propertyId` + `reviewYear` with `@@unique([propertyId, userId, reviewYear])`
   - Fields: `unit`, `monthlyRent`, `bathrooms`, free-text `body`, amenity booleans, `overallScore`, `landlordScore`, `majorityYearAttested`
@@ -82,6 +83,12 @@ Set these in `.env` (and `.env.local` for local dev as needed):
   - `TWILIO_ACCOUNT_SID`
   - `TWILIO_AUTH_TOKEN`
   - `TWILIO_VERIFY_SERVICE_SID`
+- **Map / Geocoding**
+  - `NEXT_PUBLIC_ENABLE_RENT_EXPLORER_MAP` (`1` to enable map UI)
+  - `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` (browser map rendering)
+  - `MAPBOX_GEOCODING_TOKEN` (server geocode backfill)
+- **Scheduled jobs**
+  - `CRON_SECRET` (required for `/api/cron/*` routes, including property geocoding backfill)
 
 ### Development
 
@@ -129,6 +136,7 @@ Current automated coverage includes:
 - `src/app/api/reviews/my-count/route.test.ts` (review quota count and at-cap behavior)
 - `src/app/api/moderation/check/route.test.ts` (moderation decision + detected names response shape)
 - `src/app/api/reviews/duplicate-check/route.test.ts` (adds rate-limit and invalid-input edge coverage)
+- `src/app/api/analytics/rent-explorer/map/route.test.ts` (auth gate + marker payload for map mode)
 
 ### Testing the Core Flows Locally
 

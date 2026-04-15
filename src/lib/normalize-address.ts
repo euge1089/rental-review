@@ -94,6 +94,38 @@ function normalizeStreetLineTokens(line: string): string[] {
   return trimmed.split(" ").filter(Boolean);
 }
 
+function tokenForUnitCheck(token: string): string {
+  return stripTrailingPeriod(token).replace(/,$/g, "").toLowerCase();
+}
+
+/**
+ * Remove unit/suite/floor suffixes from line 1 before geocoding.
+ * Example: "55 Broadway Apt 2" -> "55 Broadway"
+ */
+export function stripUnitFromAddressLine1(line: string): string {
+  const tokens = normalizeStreetLineTokens(line);
+  if (tokens.length === 0) return "";
+
+  const unitLeaderPattern =
+    /^(apt|apartment|unit|ste|suite|bldg|building|fl|floor)[a-z0-9-]*$/i;
+
+  let cutIndex = -1;
+  for (let i = 0; i < tokens.length; i += 1) {
+    const normalized = tokenForUnitCheck(tokens[i]!);
+    if (
+      normalized.startsWith("#") ||
+      UNIT_LEADERS.has(normalized) ||
+      unitLeaderPattern.test(normalized)
+    ) {
+      cutIndex = i;
+      break;
+    }
+  }
+
+  const root = (cutIndex >= 0 ? tokens.slice(0, cutIndex) : tokens).join(" ");
+  return root.trim().replace(/\s+/g, " ");
+}
+
 /** Lowercase, expanded suffixes, single spaces - used only for matching keys. */
 function normalizeStreetLineForKey(line: string): string {
   const tokens = normalizeStreetLineTokens(line);
@@ -124,4 +156,18 @@ export function normalizePropertyAddress(
   const c = city.trim().toLowerCase().replace(/\s+/g, " ");
   const st = state.trim().toLowerCase();
   return `${line}, ${c}, ${st}`.replace(/\s+/g, " ");
+}
+
+/** Canonical geocoder input string (unit-stripped). */
+export function geocodeQueryAddress(
+  address: string,
+  city: string,
+  state: string,
+  postalCode?: string | null,
+): string {
+  const line = stripUnitFromAddressLine1(address);
+  const cityPart = city.trim().replace(/\s+/g, " ");
+  const statePart = state.trim().replace(/\s+/g, " ");
+  const postalCodePart = (postalCode ?? "").trim();
+  return [line, cityPart, statePart, postalCodePart].filter(Boolean).join(", ");
 }

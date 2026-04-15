@@ -12,6 +12,7 @@ import {
 } from "@/lib/normalize-address";
 import { resolveReviewModeration } from "@/lib/review-moderation";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { queuePropertyForGeocoding } from "@/lib/geocoding";
 
 const yearEntrySchema = z.object({
   reviewYear: z.number().int().min(2017),
@@ -127,7 +128,7 @@ export async function POST(request: Request) {
     const addressLine1 = formatAddressLine1ForDisplay(body.address);
     const property = await prisma.property.upsert({
       where: { normalizedAddress },
-      update: { addressLine1 },
+      update: { addressLine1, postalCode: body.postalCode },
       create: {
         addressLine1,
         city: body.city,
@@ -136,6 +137,7 @@ export async function POST(request: Request) {
         normalizedAddress,
       },
     });
+    await queuePropertyForGeocoding(property);
 
     const existingForBatch = await prisma.review.findMany({
       where: {
