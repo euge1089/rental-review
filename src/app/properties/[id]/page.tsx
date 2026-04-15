@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { AppPageShell } from "@/app/_components/app-page-shell";
@@ -22,6 +23,69 @@ function reviewYearToPrivacyBucket(reviewYear: number | null): string {
   if (yearsAgo <= 2) return "Recent (within ~2 years)";
   if (yearsAgo <= 5) return "A few years ago (2-5 years)";
   return "Older experience (5+ years)";
+}
+
+/** Pipe-separated review meta; `monthlyRent` undefined omits rent (e.g. signed-out teaser). */
+function ReviewMetadataLine({
+  privacyYearBucket,
+  monthlyRent,
+  bedroomCount,
+  bathPublicLabel,
+}: {
+  privacyYearBucket: string;
+  monthlyRent?: number | null;
+  bedroomCount: number | null;
+  bathPublicLabel: string | null;
+}) {
+  const parts: ReactNode[] = [
+    <span key="tp">
+      <span className="font-medium text-zinc-700">Time period:</span>{" "}
+      {privacyYearBucket}
+    </span>,
+  ];
+
+  if (monthlyRent !== undefined) {
+    parts.push(
+      typeof monthlyRent === "number" ? (
+        <span key="rent" className="tabular-nums">
+          ${monthlyRent.toLocaleString()}/mo
+        </span>
+      ) : (
+        <span key="rent" className="text-zinc-500">
+          Rent not shared
+        </span>
+      ),
+    );
+  }
+
+  if (bedroomCount != null) {
+    parts.push(
+      <span key="br">{bedroomCountToBand(bedroomCount)}</span>,
+    );
+  }
+
+  if (bathPublicLabel) {
+    parts.push(<span key="bath">{bathPublicLabel}</span>);
+  }
+
+  return (
+    <p className="flex flex-wrap items-center gap-x-2 text-sm leading-relaxed text-zinc-600 sm:gap-x-4">
+      {parts.flatMap((node, i) =>
+        i === 0
+          ? [node]
+          : [
+              <span
+                key={`sep-${i}`}
+                className="select-none px-1 font-bold text-zinc-400"
+                aria-hidden
+              >
+                |
+              </span>,
+              node,
+            ],
+      )}
+    </p>
+  );
 }
 
 export default async function PropertyDetailPage({ params }: Props) {
@@ -251,16 +315,12 @@ export default async function PropertyDetailPage({ params }: Props) {
                             </span>
                           ) : null}
                         </p>
-                        <p className="text-sm text-zinc-600">
-                          Time period {privacyYearBucket}
-                          {typeof review.monthlyRent === "number"
-                            ? ` · $${review.monthlyRent.toLocaleString()}/mo`
-                            : " · Rent not shared"}
-                          {review.bedroomCount != null
-                            ? ` · ${bedroomCountToBand(review.bedroomCount)}`
-                            : ""}
-                          {bathPublicLabel ? ` · ${bathPublicLabel}` : ""}
-                        </p>
+                        <ReviewMetadataLine
+                          privacyYearBucket={privacyYearBucket}
+                          monthlyRent={review.monthlyRent}
+                          bedroomCount={review.bedroomCount}
+                          bathPublicLabel={bathPublicLabel}
+                        />
                         <div className="flex flex-wrap items-center gap-2 pt-1">
                           <span className="text-sm text-zinc-500">By {maskedName}</span>
                           {review.user.phoneVerified && (
@@ -401,13 +461,11 @@ export default async function PropertyDetailPage({ params }: Props) {
                               </span>
                             ) : null}
                           </p>
-                          <p className="text-sm text-zinc-600">
-                            Time period {privacyYearBucket}
-                            {review.bedroomCount != null
-                              ? ` · ${bedroomCountToBand(review.bedroomCount)}`
-                              : ""}
-                            {bathPublicLabel ? ` · ${bathPublicLabel}` : ""}
-                          </p>
+                          <ReviewMetadataLine
+                            privacyYearBucket={privacyYearBucket}
+                            bedroomCount={review.bedroomCount}
+                            bathPublicLabel={bathPublicLabel}
+                          />
                           <div className="flex flex-wrap items-center gap-2 pt-1">
                             <span className="text-sm text-zinc-500">By {maskedName}</span>
                             {review.user.phoneVerified && (

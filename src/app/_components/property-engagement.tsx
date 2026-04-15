@@ -137,11 +137,11 @@ export function PropertyEngagement(props: Props) {
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
+    <div className="flex w-full flex-col gap-3 lg:w-auto lg:items-end">
       <button
         type="button"
         onClick={toggleBookmark}
-        className={`inline-flex min-h-10 items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition sm:min-h-0 sm:px-5 ${
+        className={`inline-flex min-h-10 w-full items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition sm:min-h-0 lg:w-full lg:min-w-[12rem] ${
           isBookmarked
             ? "bg-muted-blue-hover text-white shadow-[0_8px_24px_-10px_rgb(21_42_69/0.45)] hover:bg-[#1a3555]"
             : "border border-zinc-200/90 bg-white text-muted-blue-hover shadow-sm hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
@@ -152,7 +152,7 @@ export function PropertyEngagement(props: Props) {
       </button>
       <Link
         href="/tour-checklist"
-        className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-200/90 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover shadow-sm transition hover:border-pop/40 hover:bg-pop-tint/50 sm:px-5"
+        className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-zinc-200/90 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover shadow-sm transition hover:border-pop/40 hover:bg-pop-tint/50 lg:min-w-[12rem]"
       >
         Tour checklist
       </Link>

@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { linkInlineClass } from "@/lib/ui-classes";
 
 type Props = {
   addressLine1: string;
@@ -8,7 +7,7 @@ type Props = {
   state: string;
   postalCode: string | null;
   reviewCount: number;
-  /** e.g. Save apartment + Tour checklist, aligned bottom-right on wide screens */
+  /** Signed-in: Save apartment + Tour checklist, top-right, stacked */
   engagementSlot?: ReactNode;
 };
 
@@ -63,34 +62,25 @@ export function PropertyDetailHero({
                 </span>
               </span>
             </div>
+
+            <div className="flex max-w-md flex-col gap-3 pt-1 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center">
+              <Link
+                href="/submit"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_28px_-8px_rgb(92_107_127/0.35)] transition hover:bg-muted-blue-hover sm:min-h-0 sm:w-fit"
+              >
+                Add your review
+              </Link>
+              <Link
+                href="/properties"
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-200/90 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/35 hover:bg-muted-blue-tint/50 hover:shadow-elevated sm:min-h-0 sm:w-fit"
+              >
+                ← Browse all
+              </Link>
+            </div>
           </div>
 
-          <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center lg:flex-col lg:items-stretch">
-            <Link
-              href="/submit"
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_28px_-8px_rgb(92_107_127/0.35)] transition hover:bg-muted-blue-hover sm:min-h-0"
-            >
-              Add your review
-            </Link>
-            <Link
-              href="/properties"
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-200/90 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/35 hover:bg-muted-blue-tint/50 hover:shadow-elevated sm:min-h-0"
-            >
-              ← Browse all
-            </Link>
-          </div>
-        </div>
-
-        <div className="mt-6 flex flex-col gap-4 border-t border-zinc-100/90 pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-          <p className="text-center text-xs leading-relaxed text-zinc-500 sm:text-left">
-            Numbers come from renter submissions - use them as a sanity check, not a
-            guarantee.{" "}
-            <Link href="/#how-it-works" className={linkInlineClass}>
-              How it works
-            </Link>
-          </p>
           {engagementSlot ? (
-            <div className="flex w-full shrink-0 flex-wrap justify-end gap-2 sm:w-auto">
+            <div className="flex w-full shrink-0 flex-col gap-3 lg:mt-0 lg:w-auto lg:min-w-[12rem] lg:items-end">
               {engagementSlot}
             </div>
           ) : null}
