@@ -28,7 +28,7 @@ export default async function AnalyticsPage() {
     <AppPageShell gapClass="gap-6">
       <PageHeader
         eyebrow="Boston Rent Explorer"
-        title="Boston rent intelligence and analytics"
+        title="Boston Rent Intelligence and Analytics"
         description="Explore verified renter data across neighborhoods, compare price ranges, and spot patterns in amenities and recency."
       />
       <RentExplorer userReviewCount={userReviewCount} />
