@@ -7,7 +7,7 @@ import { ProfileAccordionSection } from "@/app/_components/profile-accordion-sec
 import { formInputClass } from "@/lib/ui-classes";
 
 const PROFILE_NAME_COPY =
-  "Add/Update your name to complete your profile, this will never be shared with anyone else";
+  "Add/update your name to complete your profile, this will never be shared with anyone else";
 
 type Props = {
   initialDisplayName: string | null;
@@ -70,7 +70,7 @@ export function ProfileDisplayNameCard({ initialDisplayName }: Props) {
   return (
     <ProfileAccordionSection
       id="profile-display-name"
-      title="Your Name"
+      title="Your Information"
       summary={PROFILE_NAME_COPY}
       collapsedTone="neutral"
       expandedTone="neutral"
