@@ -111,14 +111,13 @@ export default function RootLayout({
                 href="/properties"
                 className="inline-flex min-h-11 items-center rounded-full px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80 hover:bg-muted-blue-tint sm:min-h-0 sm:py-1"
               >
-                Browse
+                Browse Addresses
               </Link>
               <Link
                 href="/analytics"
                 className="inline-flex min-h-11 items-center rounded-full px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80 hover:bg-muted-blue-tint sm:min-h-0 sm:py-1"
               >
-                <span className="sm:hidden">Explorer</span>
-                <span className="hidden sm:inline">Rent explorer</span>
+                Rental Analytics
               </Link>
               <Link
                 href="/submit"

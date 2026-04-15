@@ -38,11 +38,16 @@ model User {
   phoneVerified   Boolean   @default(false)
   /// When true, skip retention / reminder emails (transactional auth email still sent).
   retentionEmailsOptOut Boolean @default(false)
+  /// When true, skip email when someone sends a private review message (default false = notifications on).
+  messageEmailsOptOut Boolean @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   reviews         Review[]
   bookmarks       Bookmark[]
   reviewReports   ReviewReport[]
+  reviewVotes     ReviewVote[]
+  startedReviewThreads ReviewMessageThread[] @relation("StartedReviewThreads")
+  reviewThreadMessages ReviewThreadMessage[]
   retentionEmailLogs RetentionEmailLog[]
   retentionEmailClicks RetentionEmailClick[]
 }
@@ -135,12 +140,63 @@ model Review {
   property               Property         @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   user                   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   reports                ReviewReport[]
+  votes                  ReviewVote[]
+  messageThreads         ReviewMessageThread[]
 
   @@unique([propertyId, userId, reviewYear])
   @@index([reviewYear])
   @@index([moderationStatus, createdAt])
   @@index([monthlyRent])
   @@index([propertyId, createdAt])
+}
+
+/// Thumbs up (+1) or down (-1); one vote per user per review.
+model ReviewVote {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  value     Int
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@index([reviewId])
+}
+
+/// Private thread: another signed-in user asks the review author for more detail (one thread per asker per review).
+model ReviewMessageThread {
+  id            String   @id @default(cuid())
+  reviewId      String
+  starterUserId String
+  /// Set when the review author accepts; until then only the starter's first message exists.
+  acceptedAt    DateTime?
+  /// Set when the author declines; no further messages.
+  declinedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  review   Review                @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  starter  User                  @relation("StartedReviewThreads", fields: [starterUserId], references: [id], onDelete: Cascade)
+  messages ReviewThreadMessage[]
+
+  @@unique([reviewId, starterUserId])
+  @@index([starterUserId])
+  @@index([reviewId])
+}
+
+model ReviewThreadMessage {
+  id           String   @id @default(cuid())
+  threadId     String
+  senderUserId String
+  body         String
+  createdAt    DateTime @default(now())
+
+  thread ReviewMessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender User                 @relation(fields: [senderUserId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, createdAt])
 }
 
 model Bookmark {

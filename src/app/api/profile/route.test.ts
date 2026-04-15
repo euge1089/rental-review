@@ -35,11 +35,13 @@ describe("GET/PATCH /api/profile", () => {
       bostonRentingSinceYear: null,
       phoneVerified: false,
       retentionEmailsOptOut: false,
+      messageEmailsOptOut: false,
     });
     prismaMock.user.update.mockResolvedValue({
       displayName: "Updated User",
       bostonRentingSinceYear: null,
       retentionEmailsOptOut: true,
+      messageEmailsOptOut: false,
     });
   });
 
@@ -79,6 +81,7 @@ describe("GET/PATCH /api/profile", () => {
       displayName: "Updated User",
       bostonRentingSinceYear: null,
       retentionEmailsOptOut: true,
+      messageEmailsOptOut: false,
     });
     const { PATCH } = await import("./route");
     const response = await PATCH(
@@ -96,6 +99,7 @@ describe("GET/PATCH /api/profile", () => {
       ok: true,
       displayName: "Updated User",
       retentionEmailsOptOut: true,
+      messageEmailsOptOut: false,
     });
     expect(prismaMock.user.update).toHaveBeenCalledTimes(1);
   });

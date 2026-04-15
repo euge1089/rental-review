@@ -10,6 +10,7 @@ import {
 } from "@/lib/analytics";
 import { bathroomsToPublicLabel } from "@/lib/policy";
 import { ReportReviewButton } from "@/app/_components/report-review-button";
+import { ReviewVoteButtons } from "@/app/_components/review-vote-buttons";
 import { PropertyEngagement } from "@/app/_components/property-engagement";
 import {
   linkInlineClass,
@@ -39,10 +40,16 @@ export default async function PropertyDetailPage({ params }: Props) {
       where: { id },
       include: {
         reviews: {
+          where: { moderationStatus: "APPROVED" },
           orderBy: { createdAt: "desc" },
           include: {
             user: {
-              select: { displayName: true, email: true, phoneVerified: true },
+              select: {
+                id: true,
+                displayName: true,
+                email: true,
+                phoneVerified: true,
+              },
             },
           },
         },
@@ -78,6 +85,53 @@ export default async function PropertyDetailPage({ params }: Props) {
   }
 
   const isSignedIn = Boolean(session?.user?.email);
+  const reviewIds = property?.reviews.map((r) => r.id) ?? [];
+
+  const viewerRow =
+    isSignedIn && session?.user?.email
+      ? await prisma.user.findUnique({
+          where: { email: session.user.email },
+          select: { id: true },
+        })
+      : null;
+
+  const [voteGroups, myVoteRows] = await Promise.all([
+    reviewIds.length > 0
+      ? prisma.reviewVote.groupBy({
+          by: ["reviewId", "value"],
+          where: { reviewId: { in: reviewIds } },
+          _count: { _all: true },
+        })
+      : Promise.resolve(
+          [] as {
+            reviewId: string;
+            value: number;
+            _count: { _all: number };
+          }[],
+        ),
+    reviewIds.length > 0 && viewerRow
+      ? prisma.reviewVote.findMany({
+          where: { userId: viewerRow.id, reviewId: { in: reviewIds } },
+          select: { reviewId: true, value: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const voteTally = new Map<string, { up: number; down: number }>();
+  for (const rid of reviewIds) {
+    voteTally.set(rid, { up: 0, down: 0 });
+  }
+  for (const row of voteGroups) {
+    const cur = voteTally.get(row.reviewId);
+    if (!cur) continue;
+    if (row.value === 1) cur.up = row._count._all;
+    if (row.value === -1) cur.down = row._count._all;
+  }
+  const myVoteByReviewId = new Map<string, number>();
+  for (const v of myVoteRows) {
+    myVoteByReviewId.set(v.reviewId, v.value);
+  }
+
   const hasMeaningfulRentStats =
     rentStats.length > 0 &&
     rentStats.some(
@@ -334,8 +388,45 @@ export default async function PropertyDetailPage({ params }: Props) {
                       )}
                     </div>
 
-                    <div className="mt-3">
-                      <ReportReviewButton reviewId={review.id} />
+                    <div className="mt-4 flex flex-col gap-3 border-t border-zinc-100 pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                      {viewerRow && viewerRow.id !== review.user.id ? (
+                        <ReviewVoteButtons
+                          reviewId={review.id}
+                          initialUp={voteTally.get(review.id)?.up ?? 0}
+                          initialDown={voteTally.get(review.id)?.down ?? 0}
+                          initialMyVote={
+                            (() => {
+                              const v = myVoteByReviewId.get(review.id);
+                              return v === 1 || v === -1 ? v : null;
+                            })()
+                          }
+                        />
+                      ) : (
+                        <p className="text-xs text-zinc-500">
+                          <span className="font-semibold tabular-nums text-zinc-700">
+                            {voteTally.get(review.id)?.up ?? 0}
+                          </span>{" "}
+                          helpful ·{" "}
+                          <span className="font-semibold tabular-nums text-zinc-700">
+                            {voteTally.get(review.id)?.down ?? 0}
+                          </span>{" "}
+                          not helpful
+                          {viewerRow?.id === review.user.id
+                            ? " (others can vote on your review)"
+                            : null}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap items-center gap-3">
+                        {viewerRow && viewerRow.id !== review.user.id ? (
+                          <Link
+                            href={`/messages/review/${review.id}`}
+                            className="inline-flex min-h-10 items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+                          >
+                            Message the author
+                          </Link>
+                        ) : null}
+                        <ReportReviewButton reviewId={review.id} />
+                      </div>
                     </div>
                   </li>
                 );

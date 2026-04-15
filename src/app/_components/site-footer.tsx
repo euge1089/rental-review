@@ -23,7 +23,7 @@ export function SiteFooter() {
             href="/properties"
             className="inline-flex min-h-11 items-center font-medium text-muted-blue transition active:opacity-80 hover:text-muted-blue-hover"
           >
-            Browse
+            Browse Addresses
           </Link>
           <Link
             href="/submit"

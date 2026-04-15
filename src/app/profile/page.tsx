@@ -62,6 +62,7 @@ export default async function ProfilePage({ searchParams }: Props) {
       displayName: true,
       bostonRentingSinceYear: true,
       retentionEmailsOptOut: true,
+      messageEmailsOptOut: true,
     },
   });
 
@@ -192,6 +193,7 @@ export default async function ProfilePage({ searchParams }: Props) {
               <ProfileDisplayNameCard initialDisplayName={displayName} />
               <ProfileRetentionEmailPrefs
                 initialOptOut={user?.retentionEmailsOptOut ?? false}
+                initialMessageEmailsOptOut={user?.messageEmailsOptOut ?? false}
               />
             </div>
             <div className="lg:flex lg:h-full lg:min-h-0 lg:w-[min(100%,22rem)] lg:shrink-0 lg:flex-col">
@@ -226,26 +228,6 @@ export default async function ProfilePage({ searchParams }: Props) {
             </SurfacePanel>
             </div>
           </div>
-
-          {bostonRentingSinceYear != null ? (
-            <SurfacePanel variant="subtle" as="section">
-              <h2 className="text-base font-semibold text-muted-blue-hover">
-                Boston renting history
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-                You told us you first rented in Boston in{" "}
-                <span className="font-semibold text-zinc-800">
-                  {bostonRentingSinceYear}
-                </span>
-                . Lease-start years on your reviews must be{" "}
-                <span className="font-medium text-zinc-800">
-                  {bostonRentingSinceYear}
-                </span>{" "}
-                or later. If that year is wrong, contact us - only an admin can change
-                it.
-              </p>
-            </SurfacePanel>
-          ) : null}
 
           <SurfacePanel variant="subtle" as="section">
             <h2 className="text-base font-semibold text-muted-blue-hover">

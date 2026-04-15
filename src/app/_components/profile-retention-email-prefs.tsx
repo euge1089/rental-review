@@ -5,21 +5,31 @@ import { useRouter } from "next/navigation";
 
 type Props = {
   initialOptOut: boolean;
+  initialMessageEmailsOptOut: boolean;
 };
 
-export function ProfileRetentionEmailPrefs({ initialOptOut }: Props) {
+export function ProfileRetentionEmailPrefs({
+  initialOptOut,
+  initialMessageEmailsOptOut,
+}: Props) {
   const router = useRouter();
   const [optOut, setOptOut] = useState(initialOptOut);
-  const [loading, setLoading] = useState(false);
+  const [messageOptOut, setMessageOptOut] = useState(initialMessageEmailsOptOut);
+  const [loadingRetention, setLoadingRetention] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setOptOut(initialOptOut);
   }, [initialOptOut]);
 
-  async function onChange(next: boolean) {
+  useEffect(() => {
+    setMessageOptOut(initialMessageEmailsOptOut);
+  }, [initialMessageEmailsOptOut]);
+
+  async function onRetentionChange(next: boolean) {
     setError(null);
-    setLoading(true);
+    setLoadingRetention(true);
     const prev = optOut;
     setOptOut(next);
     try {
@@ -36,7 +46,30 @@ export function ProfileRetentionEmailPrefs({ initialOptOut }: Props) {
       }
       router.refresh();
     } finally {
-      setLoading(false);
+      setLoadingRetention(false);
+    }
+  }
+
+  async function onMessageOptOutChange(next: boolean) {
+    setError(null);
+    setLoadingMessage(true);
+    const prev = messageOptOut;
+    setMessageOptOut(next);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageEmailsOptOut: next }),
+      });
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok) {
+        setMessageOptOut(prev);
+        setError(data.error ?? "Could not update.");
+        return;
+      }
+      router.refresh();
+    } finally {
+      setLoadingMessage(false);
     }
   }
 
@@ -46,26 +79,41 @@ export function ProfileRetentionEmailPrefs({ initialOptOut }: Props) {
       className="scroll-mt-24 rounded-2xl border border-zinc-200/80 bg-white p-5 sm:p-6"
     >
       <h2 className="text-base font-semibold text-muted-blue-hover">
-        Email reminders
+        Email preferences
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-        Occasional nudges if you haven&apos;t submitted a review yet, or if you may
-        still have lease-start years to cover. Account and security emails are
-        separate.
+        Control optional emails. Account, sign-in, and security messages may still be
+        sent when needed.
       </p>
       <label className="mt-4 flex cursor-pointer items-start gap-3 text-sm text-zinc-800">
         <input
           type="checkbox"
           className="mt-1 size-4 rounded border-zinc-300 text-muted-blue focus:ring-muted-blue/40"
           checked={optOut}
-          disabled={loading}
-          onChange={(e) => onChange(e.target.checked)}
+          disabled={loadingRetention || loadingMessage}
+          onChange={(e) => onRetentionChange(e.target.checked)}
         />
         <span>
           <span className="font-medium">Opt out of reminder emails</span>
           <span className="mt-0.5 block text-zinc-600">
-            You won&apos;t receive retention reminders; you can turn this back off
-            anytime.
+            Occasional nudges if you haven&apos;t submitted a review or may still have
+            lease-start years to cover.
+          </span>
+        </span>
+      </label>
+      <label className="mt-4 flex cursor-pointer items-start gap-3 text-sm text-zinc-800">
+        <input
+          type="checkbox"
+          className="mt-1 size-4 rounded border-zinc-300 text-muted-blue focus:ring-muted-blue/40"
+          checked={messageOptOut}
+          disabled={loadingRetention || loadingMessage}
+          onChange={(e) => onMessageOptOutChange(e.target.checked)}
+        />
+        <span>
+          <span className="font-medium">Opt out of direct message emails</span>
+          <span className="mt-0.5 block text-zinc-600">
+            When off (default), we email you when another renter messages you about a
+            review. Turn this on to stop those notifications only.
           </span>
         </span>
       </label>

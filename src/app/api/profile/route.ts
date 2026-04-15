@@ -12,12 +12,14 @@ const patchSchema = z
     displayName: z.string().max(120).optional(),
     bostonRentingSinceYear: z.number().int().optional(),
     retentionEmailsOptOut: z.boolean().optional(),
+    messageEmailsOptOut: z.boolean().optional(),
   })
   .refine(
     (d) =>
       d.displayName !== undefined ||
       d.bostonRentingSinceYear !== undefined ||
-      d.retentionEmailsOptOut !== undefined,
+      d.retentionEmailsOptOut !== undefined ||
+      d.messageEmailsOptOut !== undefined,
     { message: "No updates." },
   );
 
@@ -36,6 +38,7 @@ export async function GET() {
       bostonRentingSinceYear: true,
       phoneVerified: true,
       retentionEmailsOptOut: true,
+      messageEmailsOptOut: true,
     },
   });
 
@@ -86,6 +89,7 @@ export async function PATCH(request: Request) {
     displayName?: string | null;
     bostonRentingSinceYear?: number;
     retentionEmailsOptOut?: boolean;
+    messageEmailsOptOut?: boolean;
   } = {};
 
   if (parsed.displayName !== undefined) {
@@ -117,6 +121,10 @@ export async function PATCH(request: Request) {
     data.retentionEmailsOptOut = parsed.retentionEmailsOptOut;
   }
 
+  if (parsed.messageEmailsOptOut !== undefined) {
+    data.messageEmailsOptOut = parsed.messageEmailsOptOut;
+  }
+
   const updated = await prisma.user.update({
     where: { email },
     data,
@@ -124,6 +132,7 @@ export async function PATCH(request: Request) {
       displayName: true,
       bostonRentingSinceYear: true,
       retentionEmailsOptOut: true,
+      messageEmailsOptOut: true,
     },
   });
 
@@ -132,5 +141,6 @@ export async function PATCH(request: Request) {
     displayName: updated.displayName,
     bostonRentingSinceYear: updated.bostonRentingSinceYear,
     retentionEmailsOptOut: updated.retentionEmailsOptOut,
+    messageEmailsOptOut: updated.messageEmailsOptOut,
   });
 }
