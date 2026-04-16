@@ -182,7 +182,7 @@ export default function PropertiesPage() {
 
   return (
     <AppPageShell gapClass="gap-6">
-      <GiveawayPromoStrip variant="home" />
+      <GiveawayPromoStrip variant="home" placement="properties" />
       <div
         className={`${mobileSectionShell} flex flex-col gap-6 bg-white py-4 sm:rounded-2xl sm:border sm:border-zinc-200/80 sm:bg-transparent sm:py-0 sm:flex-row sm:items-end sm:justify-between`}
       >
@@ -199,8 +199,8 @@ export default function PropertiesPage() {
                 </p>
               ) : (
                 <p>
-                  Start typing a street, apartment name, or ZIP to filter. South Boston
-                  addresses will appear first as you add more reviews there.
+                  Addresses will appear first as you add more reviews there. Start typing a
+                  street, apartment name, or ZIP to filter.
                 </p>
               )}
               {loggedIn === false ? (

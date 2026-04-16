@@ -11,8 +11,12 @@ const GIVEAWAY_ENTRY_CAP = 5;
 
 type Variant = "home" | "modal";
 
+type Placement = "default" | "properties";
+
 type Props = {
   variant?: Variant;
+  /** Browse page: phone-only shorter copy and tighter layout for the promo strip. */
+  placement?: Placement;
   className?: string;
 };
 
@@ -130,6 +134,7 @@ function EntryProgressBar({
   loading,
   excited,
   modalTone,
+  compactRulesFooter = false,
 }: {
   used: number;
   cap: number;
@@ -137,6 +142,8 @@ function EntryProgressBar({
   loading: boolean;
   excited?: boolean;
   modalTone?: boolean;
+  /** Shorter rules line on small screens (browse properties). */
+  compactRulesFooter?: boolean;
 }) {
   const clamped = Math.min(Math.max(0, used), cap);
   const pct = cap > 0 ? (clamped / cap) * 100 : 0;
@@ -223,14 +230,29 @@ function EntryProgressBar({
         <p
           className={`mt-2 leading-relaxed text-zinc-400 ${excited ? "text-[11px]" : "text-[10px]"}`}
         >
-          Bar uses your reviews on file; final giveaway eligibility follows official rules.
+          {compactRulesFooter ? (
+            <>
+              <span className="sm:hidden">
+                Bar uses your reviews on file; giveaway eligibility follows official rules.
+              </span>
+              <span className="hidden sm:inline">
+                Bar uses your reviews on file; final giveaway eligibility follows official rules.
+              </span>
+            </>
+          ) : (
+            "Bar uses your reviews on file; final giveaway eligibility follows official rules."
+          )}
         </p>
       ) : null}
     </div>
   );
 }
 
-export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) {
+export function GiveawayPromoStrip({
+  variant = "home",
+  placement = "default",
+  className = "",
+}: Props) {
   const [mounted, setMounted] = useState(false);
   const { data: session, status } = useSession();
   const [reviewCount, setReviewCount] = useState<number | null>(null);
@@ -277,12 +299,17 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
 
   const isModal = variant === "modal";
   const isHome = variant === "home";
+  const isPropertiesBrowse = placement === "properties";
   const entriesUsed = reviewCount ?? 0;
 
   const asideSurface = "rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_3px_rgb(15_23_42/0.06)]";
 
-  const innerAccent =
-    "flex border-l-[3px] border-l-muted-blue pl-4 pr-4 py-4 sm:pl-5 sm:pr-5 sm:py-5";
+  const innerAccent = [
+    "flex border-l-[3px] border-l-muted-blue py-4 sm:py-5",
+    isPropertiesBrowse
+      ? "pl-3 pr-2 max-sm:pl-3 max-sm:pr-1.5 sm:pl-5 sm:pr-5"
+      : "pl-4 pr-4 sm:pl-5 sm:pr-5",
+  ].join(" ");
 
   if (isModal) {
     return (
@@ -348,6 +375,7 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
             loading={signedIn && countLoading}
             excited={false}
             modalTone
+            compactRulesFooter={isPropertiesBrowse}
           />
         </div>
       </aside>
@@ -368,20 +396,34 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
                 : "flex flex-col gap-4"
             }
           >
-            <div className="min-w-0 flex gap-3.5">
+            <div className="flex w-full min-w-0 gap-3.5">
               <div
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted-blue-tint/60 text-muted-blue-hover ring-1 ring-muted-blue/15"
                 aria-hidden
               >
                 <GiftIcon className="text-muted-blue-hover" />
               </div>
-              <div className="min-w-0 pt-0.5">
+              <div className="min-w-0 flex-1 pt-0.5">
                 <p className="text-xs font-semibold uppercase tracking-[0.15em] text-zinc-500">
                   April giveaway
                 </p>
-                <p className="mt-1.5 text-pretty text-sm leading-relaxed text-zinc-800 sm:text-[0.9375rem]">
+                <p
+                  className={`mt-1.5 text-sm leading-relaxed text-zinc-800 sm:text-[0.9375rem] ${
+                    isPropertiesBrowse
+                      ? "max-sm:w-full max-sm:text-left sm:text-pretty"
+                      : "text-pretty"
+                  }`}
+                >
                   <strong className="font-semibold text-muted-blue-hover">$200</strong>{" "}
-                  in Boston restaurant gift cards will be awarded - enter by sharing an{" "}
+                  in Boston restaurant gift cards
+                  {isPropertiesBrowse ? (
+                    <>
+                      <span className="hidden sm:inline"> will be awarded</span> - enter by
+                      sharing an{" "}
+                    </>
+                  ) : (
+                    <> will be awarded - enter by sharing an </>
+                  )}
                   <strong className="font-semibold text-muted-blue-hover">anonymous</strong>{" "}
                   rental review.{" "}
                   <Link
@@ -417,6 +459,7 @@ export function GiveawayPromoStrip({ variant = "home", className = "" }: Props) 
             signedIn={signedIn}
             loading={signedIn && countLoading}
             excited={false}
+            compactRulesFooter={isPropertiesBrowse}
           />
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavUser } from "@/app/_components/nav-user";
@@ -103,6 +104,90 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
     setIsMenuOpen(false);
   }, [pathname]);
 
+  const mobileMenuOverlay =
+    isMenuOpen ? (
+      <div
+        className="fixed inset-0 z-50 min-h-[100dvh] bg-zinc-900/50 backdrop-blur-[2px] sm:hidden"
+        onClick={() => setIsMenuOpen(false)}
+      >
+        <aside
+          id="mobile-site-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Site navigation"
+          className="ml-auto flex h-full min-h-[100dvh] max-h-[100dvh] w-[min(70vw,16.5rem)] flex-col overflow-y-auto rounded-l-2xl border border-zinc-200/90 border-r-0 bg-gradient-to-b from-muted-blue-tint/50 via-white to-zinc-50/95 pl-px shadow-[-8px_0_32px_-8px_rgb(15_23_42/0.25)]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-2 border-b border-zinc-200/80 px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
+            <div className="min-w-0 pt-0.5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-blue">
+                Rent Review Boston
+              </p>
+              <p className="mt-1 text-xl font-semibold tracking-tight text-zinc-900">
+                Menu
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(false)}
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-zinc-100/90 text-zinc-700 transition active:bg-zinc-200"
+              aria-label="Close menu"
+            >
+              <CloseIcon />
+            </button>
+          </div>
+
+          <nav className="flex flex-col gap-1 px-3 py-3" aria-label="Primary">
+            <Link
+              href="/properties"
+              onClick={() => setIsMenuOpen(false)}
+              className={mobileDrawerLinkClass(
+                isActiveHref(pathname, "/properties"),
+              )}
+            >
+              Browse Addresses
+            </Link>
+            <Link
+              href="/analytics"
+              onClick={() => setIsMenuOpen(false)}
+              className={mobileDrawerLinkClass(
+                isActiveHref(pathname, "/analytics"),
+              )}
+            >
+              Rental Analytics
+            </Link>
+            <Link
+              href="/profile"
+              onClick={() => setIsMenuOpen(false)}
+              className={mobileDrawerLinkClass(
+                isActiveHref(pathname, "/profile"),
+              )}
+            >
+              Profile
+            </Link>
+            <Link
+              href="/submit"
+              onClick={() => setIsMenuOpen(false)}
+              className={
+                isActiveHref(pathname, "/submit")
+                  ? mobileDrawerLinkClass(true)
+                  : "mt-1 flex min-h-[3.25rem] items-center justify-center rounded-xl bg-muted-blue px-4 py-3 text-base font-semibold leading-snug tracking-tight text-white shadow-sm transition hover:bg-muted-blue-hover active:scale-[0.99]"
+              }
+            >
+              Submit a Review
+            </Link>
+          </nav>
+
+          <div className="mt-auto border-t border-zinc-200/80 bg-white/70 px-3 py-4 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]">
+            <p className="mb-2.5 px-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+              Account
+            </p>
+            <NavUser adminEmail={adminEmail} variant="drawer" />
+          </div>
+        </aside>
+      </div>
+    ) : null;
+
   return (
     <>
       <nav
@@ -168,91 +253,9 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
         </div>
       </nav>
 
-      {isMenuOpen ? (
-        <div
-          className="fixed inset-0 z-50 bg-zinc-900/50 backdrop-blur-[2px] sm:hidden"
-          onClick={() => setIsMenuOpen(false)}
-        >
-          <aside
-            id="mobile-site-menu"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Site navigation"
-            className="ml-auto flex h-full max-h-[100dvh] w-[min(70vw,16.5rem)] flex-col overflow-y-auto rounded-l-2xl border border-zinc-200/90 border-r-0 bg-gradient-to-b from-muted-blue-tint/50 via-white to-zinc-50/95 pl-px shadow-[-8px_0_32px_-8px_rgb(15_23_42/0.25)]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-2 border-b border-zinc-200/80 px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
-              <div className="min-w-0 pt-0.5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-blue">
-                  Rent Review Boston
-                </p>
-                <p className="mt-1 text-xl font-semibold tracking-tight text-zinc-900">
-                  Menu
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsMenuOpen(false)}
-                className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-zinc-100/90 text-zinc-700 transition active:bg-zinc-200"
-                aria-label="Close menu"
-              >
-                <CloseIcon />
-              </button>
-            </div>
-
-            <nav
-              className="flex flex-col gap-1 px-3 py-3"
-              aria-label="Primary"
-            >
-              <Link
-                href="/properties"
-                onClick={() => setIsMenuOpen(false)}
-                className={mobileDrawerLinkClass(
-                  isActiveHref(pathname, "/properties"),
-                )}
-              >
-                Browse Addresses
-              </Link>
-              <Link
-                href="/analytics"
-                onClick={() => setIsMenuOpen(false)}
-                className={mobileDrawerLinkClass(
-                  isActiveHref(pathname, "/analytics"),
-                )}
-              >
-                Rental Analytics
-              </Link>
-              <Link
-                href="/profile"
-                onClick={() => setIsMenuOpen(false)}
-                className={mobileDrawerLinkClass(
-                  isActiveHref(pathname, "/profile"),
-                )}
-              >
-                Profile
-              </Link>
-              <Link
-                href="/submit"
-                onClick={() => setIsMenuOpen(false)}
-                className={
-                  isActiveHref(pathname, "/submit")
-                    ? mobileDrawerLinkClass(true)
-                    : "mt-1 flex min-h-[3.25rem] items-center justify-center rounded-xl bg-muted-blue px-4 py-3 text-base font-semibold leading-snug tracking-tight text-white shadow-sm transition hover:bg-muted-blue-hover active:scale-[0.99]"
-                }
-              >
-                Submit a Review
-              </Link>
-            </nav>
-
-            <div className="mt-4 border-t border-zinc-200/80 bg-white/70 px-3 py-4 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]">
-              <p className="mb-2.5 px-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
-                Account
-              </p>
-              <NavUser adminEmail={adminEmail} variant="drawer" />
-            </div>
-          </aside>
-        </div>
-      ) : null}
+      {typeof document !== "undefined" && mobileMenuOverlay
+        ? createPortal(mobileMenuOverlay, document.body)
+        : null}
     </>
   );
 }
