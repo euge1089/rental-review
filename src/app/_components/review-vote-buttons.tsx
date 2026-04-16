@@ -69,15 +69,15 @@ export function ReviewVoteButtons({
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex flex-wrap items-center gap-1">
-        <span className="mr-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="mr-0.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 sm:mr-1">
           Helpful?
         </span>
         <button
           type="button"
           disabled={pending || disabled}
           onClick={() => postVote(myVote === 1 ? 0 : 1)}
-          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition disabled:opacity-50 ${
+          className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition disabled:opacity-50 sm:min-h-0 sm:gap-1 sm:px-2.5 sm:py-1 sm:text-xs ${
             myVote === 1
               ? "border-emerald-400 bg-emerald-50 text-emerald-900"
               : "border-zinc-200 bg-white text-zinc-600 hover:border-emerald-200 hover:bg-emerald-50/50"

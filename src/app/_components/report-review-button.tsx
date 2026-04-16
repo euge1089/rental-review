@@ -4,9 +4,11 @@ import { useState } from "react";
 
 type Props = {
   reviewId: string;
+  /** Merged onto the report button (e.g. full-width pill on mobile). */
+  className?: string;
 };
 
-export function ReportReviewButton({ reviewId }: Props) {
+export function ReportReviewButton({ reviewId, className }: Props) {
   const [state, setState] = useState<"idle" | "sent" | "error">("idle");
 
   async function handleClick() {
@@ -32,11 +34,14 @@ export function ReportReviewButton({ reviewId }: Props) {
   }
 
   return (
-    <div className="mt-2 text-xs">
+    <div className="text-xs sm:mt-2">
       <button
         type="button"
         onClick={handleClick}
-        className="-mx-1 inline-flex min-h-11 items-center rounded-md px-1 py-2 text-zinc-400 underline-offset-2 active:bg-zinc-100 hover:text-zinc-600 hover:underline sm:min-h-0 sm:py-0"
+        className={
+          className ??
+          "-mx-1 inline-flex min-h-11 items-center rounded-md px-1 py-2 text-zinc-400 underline-offset-2 active:bg-zinc-100 hover:text-zinc-600 hover:underline sm:min-h-0 sm:py-0"
+        }
       >
         Report this review
       </button>

@@ -129,7 +129,7 @@ export function HomePageSections({
     ? "relative w-full overflow-hidden border-b border-zinc-100 bg-gradient-to-br from-white via-[#fafbfc] to-muted-blue-tint/35 shadow-elevated"
     : "relative overflow-hidden rounded-3xl bg-white px-6 py-12 shadow-elevated sm:px-10 sm:py-14 lg:px-12 lg:py-16";
   const heroInnerClass = fw
-    ? "relative mx-auto w-full max-w-[min(88rem,calc(100%-1rem))] px-4 py-10 sm:max-w-[min(88rem,calc(100%-2rem))] sm:px-8 sm:py-14 lg:px-12 lg:py-16 xl:px-20 xl:py-20"
+    ? "relative mx-auto w-full max-w-[min(88rem,calc(100%-1rem))] px-4 py-8 sm:max-w-[min(88rem,calc(100%-2rem))] sm:px-8 sm:py-14 lg:px-12 lg:py-16 xl:px-20 xl:py-20"
     : "relative";
 
   return (

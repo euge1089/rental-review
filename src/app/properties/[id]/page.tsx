@@ -69,23 +69,58 @@ function ReviewMetadataLine({
     parts.push(<span key="bath">{bathPublicLabel}</span>);
   }
 
+  const rentDisplay =
+    monthlyRent !== undefined ? (
+      typeof monthlyRent === "number" ? (
+        <span className="tabular-nums">${monthlyRent.toLocaleString()}/mo</span>
+      ) : (
+        <span className="text-zinc-500">Rent not shared</span>
+      )
+    ) : null;
+
   return (
-    <p className="flex flex-wrap items-center gap-x-2 text-sm leading-relaxed text-zinc-600 sm:gap-x-4">
-      {parts.flatMap((node, i) =>
-        i === 0
-          ? [node]
-          : [
-              <span
-                key={`sep-${i}`}
-                className="select-none px-1 font-bold text-zinc-400"
-                aria-hidden
-              >
-                |
-              </span>,
-              node,
-            ],
-      )}
-    </p>
+    <>
+      <ul className="space-y-1 sm:hidden">
+        <li className="text-xs leading-snug text-zinc-600">
+          <span className="font-medium text-zinc-700">When · </span>
+          {privacyYearBucket}
+        </li>
+        {monthlyRent !== undefined ? (
+          <li className="text-xs leading-snug text-zinc-600">
+            <span className="font-medium text-zinc-700">Rent · </span>
+            {rentDisplay}
+          </li>
+        ) : null}
+        {bedroomCount != null ? (
+          <li className="text-xs leading-snug text-zinc-600">
+            <span className="font-medium text-zinc-700">Layout · </span>
+            {bedroomCountToBand(bedroomCount)}
+          </li>
+        ) : null}
+        {bathPublicLabel ? (
+          <li className="text-xs leading-snug text-zinc-600">
+            <span className="font-medium text-zinc-700">Baths · </span>
+            {bathPublicLabel}
+          </li>
+        ) : null}
+      </ul>
+      <p className="hidden flex-wrap items-center gap-x-2 text-sm leading-relaxed text-zinc-600 sm:flex sm:gap-x-4">
+        {parts.flatMap((node, i) =>
+          i === 0
+            ? [node]
+            : [
+                <span
+                  key={`sep-${i}`}
+                  className="select-none px-1 font-bold text-zinc-400"
+                  aria-hidden
+                >
+                  |
+                </span>,
+                node,
+              ],
+        )}
+      </p>
+    </>
   );
 }
 
@@ -336,7 +371,7 @@ export default async function PropertyDetailPage({ params }: Props) {
 
                       {(typeof review.overallScore === "number" ||
                         typeof review.landlordScore === "number") && (
-                        <div className="flex shrink-0 flex-wrap gap-2">
+                        <div className="flex w-full shrink-0 flex-wrap gap-2 sm:w-auto">
                           {typeof review.overallScore === "number" ? (
                             <span className="rounded-full bg-muted-blue-tint px-3.5 py-1.5 text-sm font-semibold tabular-nums text-muted-blue-hover ring-1 ring-zinc-200/60 sm:text-base sm:px-4 sm:py-2">
                               Overall {review.overallScore}/10
@@ -351,7 +386,35 @@ export default async function PropertyDetailPage({ params }: Props) {
                       )}
                     </div>
 
-                    <div className="mt-4 border-t border-zinc-100 pt-4">
+                    <details className="group mt-4 rounded-xl border border-zinc-100 bg-zinc-50/50 sm:hidden">
+                      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-sm font-semibold text-zinc-800 [&::-webkit-details-marker]:hidden">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                          Amenities reported
+                        </span>
+                        <span className="text-zinc-400 transition group-open:rotate-180">
+                          ▼
+                        </span>
+                      </summary>
+                      <div className="border-t border-zinc-100 px-3 pb-3 pt-2">
+                        <div className="flex flex-wrap gap-2">
+                          {amenities.map((amenity) => (
+                            <span
+                              key={amenity.key}
+                              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition ${
+                                amenity.value
+                                  ? "bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200/70"
+                                  : "bg-zinc-50 text-zinc-500 ring-1 ring-zinc-200/80"
+                              }`}
+                            >
+                              <span aria-hidden>{amenity.value ? "✓" : "-"}</span>
+                              {amenity.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </details>
+
+                    <div className="mt-4 hidden border-t border-zinc-100 pt-4 sm:block">
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
                         Amenities reported
                       </p>
@@ -382,38 +445,43 @@ export default async function PropertyDetailPage({ params }: Props) {
                       )}
                     </div>
 
-                    <div className="mt-4 flex flex-col gap-3 border-t border-zinc-100 pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-                      {viewerRow && viewerRow.id !== review.user.id ? (
-                        <ReviewVoteButtons
-                          reviewId={review.id}
-                          initialUp={voteTally.get(review.id) ?? 0}
-                          initialMyVote={myVoteByReviewId.get(review.id) ?? null}
-                          disabled={blockedWithAuthor.has(review.user.id)}
-                        />
-                      ) : (
-                        <p className="text-xs text-zinc-500">
-                          <span className="font-semibold tabular-nums text-zinc-700">
-                            {voteTally.get(review.id) ?? 0}
-                          </span>{" "}
-                          marked helpful
-                          {viewerRow?.id === review.user.id
-                            ? " (others can vote on your review)"
-                            : null}
-                        </p>
-                      )}
-                      <div className="flex flex-wrap items-center gap-3">
+                    <div className="mt-4 flex flex-col gap-3 border-t border-zinc-100 pt-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4">
+                      <div className="min-w-0 sm:max-w-[min(100%,20rem)]">
+                        {viewerRow && viewerRow.id !== review.user.id ? (
+                          <ReviewVoteButtons
+                            reviewId={review.id}
+                            initialUp={voteTally.get(review.id) ?? 0}
+                            initialMyVote={myVoteByReviewId.get(review.id) ?? null}
+                            disabled={blockedWithAuthor.has(review.user.id)}
+                          />
+                        ) : (
+                          <p className="text-xs text-zinc-500">
+                            <span className="font-semibold tabular-nums text-zinc-700">
+                              {voteTally.get(review.id) ?? 0}
+                            </span>{" "}
+                            marked helpful
+                            {viewerRow?.id === review.user.id
+                              ? " (others can vote on your review)"
+                              : null}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
                         {messagesUiEnabled &&
                         viewerRow &&
                         viewerRow.id !== review.user.id &&
                         !blockedWithAuthor.has(review.user.id) ? (
                           <Link
                             href={`/messages/review/${review.id}`}
-                            className="inline-flex min-h-10 items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+                            className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-muted-blue-hover transition active:bg-muted-blue-tint/30 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 sm:min-h-10 sm:w-auto sm:py-2 sm:text-xs"
                           >
                             Message the author
                           </Link>
                         ) : null}
-                        <ReportReviewButton reviewId={review.id} />
+                        <ReportReviewButton
+                          reviewId={review.id}
+                          className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-600 shadow-sm active:bg-zinc-50 sm:mt-2 sm:w-auto sm:justify-start sm:border-0 sm:bg-transparent sm:px-1 sm:py-0 sm:text-xs sm:font-normal sm:text-zinc-400 sm:shadow-none sm:underline-offset-2 sm:hover:text-zinc-600 sm:hover:underline"
+                        />
                       </div>
                     </div>
                   </li>
@@ -428,7 +496,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                 address. Sign in to read full details.
               </p>
               <ul
-                className="pointer-events-none select-none space-y-5 blur-md sm:blur-lg"
+                className="pointer-events-none select-none space-y-5 blur-sm sm:blur-md"
                 aria-hidden
               >
                 {property.reviews.map((review) => {
@@ -511,12 +579,12 @@ export default async function PropertyDetailPage({ params }: Props) {
               </ul>
 
               <div
-                className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-b from-white/55 via-white/65 to-muted-blue-tint/40 px-4 py-10 backdrop-blur-[2px] sm:rounded-3xl sm:px-6"
+                className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-b from-white/30 via-white/45 to-muted-blue-tint/30 px-4 py-8 sm:rounded-3xl sm:px-6 sm:py-10 sm:backdrop-blur-[1px]"
                 role="region"
                 aria-label="Sign in to view reviews"
               >
                 <div
-                  className={`${surfaceElevatedClass} max-w-md px-6 py-7 text-center shadow-elevated sm:px-8 sm:py-8`}
+                  className={`${surfaceElevatedClass} max-w-md px-6 py-7 text-center shadow-xl ring-1 ring-zinc-200/90 sm:px-8 sm:py-8 sm:shadow-elevated sm:ring-zinc-100`}
                 >
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-blue">
                     Members only

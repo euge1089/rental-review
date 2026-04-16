@@ -22,7 +22,7 @@ export function PropertyDetailHero({
   const location = [city, state, postalCode].filter(Boolean).join(", ");
 
   return (
-    <section className="relative overflow-hidden border-b border-zinc-100 bg-gradient-to-br from-white via-[#fafbfc] to-muted-blue-tint/40 shadow-elevated sm:rounded-3xl sm:border sm:border-zinc-100">
+    <section className="relative -mx-4 overflow-hidden border-b border-zinc-100 bg-gradient-to-br from-white via-[#fafbfc] to-muted-blue-tint/40 shadow-elevated sm:mx-0 sm:rounded-3xl sm:border sm:border-zinc-100">
       <div
         className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-muted-blue-tint/80 blur-3xl"
         aria-hidden

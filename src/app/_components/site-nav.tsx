@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { NavUser } from "@/app/_components/nav-user";
 import {
   appContentMaxWidthClass,
@@ -12,7 +13,20 @@ type SiteNavProps = {
   adminEmail?: string;
 };
 
+function isActiveHref(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+const desktopNavLinkClass = (active: boolean) =>
+  `inline-flex min-h-11 items-center rounded-full px-3 py-2 font-medium sm:min-h-0 sm:py-1 ${
+    active
+      ? "bg-muted-blue-tint font-semibold text-muted-blue-hover"
+      : "text-muted-blue active:bg-muted-blue-tint/80 hover:bg-muted-blue-tint"
+  }`;
+
 export function SiteNav({ adminEmail }: SiteNavProps) {
+  const pathname = usePathname() ?? "";
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -36,6 +50,10 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
     };
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
+
   return (
     <>
       <nav
@@ -58,19 +76,23 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
         <div className="hidden min-w-0 items-center gap-2 text-sm sm:flex">
           <Link
             href="/properties"
-            className="inline-flex min-h-11 items-center rounded-full px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80 hover:bg-muted-blue-tint sm:min-h-0 sm:py-1"
+            className={desktopNavLinkClass(isActiveHref(pathname, "/properties"))}
           >
             Browse Addresses
           </Link>
           <Link
             href="/analytics"
-            className="inline-flex min-h-11 items-center rounded-full px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80 hover:bg-muted-blue-tint sm:min-h-0 sm:py-1"
+            className={desktopNavLinkClass(isActiveHref(pathname, "/analytics"))}
           >
             Rental Analytics
           </Link>
           <Link
             href="/submit"
-            className="inline-flex min-h-11 items-center rounded-full bg-muted-blue px-3 py-2 font-medium text-white transition active:bg-muted-blue-hover hover:bg-muted-blue-hover sm:min-h-0 sm:py-1"
+            className={`inline-flex min-h-11 items-center rounded-full px-3 py-2 font-medium text-white transition sm:min-h-0 sm:py-1 ${
+              isActiveHref(pathname, "/submit")
+                ? "bg-muted-blue-hover ring-2 ring-muted-blue-hover/40"
+                : "bg-muted-blue active:bg-muted-blue-hover hover:bg-muted-blue-hover"
+            }`}
           >
             Submit
           </Link>
@@ -123,21 +145,44 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
               <Link
                 href="/properties"
                 onClick={() => setIsMenuOpen(false)}
-                className="inline-flex min-h-11 items-center rounded-xl px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80"
+                className={`inline-flex min-h-11 items-center rounded-xl px-3 py-2 font-medium active:bg-muted-blue-tint/80 ${
+                  isActiveHref(pathname, "/properties")
+                    ? "bg-muted-blue-tint font-semibold text-muted-blue-hover"
+                    : "text-muted-blue"
+                }`}
               >
                 Browse Addresses
               </Link>
               <Link
                 href="/analytics"
                 onClick={() => setIsMenuOpen(false)}
-                className="inline-flex min-h-11 items-center rounded-xl px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80"
+                className={`inline-flex min-h-11 items-center rounded-xl px-3 py-2 font-medium active:bg-muted-blue-tint/80 ${
+                  isActiveHref(pathname, "/analytics")
+                    ? "bg-muted-blue-tint font-semibold text-muted-blue-hover"
+                    : "text-muted-blue"
+                }`}
               >
                 Rental Analytics
               </Link>
               <Link
+                href="/profile"
+                onClick={() => setIsMenuOpen(false)}
+                className={`inline-flex min-h-11 items-center rounded-xl px-3 py-2 font-medium active:bg-muted-blue-tint/80 ${
+                  isActiveHref(pathname, "/profile")
+                    ? "bg-muted-blue-tint font-semibold text-muted-blue-hover"
+                    : "text-muted-blue"
+                }`}
+              >
+                Profile
+              </Link>
+              <Link
                 href="/submit"
                 onClick={() => setIsMenuOpen(false)}
-                className="inline-flex min-h-11 items-center rounded-xl px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80"
+                className={`inline-flex min-h-11 items-center rounded-xl px-3 py-2 font-medium active:bg-muted-blue-tint/80 ${
+                  isActiveHref(pathname, "/submit")
+                    ? "bg-muted-blue-tint font-semibold text-muted-blue-hover"
+                    : "text-muted-blue"
+                }`}
               >
                 Submit a Review
               </Link>
