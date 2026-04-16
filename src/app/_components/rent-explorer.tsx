@@ -8,7 +8,6 @@ import {
   formInputCompactClass,
   formSelectCompactClass,
   surfaceElevatedClass,
-  surfaceSubtleClass,
 } from "@/lib/ui-classes";
 import type { ExplorerMapBounds, ExplorerMapMarker } from "@/app/_components/rent-explorer-map";
 
@@ -361,6 +360,8 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   const [mapError, setMapError] = useState<string | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [mobileResultsView, setMobileResultsView] = useState<"list" | "map">("list");
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const mapAbortRef = useRef<AbortController | null>(null);
 
   const activeAmenityFilters = useMemo(
@@ -505,6 +506,15 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
     timeWindow,
   ]);
 
+  useEffect(() => {
+    if (!isMobileFiltersOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMobileFiltersOpen]);
+
   const lowData = snapshot && snapshot.n > 0 && snapshot.n < 5;
 
   const contributionN =
@@ -584,6 +594,15 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   const chipBase =
     "inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] font-medium transition has-[:checked]:border-muted-blue-hover has-[:checked]:bg-muted-blue-hover has-[:checked]:text-white";
   const chipOff = "border-zinc-200/90 bg-white text-zinc-600 hover:border-muted-blue/25 hover:bg-muted-blue-tint/30";
+  const mobileEdgeToEdgeClass = "-mx-4 px-4 sm:mx-0 sm:px-0";
+  const activeFilterChips = [
+    zip !== "any" ? `ZIP ${zip}` : null,
+    bedroomQualifier(minBedroomBand, maxBedroomBand),
+    rentFilterClause(minRent, maxRent),
+    bathFilterClause(minBathrooms),
+    activeAmenityFilters ? "Amenities selected" : null,
+    timeWindow !== "all" ? formatTimeWindowLabel(timeWindow) : null,
+  ].filter(Boolean) as string[];
 
   return (
     <div className="flex flex-col gap-10">
@@ -593,7 +612,9 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           aria-hidden={explorerLocked}
         >
       {/* Search + filters */}
-      <section className={`${surfaceElevatedClass} space-y-5 p-4 sm:space-y-6 sm:p-6 md:p-8`}>
+      <section
+        className={`${mobileEdgeToEdgeClass} space-y-5 bg-white py-4 sm:space-y-6 sm:rounded-3xl sm:border sm:border-zinc-100 sm:bg-white sm:p-6 sm:shadow-elevated md:p-8`}
+      >
         <div className="space-y-2">
           <p className={explorerEyebrowClass}>
             Your search
@@ -705,7 +726,17 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           </div>
         </div>
 
-        <details className="group rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/25 transition open:bg-muted-blue-tint/40">
+        <div className="sm:hidden">
+          <button
+            type="button"
+            onClick={() => setIsMobileFiltersOpen(true)}
+            className="inline-flex min-h-11 w-full items-center justify-between rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/25 px-4 py-3 text-left text-[1.04rem] font-semibold text-muted-blue-hover transition active:bg-muted-blue-tint/40"
+          >
+            More filters (optional)
+            <span className="text-zinc-400">▾</span>
+          </button>
+        </div>
+        <details className="group hidden rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/25 transition open:bg-muted-blue-tint/40 sm:block">
           <summary className="flex min-h-11 cursor-pointer list-none items-center px-4 py-3 text-[1.04rem] font-semibold text-muted-blue-hover [&::-webkit-details-marker]:hidden">
             <span className="flex w-full min-w-0 items-center justify-between gap-2">
               More filters (optional)
@@ -781,6 +812,18 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             </div>
           </div>
         </details>
+        {activeFilterChips.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-2">
+            {activeFilterChips.map((chip) => (
+              <span
+                key={chip}
+                className="inline-flex min-h-8 items-center rounded-full border border-muted-blue/20 bg-muted-blue-tint px-3 py-1 text-xs font-semibold text-muted-blue-hover"
+              >
+                {chip}
+              </span>
+            ))}
+          </div>
+        ) : null}
                {error ? (
           <p className="text-[1.04rem] text-red-600" role="alert">
             {error}
@@ -788,8 +831,149 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
         ) : null}
       </section>
 
+      {isMobileFiltersOpen ? (
+        <div
+          className="fixed inset-0 z-[70] bg-zinc-900/45 sm:hidden"
+          onClick={() => setIsMobileFiltersOpen(false)}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="More filters"
+            className="absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-3xl bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] pt-4 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-base font-semibold text-muted-blue-hover">More filters</p>
+              <button
+                type="button"
+                onClick={() => setIsMobileFiltersOpen(false)}
+                className="inline-flex min-h-10 items-center rounded-full px-3 py-2 text-sm font-medium text-zinc-700 active:bg-zinc-100"
+              >
+                Close
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="grid gap-1.5">
+                <label className={explorerLabelClass}>Bathrooms</label>
+                <select
+                  value={minBathrooms}
+                  onChange={(e) =>
+                    setMinBathrooms(e.target.value as "Any" | "1" | "1.5" | "2")
+                  }
+                  className={`${selectClass} w-full`}
+                >
+                  <option value="Any">Any</option>
+                  <option value="1">1+</option>
+                  <option value="1.5">1.5+</option>
+                  <option value="2">2+</option>
+                </select>
+              </div>
+              <div className="grid gap-1.5">
+                <label className={explorerLabelClass}>How far back to look</label>
+                <select
+                  value={timeWindow}
+                  onChange={(e) =>
+                    setTimeWindow(
+                      e.target.value as "1y" | "2y" | "3y" | "10y" | "all",
+                    )
+                  }
+                  className={`${selectClass} w-full`}
+                >
+                  <option value="1y">Last 1 year</option>
+                  <option value="2y">Last 2 years</option>
+                  <option value="3y">Last 3 years</option>
+                  <option value="10y">Last 10 years</option>
+                  <option value="all">All time</option>
+                </select>
+              </div>
+              <div className="grid gap-2">
+                <label className={explorerLabelClass}>Amenities</label>
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    [
+                      ["hasParking", "Parking"],
+                      ["hasCentralHeatCooling", "Central heat/cooling"],
+                      ["hasInUnitLaundry", "In-unit laundry"],
+                      ["hasStorageSpace", "Storage"],
+                      ["hasOutdoorSpace", "Outdoor space"],
+                      ["petFriendly", "Pet-friendly"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <label key={key} className={`${chipBase} ${chipOff}`}>
+                      <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={amenities[key]}
+                        onChange={(e) =>
+                          setAmenities((prev) => ({ ...prev, [key]: e.target.checked }))
+                        }
+                      />
+                      <span>{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-2 border-t border-zinc-100 pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  handleClear();
+                  setIsMobileFiltersOpen(false);
+                }}
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover active:bg-zinc-50"
+              >
+                Clear
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleUpdate();
+                  setIsMobileFiltersOpen(false);
+                }}
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-4 py-2 text-sm font-semibold text-white active:bg-muted-blue-hover"
+              >
+                Apply
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
       {MAP_ENABLED ? (
-        <section className="space-y-3">
+        <section className={`${mobileEdgeToEdgeClass} sm:hidden`}>
+          <div className="grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200/80 bg-white p-1">
+            <button
+              type="button"
+              onClick={() => setMobileResultsView("list")}
+              className={`inline-flex min-h-10 items-center justify-center rounded-xl text-sm font-semibold transition ${
+                mobileResultsView === "list"
+                  ? "bg-muted-blue-tint text-muted-blue-hover"
+                  : "text-zinc-600"
+              }`}
+            >
+              List
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileResultsView("map")}
+              className={`inline-flex min-h-10 items-center justify-center rounded-xl text-sm font-semibold transition ${
+                mobileResultsView === "map"
+                  ? "bg-muted-blue-tint text-muted-blue-hover"
+                  : "text-zinc-600"
+              }`}
+            >
+              Map
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      {MAP_ENABLED ? (
+        <section
+          className={`${mobileResultsView === "map" ? "block" : "hidden"} ${mobileEdgeToEdgeClass} space-y-3 bg-white py-4 sm:block sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-6 sm:shadow-elevated`}
+        >
           <div className="space-y-1">
             <p className={explorerEyebrowClass}>
               Interactive map
@@ -817,7 +1001,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
       {snapshot ? (
         <>
-          <section className="rounded-3xl border border-zinc-200/90 bg-muted-blue-tint px-5 py-5 sm:px-6 sm:py-6">
+          <section className={`${mobileEdgeToEdgeClass} bg-muted-blue-tint px-4 py-5 sm:rounded-3xl sm:border sm:border-zinc-200/90 sm:px-6 sm:py-6`}>
             <div className="mb-4 border-b border-zinc-200/80 pb-4">
               <p className={explorerEyebrowClass}>
                 Summary
@@ -905,7 +1089,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             snapshot.min != null &&
             snapshot.max != null && (
               <section
-                className={`${surfaceSubtleClass} p-6 shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:p-8`}
+                className={`${mobileEdgeToEdgeClass} border-zinc-200/80 bg-white p-4 sm:rounded-2xl sm:border sm:p-8 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}
               >
                 <RentRangeBand
                   min={snapshot.min}
@@ -919,7 +1103,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
       {/* Results list */}
       <section
-        className={`${surfaceElevatedClass} space-y-5 p-6 sm:p-8`}
+        className={`${mobileResultsView === "list" ? "block" : "hidden"} ${mobileEdgeToEdgeClass} space-y-5 bg-white px-4 py-5 sm:block sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-8 sm:shadow-elevated`}
       >
         <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -1072,7 +1256,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
         )}
       </section>
 
-      <section className="overflow-hidden rounded-3xl border border-white/10 bg-muted-blue-hover px-6 py-8 text-center shadow-elevated sm:px-10 sm:py-10 sm:text-left">
+      <section className={`${mobileEdgeToEdgeClass} overflow-hidden bg-muted-blue-hover px-4 py-8 text-center sm:rounded-3xl sm:border sm:border-white/10 sm:px-10 sm:py-10 sm:text-left sm:shadow-elevated`}>
         <div className="max-w-xl">
           <p className="text-[13px] font-semibold uppercase tracking-[0.2em] text-white/90">
             Add your rental history

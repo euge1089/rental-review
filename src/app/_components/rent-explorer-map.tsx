@@ -80,14 +80,14 @@ export function RentExplorerMap({
 
   if (!hasToken) {
     return (
-      <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-[1.04rem] text-amber-900">
+      <div className="bg-amber-50 p-4 text-[1.04rem] text-amber-900 sm:rounded-3xl sm:border sm:border-amber-200">
         Set `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` to enable the map.
       </div>
     );
   }
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-[0_8px_30px_-16px_rgb(15_23_42/0.2)]">
+    <div className="relative overflow-hidden bg-white sm:rounded-3xl sm:border sm:border-zinc-200 sm:shadow-[0_8px_30px_-16px_rgb(15_23_42/0.2)]">
       <Map
         initialViewState={INITIAL_VIEW}
         style={{ width: "100%", height: 420 }}

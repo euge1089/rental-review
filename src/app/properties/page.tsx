@@ -76,11 +76,14 @@ export default function PropertiesPage() {
     isLoggedOutBrowse && properties.length > previewLimit;
 
   const propertiesCallback = encodeURIComponent("/properties");
+  const mobileSectionShell = "-mx-4 px-4 sm:mx-0 sm:px-0";
 
   return (
     <AppPageShell gapClass="gap-6">
       <GiveawayPromoStrip variant="home" />
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+      <div
+        className={`${mobileSectionShell} flex flex-col gap-6 bg-white py-4 sm:rounded-2xl sm:border sm:border-zinc-200/80 sm:bg-transparent sm:py-0 sm:flex-row sm:items-end sm:justify-between`}
+      >
         <PageHeader
           eyebrow="Browse"
           title="Reviewed Boston addresses"
@@ -185,7 +188,7 @@ export default function PropertiesPage() {
             {visibleProperties.map((property) => (
               <li
                 key={property.id}
-                className={`${surfaceSubtleClass} p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition hover:border-muted-blue/25 hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.08)]`}
+                className={`-mx-4 border-zinc-200/80 bg-white px-4 py-5 transition hover:border-muted-blue/25 sm:mx-0 ${surfaceSubtleClass} sm:p-5 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.08)]`}
               >
                 <Link
                   href={`/properties/${property.id}`}
@@ -208,7 +211,7 @@ export default function PropertiesPage() {
           </ul>
 
           {showSignInTeaser ? (
-            <div className="relative mt-6">
+            <div className={`${mobileSectionShell} relative mt-6`}>
               <div
                 className="pointer-events-none absolute -top-20 left-0 right-0 h-28 bg-gradient-to-b from-transparent via-zinc-50/90 to-zinc-50"
                 aria-hidden

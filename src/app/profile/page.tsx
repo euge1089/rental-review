@@ -20,6 +20,7 @@ import {
 import { ProfileBostonYearGate } from "@/app/_components/profile-boston-year-gate";
 import { ProfileContributorLadder } from "@/app/_components/profile-contributor-ladder";
 import { ProfileVerificationPanel } from "@/app/_components/profile-verification-panel";
+import { ProfileSectionNav } from "@/app/_components/profile-section-nav";
 import { authOptions } from "@/lib/auth";
 import { messagesUiEnabled } from "@/lib/feature-flags";
 import { prisma } from "@/lib/prisma";
@@ -126,6 +127,9 @@ export default async function ProfilePage({ searchParams }: Props) {
     return `${desc.slice(0, 3).join(", ")}, +${desc.length - 3} more`;
   }
 
+  const mobileSectionShell =
+    "-mx-4 bg-white px-4 py-5 sm:mx-0 sm:rounded-2xl sm:border sm:border-zinc-200/80 sm:bg-white sm:p-6 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)]";
+
   return (
     <AppPageShell>
       {bostonRentingSinceYear == null ? (
@@ -160,12 +164,19 @@ export default async function ProfilePage({ searchParams }: Props) {
           </div>
         }
       />
+      <ProfileSectionNav
+        sections={[
+          { id: "profile-account", label: "Account" },
+          { id: "profile-reviews", label: "Reviews" },
+          { id: "profile-saved", label: "Saved" },
+          { id: "profile-privacy", label: "Privacy" },
+        ]}
+        className="-mx-4 sticky top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 flex gap-2 overflow-x-auto border-y border-zinc-200/80 bg-white/95 px-4 py-2 backdrop-blur sm:static sm:mx-0 sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none"
+      />
       {bostonRentingSinceYear != null &&
       eligibleYearsWithoutAnyReview.length > 0 ? (
-        <SurfacePanel
-          variant="subtle"
-          as="section"
-          className="border border-muted-blue/20 bg-gradient-to-b from-muted-blue-tint/50 to-muted-blue-tint/25"
+        <section
+          className={`-mx-4 bg-gradient-to-b from-muted-blue-tint/50 to-muted-blue-tint/25 px-4 py-5 sm:mx-0 sm:rounded-2xl sm:border sm:border-muted-blue/20 sm:p-6`}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
@@ -195,7 +206,7 @@ export default async function ProfilePage({ searchParams }: Props) {
               Add a review
             </Link>
           </div>
-        </SurfacePanel>
+        </section>
       ) : null}
 
       <div
@@ -212,6 +223,11 @@ export default async function ProfilePage({ searchParams }: Props) {
               : "space-y-5"
           }
         >
+          <section id="profile-account" className="space-y-2 scroll-mt-24">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Account
+            </p>
+          </section>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-6">
             <ProfileDisplayNameCard initialDisplayName={displayName} />
             <ProfileRetentionEmailPrefs
@@ -224,31 +240,61 @@ export default async function ProfilePage({ searchParams }: Props) {
           </div>
 
           {messagesUiEnabled ? (
-            <SurfacePanel variant="subtle" as="section" id="blocked-renters">
-              <h2 className="text-base font-semibold text-muted-blue-hover">
-                Blocked renters
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-                Accounts you block can&apos;t message you or vote on your reviews, and
-                you can&apos;t message or vote on theirs.
-              </p>
-              <div className="mt-4">
-                <ProfileBlockedRenters initialBlocks={blockedRenters} />
+            <section className={mobileSectionShell} id="profile-privacy">
+              <details className="group sm:hidden">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-muted-blue-hover [&::-webkit-details-marker]:hidden">
+                  Blocked renters
+                  <span className="text-zinc-400 transition group-open:rotate-180">
+                    ▼
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                  Accounts you block can&apos;t message you or vote on your reviews, and
+                  you can&apos;t message or vote on theirs.
+                </p>
+                <div className="mt-4">
+                  <ProfileBlockedRenters initialBlocks={blockedRenters} />
+                </div>
+              </details>
+              <div className="hidden sm:block">
+                <h2 className="text-base font-semibold text-muted-blue-hover">
+                  Blocked renters
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                  Accounts you block can&apos;t message you or vote on your reviews, and
+                  you can&apos;t message or vote on theirs.
+                </p>
+                <div className="mt-4">
+                  <ProfileBlockedRenters initialBlocks={blockedRenters} />
+                </div>
               </div>
-            </SurfacePanel>
+            </section>
           ) : null}
 
-          <SurfacePanel variant="subtle" as="section">
-            <h2 className="text-base font-semibold text-muted-blue-hover">
-              Saved apartments
-            </h2>
-            <div className="mt-3">
-              <ProfileBookmarks />
+          <section id="profile-saved" className={`${mobileSectionShell} scroll-mt-24`}>
+            <details className="group sm:hidden" open>
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-muted-blue-hover [&::-webkit-details-marker]:hidden">
+                Saved apartments
+                <span className="text-zinc-400 transition group-open:rotate-180">
+                  ▼
+                </span>
+              </summary>
+              <div className="mt-3">
+                <ProfileBookmarks />
+              </div>
+            </details>
+            <div className="hidden sm:block">
+              <h2 className="text-base font-semibold text-muted-blue-hover">
+                Saved apartments
+              </h2>
+              <div className="mt-3">
+                <ProfileBookmarks />
+              </div>
             </div>
-          </SurfacePanel>
+          </section>
 
           {isAdmin ? (
-            <SurfacePanel variant="muted">
+            <section className={mobileSectionShell}>
               <h2 className="text-base font-semibold text-muted-blue-hover">
                 Admin tools
               </h2>
@@ -275,13 +321,15 @@ export default async function ProfilePage({ searchParams }: Props) {
                   Users
                 </Link>
               </div>
-            </SurfacePanel>
+            </section>
           ) : null}
 
-          <ProfileReviewsGrouped
-            reviews={reviews as ProfileReviewForList[]}
-            reviewTotalCount={reviewTotalCount}
-          />
+          <section id="profile-reviews" className="scroll-mt-24 space-y-2">
+            <ProfileReviewsGrouped
+              reviews={reviews as ProfileReviewForList[]}
+              reviewTotalCount={reviewTotalCount}
+            />
+          </section>
         </div>
 
         {bostonRentingSinceYear != null ? (

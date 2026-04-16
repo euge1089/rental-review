@@ -203,6 +203,8 @@ export default async function PropertyDetailPage({ params }: Props) {
     );
   }
 
+  const mobileSectionShell = "-mx-4 px-4 sm:mx-0 sm:px-0";
+
   return (
     <AppPageShell gapClass="gap-8 sm:gap-10">
       <PropertyDetailHero
@@ -226,7 +228,7 @@ export default async function PropertyDetailPage({ params }: Props) {
 
       {property.reviews.length === 0 ? (
         <div
-          className={`${surfaceElevatedClass} flex flex-col items-center gap-4 p-10 text-center`}
+          className={`${mobileSectionShell} flex flex-col items-center gap-4 border-zinc-200/80 bg-white p-6 text-center ${surfaceElevatedClass} sm:p-10`}
         >
           <p className="text-sm font-medium text-muted-blue-hover">
             No reviews here yet
@@ -243,7 +245,7 @@ export default async function PropertyDetailPage({ params }: Props) {
           </Link>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className={`${mobileSectionShell} space-y-3 bg-white py-4 sm:bg-transparent sm:py-0`}>
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-blue">
             Real renter reviews
           </p>
@@ -298,7 +300,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                 return (
                   <li
                     key={review.id}
-                    className={`${surfaceElevatedClass} relative overflow-hidden p-5 sm:p-6`}
+                    className={`relative -mx-4 overflow-hidden border-zinc-200/80 bg-white px-4 py-5 sm:mx-0 ${surfaceElevatedClass} sm:p-6`}
                   >
                     <div
                       className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-pop/30 to-transparent sm:inset-x-8"
@@ -445,7 +447,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                   return (
                     <li
                       key={review.id}
-                      className={`${surfaceElevatedClass} relative overflow-hidden p-5 sm:p-6`}
+                      className={`relative -mx-4 overflow-hidden border-zinc-200/80 bg-white px-4 py-5 sm:mx-0 ${surfaceElevatedClass} sm:p-6`}
                     >
                       <div
                         className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-pop/30 to-transparent sm:inset-x-8"
@@ -509,7 +511,7 @@ export default async function PropertyDetailPage({ params }: Props) {
               </ul>
 
               <div
-                className="absolute inset-0 z-10 flex items-center justify-center rounded-3xl bg-gradient-to-b from-white/55 via-white/65 to-muted-blue-tint/40 px-4 py-10 backdrop-blur-[2px] sm:px-6"
+                className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-b from-white/55 via-white/65 to-muted-blue-tint/40 px-4 py-10 backdrop-blur-[2px] sm:rounded-3xl sm:px-6"
                 role="region"
                 aria-label="Sign in to view reviews"
               >

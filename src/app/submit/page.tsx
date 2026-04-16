@@ -135,13 +135,13 @@ function ScoreScale({
   return (
     <div className="grid gap-3">
       <p className="text-base font-medium leading-snug text-zinc-800">{label}</p>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2.5">
         {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
           <button
             key={n}
             type="button"
             onClick={() => onChange(n)}
-            className={`h-10 min-w-[2.5rem] rounded-xl text-sm font-semibold transition ${
+            className={`min-h-11 min-w-[2.75rem] rounded-xl px-2 text-sm font-semibold transition sm:min-h-10 sm:min-w-[2.5rem] ${
               value === n
                 ? "bg-muted-blue-hover text-white shadow-sm"
                 : "border border-zinc-200/90 bg-white text-zinc-600 hover:border-muted-blue/30 hover:bg-muted-blue-tint/50"
@@ -928,6 +928,13 @@ export default function SubmitReviewPage() {
     (bostonFloor === undefined || bostonFloor === null);
   const formSurfaceBlocked =
     !isAuthed || atReviewCap || bostonGateActive;
+  const submitActionLabel = duplicateChecking
+    ? "Checking…"
+    : finalSubmitting
+      ? "Submitting…"
+      : step < 3
+        ? "Continue"
+        : "Submit review";
 
   return (
     <AppPageShell gapClass="gap-6" className="relative">
@@ -1111,7 +1118,7 @@ export default function SubmitReviewPage() {
         onChange={() => {
           persistDraft();
         }}
-        className={`${surfaceElevatedClass} space-y-7 p-6 text-base sm:space-y-8 sm:p-10 ${formSurfaceBlocked ? "pointer-events-none opacity-40" : ""}`}
+        className={`${surfaceElevatedClass} space-y-7 p-6 pb-28 text-base sm:space-y-8 sm:p-10 ${formSurfaceBlocked ? "pointer-events-none opacity-40" : ""}`}
       >
         <div
           data-step-panel="1"
@@ -1154,8 +1161,8 @@ export default function SubmitReviewPage() {
                   className={formInputCompactClass}
                 />
               </div>
-              <div className="flex min-w-0 gap-2 sm:gap-3 lg:contents">
-                <div className="grid min-w-0 flex-1 gap-2 sm:max-w-[10rem] lg:w-[min(7.5rem,100%)] lg:max-w-[7.5rem] lg:flex-none">
+              <div className="grid min-w-0 grid-cols-1 gap-3 sm:flex sm:gap-3 lg:contents">
+                <div className="grid min-w-0 gap-2 sm:max-w-[10rem] sm:flex-1 lg:w-[min(7.5rem,100%)] lg:max-w-[7.5rem] lg:flex-none">
                   <label
                     htmlFor="unit"
                     className="text-sm font-semibold leading-5 text-zinc-800"
@@ -1182,6 +1189,7 @@ export default function SubmitReviewPage() {
                     name="postalCode"
                     placeholder="02127"
                     required
+                    inputMode="numeric"
                     className={formInputCompactClass}
                   />
                 </div>
@@ -1510,7 +1518,7 @@ export default function SubmitReviewPage() {
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-5 border-t border-zinc-100 pt-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+        <div className="hidden border-t border-zinc-100 pt-6 sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
           <div className="flex flex-wrap gap-3">
             {step > 1 && (
               <button
@@ -1538,13 +1546,7 @@ export default function SubmitReviewPage() {
               }
               className="rounded-full bg-muted-blue px-6 py-2.5 text-sm font-semibold text-white shadow-[0_8px_22px_-8px_rgb(92_107_127/0.4)] transition hover:bg-muted-blue-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {duplicateChecking
-                ? "Checking…"
-                : finalSubmitting
-                  ? "Submitting…"
-                  : step < 3
-                    ? "Continue"
-                    : "Submit review"}
+              {submitActionLabel}
             </button>
           </div>
         </div>
@@ -1592,6 +1594,39 @@ export default function SubmitReviewPage() {
           </div>
         ) : null}
       </form>
+
+      {!formSurfaceBlocked ? (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200/80 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-2 backdrop-blur sm:hidden">
+          <div className="mx-auto flex max-w-[min(88rem,calc(100%-1rem))] flex-col gap-2">
+            <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500">
+              Step {step} of 3
+            </p>
+            <div className="flex items-center gap-2">
+            {step > 1 ? (
+              <button
+                type="button"
+                onClick={() => setStep((prev) => (prev === 3 ? 2 : 1))}
+                className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover active:bg-zinc-50"
+              >
+                Back
+              </button>
+            ) : null}
+            <button
+              type="submit"
+              form="submit-review-form"
+              disabled={
+                duplicateChecking ||
+                finalSubmitting ||
+                (step === 2 && (overallScore == null || landlordScore == null))
+              }
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-muted-blue px-5 py-2 text-sm font-semibold text-white active:bg-muted-blue-hover disabled:opacity-60"
+            >
+              {submitActionLabel}
+            </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {duplicateModalDupes && duplicateModalDupes.length > 0 ? (
         <div className={`${modalBackdropClass} z-[60]`}>
