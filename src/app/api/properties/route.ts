@@ -31,6 +31,7 @@ export async function GET() {
       postalCode: property.postalCode,
       reviewCount: property._count.reviews,
       averageRent,
+      createdAt: property.createdAt.toISOString(),
     };
   });
 

@@ -619,10 +619,12 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           <p className={explorerEyebrowClass}>
             Your search
           </p>
-          <h2 className="text-xl font-semibold tracking-tight text-muted-blue-hover sm:text-2xl">
+          <h2 className="hidden text-xl font-semibold tracking-tight text-muted-blue-hover sm:block sm:text-2xl">
             Where are you looking?
           </h2>
-          <p className={`overflow-x-auto whitespace-nowrap ${explorerBodyLeadClass}`}>
+          <p
+            className={`hidden overflow-x-auto whitespace-nowrap sm:block ${explorerBodyLeadClass}`}
+          >
             Start with a Boston ZIP and rough budget. We&apos;ll show what renters reported, then you can narrow with optional filters.
           </p>
         </div>
@@ -707,22 +709,24 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 />
               </div>
             </div>
-            <button
-              type="button"
-              onClick={handleUpdate}
-              disabled={isLoading}
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-6 py-2.5 text-[1.04rem] font-semibold text-white shadow-[0_10px_28px_-8px_rgb(92_107_127/0.35)] transition active:bg-muted-blue-hover/95 hover:bg-muted-blue-hover disabled:opacity-60"
-            >
-              {isLoading ? "Updating…" : "Show results"}
-            </button>
-            <button
-              type="button"
-              onClick={handleClear}
-              disabled={isLoading}
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-200 bg-white px-6 py-2.5 text-[1.04rem] font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 disabled:opacity-60"
-            >
-              Reset filters
-            </button>
+            <div className="flex w-full basis-full flex-wrap items-center justify-center gap-3 sm:flex-initial sm:w-auto sm:basis-auto sm:justify-start">
+              <button
+                type="button"
+                onClick={handleUpdate}
+                disabled={isLoading}
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-6 py-2.5 text-[calc(1.04rem-1pt)] font-semibold text-white shadow-[0_10px_28px_-8px_rgb(92_107_127/0.35)] transition active:bg-muted-blue-hover/95 hover:bg-muted-blue-hover disabled:opacity-60 sm:text-[1.04rem]"
+              >
+                {isLoading ? "Updating…" : "Show results"}
+              </button>
+              <button
+                type="button"
+                onClick={handleClear}
+                disabled={isLoading}
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-200 bg-white px-6 py-2.5 text-[calc(1.04rem-1pt)] font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 disabled:opacity-60 sm:text-[1.04rem]"
+              >
+                Reset filters
+              </button>
+            </div>
           </div>
         </div>
 
@@ -730,7 +734,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           <button
             type="button"
             onClick={() => setIsMobileFiltersOpen(true)}
-            className="inline-flex min-h-11 w-full items-center justify-between rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/25 px-4 py-3 text-left text-[1.04rem] font-semibold text-muted-blue-hover transition active:bg-muted-blue-tint/40"
+            className="inline-flex min-h-11 w-full items-center justify-between rounded-2xl border border-zinc-200/80 bg-muted-blue-tint/25 px-4 py-3 text-left text-[calc(1.04rem-1pt)] font-semibold text-muted-blue-hover transition active:bg-muted-blue-tint/40"
           >
             More filters (optional)
             <span className="text-zinc-400">▾</span>

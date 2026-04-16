@@ -7,9 +7,11 @@ import { messagesUiEnabled } from "@/lib/feature-flags";
 
 type Props = {
   adminEmail?: string;
+  /** Larger touch targets and stacked layout for the mobile slide-out menu. */
+  variant?: "default" | "drawer";
 };
 
-export function NavUser({ adminEmail }: Props) {
+export function NavUser({ adminEmail, variant = "default" }: Props) {
   const { data: session, status } = useSession();
   const user = status === "authenticated" ? session?.user : null;
 
@@ -21,6 +23,16 @@ export function NavUser({ adminEmail }: Props) {
     adminEmail.toLowerCase() === email.toLowerCase();
 
   if (!user) {
+    if (variant === "drawer") {
+      return (
+        <Link
+          href="/signin"
+          className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-muted-blue px-4 py-3 text-base font-semibold text-white shadow-sm transition active:bg-muted-blue-hover"
+        >
+          Sign in
+        </Link>
+      );
+    }
     return (
       <Link
         href="/signin"
@@ -28,6 +40,35 @@ export function NavUser({ adminEmail }: Props) {
       >
         Sign in
       </Link>
+    );
+  }
+
+  if (variant === "drawer") {
+    return (
+      <div className="flex min-w-0 flex-col gap-2">
+        {messagesUiEnabled ? (
+          <Link
+            href="/messages"
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-zinc-200/90 bg-white px-4 py-3 text-base font-semibold text-muted-blue-hover shadow-sm transition active:bg-muted-blue-tint/40"
+          >
+            Messages
+          </Link>
+        ) : null}
+        <Link
+          href="/profile"
+          className="flex min-h-12 min-w-0 items-center justify-between gap-2 rounded-xl border border-zinc-200/90 bg-white px-4 py-3 text-left shadow-sm transition active:bg-zinc-50"
+        >
+          <span className="min-w-0 flex-1 truncate text-base font-semibold text-zinc-900">
+            {displayName}
+          </span>
+          {isAdmin ? (
+            <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-900 ring-1 ring-amber-200/80">
+              Admin
+            </span>
+          ) : null}
+        </Link>
+        <SignOutOverlay triggerClassName="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-3 text-base font-semibold text-zinc-700 shadow-sm transition active:bg-zinc-50" />
+      </div>
     );
   }
 

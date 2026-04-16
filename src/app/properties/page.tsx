@@ -8,7 +8,7 @@ import {
   PageHeader,
 } from "@/app/_components/app-page-shell";
 import { GiveawayPromoStrip } from "@/app/_components/giveaway-promo-strip";
-import { formInputCompactClass, surfaceSubtleClass } from "@/lib/ui-classes";
+import { formInputCompactClass, formSelectCompactClass, surfaceSubtleClass } from "@/lib/ui-classes";
 
 type PropertySummary = {
   id: string;
@@ -18,7 +18,81 @@ type PropertySummary = {
   postalCode: string | null;
   reviewCount: number;
   averageRent: number | null;
+  /** ISO timestamp; used for “Most recent” sort */
+  createdAt?: string;
 };
+
+type SortMode = "recent" | "rent-asc" | "rent-desc";
+
+function parseSortParam(value: string | null): SortMode {
+  if (value === "rent-asc" || value === "rent-desc") return value;
+  return "recent";
+}
+
+function createdAtMs(p: PropertySummary): number {
+  if (!p.createdAt) return 0;
+  return new Date(p.createdAt).getTime();
+}
+
+function sortProperties(list: PropertySummary[], sort: SortMode): PropertySummary[] {
+  const copy = [...list];
+  if (sort === "recent") {
+    copy.sort((a, b) => createdAtMs(b) - createdAtMs(a));
+    return copy;
+  }
+  if (sort === "rent-asc") {
+    copy.sort((a, b) => {
+      const ar = a.averageRent;
+      const br = b.averageRent;
+      if (ar == null && br == null) {
+        return createdAtMs(b) - createdAtMs(a);
+      }
+      if (ar == null) return 1;
+      if (br == null) return -1;
+      return ar - br;
+    });
+    return copy;
+  }
+  copy.sort((a, b) => {
+    const ar = a.averageRent;
+    const br = b.averageRent;
+    if (ar == null && br == null) {
+      return createdAtMs(b) - createdAtMs(a);
+    }
+    if (ar == null) return 1;
+    if (br == null) return -1;
+    return br - ar;
+  });
+  return copy;
+}
+
+function SortIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M4 6h11M4 12h7M4 18h11"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+      <path
+        d="M17 8v10m0 0 2.5-2.5M17 18l-2.5-2.5"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 export default function PropertiesPage() {
   const { status } = useSession();
@@ -29,6 +103,11 @@ export default function PropertiesPage() {
     if (typeof window === "undefined") return "";
     const params = new URLSearchParams(window.location.search);
     return params.get("query") ?? "";
+  });
+  const [sort, setSort] = useState<SortMode>(() => {
+    if (typeof window === "undefined") return "recent";
+    const params = new URLSearchParams(window.location.search);
+    return parseSortParam(params.get("sort"));
   });
 
   useEffect(() => {
@@ -71,7 +150,30 @@ export default function PropertiesPage() {
     });
   }, [poolForFilter, query]);
 
-  const visibleProperties = filtered;
+  const visibleProperties = useMemo(
+    () => sortProperties(filtered, sort),
+    [filtered, sort],
+  );
+
+  function applySort(next: SortMode) {
+    setSort(next);
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const q = query.trim();
+    if (q) params.set("query", q);
+    else params.delete("query");
+    if (next === "recent") {
+      params.delete("sort");
+    } else {
+      params.set("sort", next);
+    }
+    const qs = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      qs ? `${window.location.pathname}?${qs}` : window.location.pathname,
+    );
+  }
   const showSignInTeaser =
     isLoggedOutBrowse && properties.length > previewLimit;
 
@@ -114,44 +216,85 @@ export default function PropertiesPage() {
             </>
           }
         />
-        <div className="w-full max-w-xs shrink-0">
-          <label
-            htmlFor="properties-search"
-            className="mb-1.5 block text-xs font-medium text-zinc-600"
-          >
-            {isLoggedOutBrowse
-              ? `Filter these ${previewLimit} preview addresses`
-              : "Search by street or ZIP"}
-          </label>
-          <input
-            id="properties-search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={
-              isLoggedOutBrowse
-                ? `Searches only these ${previewLimit} cards`
-                : "e.g. West 3rd, 02127"
-            }
-            aria-describedby={
-              isLoggedOutBrowse ? "properties-search-hint" : undefined
-            }
-            className={formInputCompactClass}
-          />
-          {isLoggedOutBrowse ? (
-            <p
-              id="properties-search-hint"
-              className="mt-1.5 text-[11px] leading-snug text-zinc-500"
+        <div className="flex w-full flex-col gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-end sm:justify-end sm:gap-4">
+          <div className="w-full shrink-0 sm:max-w-xs sm:min-w-[min(100%,16rem)]">
+            <label
+              htmlFor="properties-search"
+              className="mb-1.5 block text-xs font-medium text-zinc-600"
             >
-              Does not search the full database.{" "}
-              <Link
-                href={`/signin?callbackUrl=${propertiesCallback}`}
-                className="font-medium text-muted-blue hover:underline"
+              {isLoggedOutBrowse
+                ? `Filter these ${previewLimit} preview addresses`
+                : "Search by street or ZIP"}
+            </label>
+            <input
+              id="properties-search"
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                if (typeof window === "undefined") return;
+                const params = new URLSearchParams(window.location.search);
+                const v = event.target.value;
+                if (v) params.set("query", v);
+                else params.delete("query");
+                if (sort !== "recent") params.set("sort", sort);
+                else params.delete("sort");
+                const qs = params.toString();
+                window.history.replaceState(
+                  null,
+                  "",
+                  qs
+                    ? `${window.location.pathname}?${qs}`
+                    : window.location.pathname,
+                );
+              }}
+              placeholder={
+                isLoggedOutBrowse
+                  ? `Searches only these ${previewLimit} cards`
+                  : "e.g. West 3rd, 02127"
+              }
+              aria-describedby={
+                isLoggedOutBrowse ? "properties-search-hint" : undefined
+              }
+              className={formInputCompactClass}
+            />
+            {isLoggedOutBrowse ? (
+              <p
+                id="properties-search-hint"
+                className="mt-1.5 text-[11px] leading-snug text-zinc-500"
               >
-                Sign in
-              </Link>{" "}
-              for that.
-            </p>
-          ) : null}
+                Does not search the full database.{" "}
+                <Link
+                  href={`/signin?callbackUrl=${propertiesCallback}`}
+                  className="font-medium text-muted-blue hover:underline"
+                >
+                  Sign in
+                </Link>{" "}
+                for that.
+              </p>
+            ) : null}
+          </div>
+
+          <div className="w-full shrink-0 sm:w-auto sm:min-w-[13.5rem]">
+            <label
+              htmlFor="properties-sort"
+              className="mb-1.5 flex items-center gap-2 text-xs font-medium text-zinc-600"
+            >
+              <SortIcon className="text-zinc-500" />
+              Sort
+            </label>
+            <select
+              id="properties-sort"
+              value={sort}
+              onChange={(event) =>
+                applySort(parseSortParam(event.target.value))
+              }
+              className={`${formSelectCompactClass} w-full sm:min-w-[13.5rem]`}
+            >
+              <option value="recent">Most recent</option>
+              <option value="rent-asc">Price: low to high</option>
+              <option value="rent-desc">Price: high to low</option>
+            </select>
+          </div>
         </div>
       </div>
 
