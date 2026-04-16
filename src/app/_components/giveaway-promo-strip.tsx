@@ -307,7 +307,7 @@ export function GiveawayPromoStrip({
   const innerAccent = [
     "flex border-l-[3px] border-l-muted-blue py-4 sm:py-5",
     isPropertiesBrowse
-      ? "pl-3 pr-2 max-sm:pl-3 max-sm:pr-1.5 sm:pl-5 sm:pr-5"
+      ? "pl-3 pr-3 max-sm:pl-3 max-sm:pr-2.5 sm:pl-5 sm:pr-5"
       : "pl-4 pr-4 sm:pl-5 sm:pr-5",
   ].join(" ");
 

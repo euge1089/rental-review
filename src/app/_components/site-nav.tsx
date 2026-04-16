@@ -115,7 +115,7 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
           role="dialog"
           aria-modal="true"
           aria-label="Site navigation"
-          className="ml-auto flex h-full min-h-[100dvh] max-h-[100dvh] w-[min(70vw,16.5rem)] flex-col overflow-y-auto rounded-l-2xl border border-zinc-200/90 border-r-0 bg-gradient-to-b from-muted-blue-tint/50 via-white to-zinc-50/95 pl-px shadow-[-8px_0_32px_-8px_rgb(15_23_42/0.25)]"
+          className="ml-auto flex h-full min-h-[100dvh] max-h-[100dvh] w-[min(73.5vw,17.325rem)] flex-col overflow-y-auto rounded-l-2xl border border-zinc-200/90 border-r-0 bg-white shadow-[-8px_0_32px_-8px_rgb(15_23_42/0.25)]"
           onClick={(event) => event.stopPropagation()}
         >
           <div className="flex items-start justify-between gap-2 border-b border-zinc-200/80 px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
@@ -178,7 +178,7 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
             </Link>
           </nav>
 
-          <div className="mt-auto border-t border-zinc-200/80 bg-white/70 px-3 py-4 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]">
+          <div className="mt-auto border-t border-zinc-200/80 bg-white px-3 py-4 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]">
             <p className="mb-2.5 px-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
               Account
             </p>
