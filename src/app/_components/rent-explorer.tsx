@@ -360,7 +360,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   const [mapError, setMapError] = useState<string | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
-  const [mobileResultsView, setMobileResultsView] = useState<"list" | "map">("list");
+  const [mobileResultsView, setMobileResultsView] = useState<"list" | "map">("map");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const mapAbortRef = useRef<AbortController | null>(null);
 
@@ -950,17 +950,6 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           <div className="grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200/80 bg-white p-1">
             <button
               type="button"
-              onClick={() => setMobileResultsView("list")}
-              className={`inline-flex min-h-10 items-center justify-center rounded-xl text-sm font-semibold transition ${
-                mobileResultsView === "list"
-                  ? "bg-muted-blue-tint text-muted-blue-hover"
-                  : "text-zinc-600"
-              }`}
-            >
-              List
-            </button>
-            <button
-              type="button"
               onClick={() => setMobileResultsView("map")}
               className={`inline-flex min-h-10 items-center justify-center rounded-xl text-sm font-semibold transition ${
                 mobileResultsView === "map"
@@ -969,6 +958,17 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
               }`}
             >
               Map
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileResultsView("list")}
+              className={`inline-flex min-h-10 items-center justify-center rounded-xl text-sm font-semibold transition ${
+                mobileResultsView === "list"
+                  ? "bg-muted-blue-tint text-muted-blue-hover"
+                  : "text-zinc-600"
+              }`}
+            >
+              List
             </button>
           </div>
         </section>
@@ -982,7 +982,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             <p className={explorerEyebrowClass}>
               Interactive map
             </p>
-            <p className={explorerBodyLeadClass}>
+            <p className={`hidden sm:block ${explorerBodyLeadClass}`}>
               Move the map to load points in view. Filters above apply to both map and list.
             </p>
           </div>

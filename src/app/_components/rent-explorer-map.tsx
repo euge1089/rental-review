@@ -33,11 +33,10 @@ type RentExplorerMapProps = {
   onBoundsChange: (bounds: ExplorerMapBounds) => void;
 };
 
-const INITIAL_VIEW = {
-  longitude: -71.0589,
-  latitude: 42.3601,
-  zoom: 11.2,
-};
+/** Aligns with Tailwind `sm:` (640px): phones get a slightly wider default view. */
+const INITIAL_CENTER = { longitude: -71.0589, latitude: 42.3601 };
+const INITIAL_ZOOM_DESKTOP = 11.2;
+const INITIAL_ZOOM_PHONE = 10.55;
 
 function toBounds(mapBounds: LngLatBounds): ExplorerMapBounds {
   const southWest = mapBounds.getSouthWest();
@@ -68,6 +67,16 @@ export function RentExplorerMap({
   const hasToken = token.trim().length > 0;
   const [hoveredPropertyId, setHoveredPropertyId] = useState<string | null>(null);
 
+  const initialViewState = useMemo(() => {
+    const phone =
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 639px)").matches;
+    return {
+      ...INITIAL_CENTER,
+      zoom: phone ? INITIAL_ZOOM_PHONE : INITIAL_ZOOM_DESKTOP,
+    };
+  }, []);
+
   const sortedMarkers = useMemo(
     () => [...markers].sort((a, b) => a.reviewCount - b.reviewCount),
     [markers],
@@ -89,7 +98,7 @@ export function RentExplorerMap({
   return (
     <div className="relative overflow-hidden bg-white sm:rounded-3xl sm:border sm:border-zinc-200 sm:shadow-[0_8px_30px_-16px_rgb(15_23_42/0.2)]">
       <Map
-        initialViewState={INITIAL_VIEW}
+        initialViewState={initialViewState}
         style={{ width: "100%", height: 420 }}
         mapStyle="mapbox://styles/mapbox/light-v11"
         mapboxAccessToken={token}
