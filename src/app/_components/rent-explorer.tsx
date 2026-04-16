@@ -709,12 +709,12 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 />
               </div>
             </div>
-            <div className="flex w-full basis-full flex-wrap items-center justify-center gap-3 sm:flex-initial sm:w-auto sm:basis-auto sm:justify-start">
+            <div className="flex w-full basis-full flex-nowrap items-stretch gap-3 sm:flex-initial sm:w-auto sm:basis-auto sm:items-center sm:justify-start">
               <button
                 type="button"
                 onClick={handleUpdate}
                 disabled={isLoading}
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-6 py-2.5 text-[calc(1.04rem-1pt)] font-semibold text-white shadow-[0_10px_28px_-8px_rgb(92_107_127/0.35)] transition active:bg-muted-blue-hover/95 hover:bg-muted-blue-hover disabled:opacity-60 sm:text-[1.04rem]"
+                className="inline-flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-xl bg-muted-blue px-4 py-2.5 text-[calc(1.04rem-1pt)] font-semibold text-white shadow-[0_10px_28px_-8px_rgb(92_107_127/0.35)] transition active:bg-muted-blue-hover/95 hover:bg-muted-blue-hover disabled:opacity-60 sm:flex-initial sm:rounded-full sm:px-6 sm:text-[1.04rem]"
               >
                 {isLoading ? "Updating…" : "Show results"}
               </button>
@@ -722,7 +722,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 type="button"
                 onClick={handleClear}
                 disabled={isLoading}
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-200 bg-white px-6 py-2.5 text-[calc(1.04rem-1pt)] font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 disabled:opacity-60 sm:text-[1.04rem]"
+                className="inline-flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-[calc(1.04rem-1pt)] font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 disabled:opacity-60 sm:flex-initial sm:rounded-full sm:px-6 sm:text-[1.04rem]"
               >
                 Reset filters
               </button>
@@ -946,7 +946,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
       ) : null}
 
       {MAP_ENABLED ? (
-        <section className={`${mobileEdgeToEdgeClass} sm:hidden`}>
+        <section className={`${mobileEdgeToEdgeClass} -my-2 sm:hidden`}>
           <div className="grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200/80 bg-white p-1">
             <button
               type="button"
