@@ -19,31 +19,15 @@ export default function TermsPage() {
         eyebrow="Legal"
         title="Terms of Service"
         description={
-          <div className="space-y-2">
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-              <strong>Not legal advice.</strong> These terms summarize how Rent Review
-              Boston is intended to operate. A licensed attorney should review and
-              tailor them—especially for liability limits, dispute resolution, fair
-              housing, defamation, and compliance with Massachusetts and federal law—
-              before you rely on them.
+          support ? (
+            <p className="text-sm text-zinc-600">
+              Legal notices and support inquiries can be sent to{" "}
+              <a className={linkInlineClass} href={`mailto:${support}`}>
+                {support}
+              </a>
+              .
             </p>
-            {support ? (
-              <p className="text-sm text-zinc-600">
-                Notices and support:{" "}
-                <a className={linkInlineClass} href={`mailto:${support}`}>
-                  {support}
-                </a>
-              </p>
-            ) : (
-              <p className="text-sm text-zinc-600">
-                Set <code className="rounded bg-zinc-100 px-1">SUPPORT_EMAIL</code> or{" "}
-                <code className="rounded bg-zinc-100 px-1">
-                  NEXT_PUBLIC_SUPPORT_EMAIL
-                </code>{" "}
-                in production to show a public contact here.
-              </p>
-            )}
-          </div>
+          ) : null
         }
       />
 
@@ -51,12 +35,12 @@ export default function TermsPage() {
         <div className="max-w-none space-y-6 text-sm leading-relaxed text-zinc-700">
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Agreement
+              1) Acceptance of these Terms
             </h2>
             <p>
-              These Terms of Service (“Terms”) govern your access to and use of the
-              website and services branded <strong>Rent Review Boston</strong> (the
-              “Service”). By creating an account or using the Service, you agree to
+              These Terms of Service (“Terms”) govern your access to and use of Rent
+              Review Boston’s website and related services (collectively, the
+              “Service”). By accessing or using the Service, you agree to be bound by
               these Terms and our{" "}
               <Link href="/legal/privacy" className={linkInlineClass}>
                 Privacy Policy
@@ -67,178 +51,167 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              What the Service is
+              2) Service description
             </h2>
             <p>
-              Rent Review Boston provides tools for renters to share opinions and
-              factual information about past tenancies tied to{" "}
-              <strong>specific addresses in the City of Boston, Massachusetts</strong>.
-              Listings, landlords, property managers, and other third parties are not
-              parties to these Terms unless you have a separate agreement with them.
+              The Service allows renters to share and view address-level rental
+              experiences and related data in the Boston area. Content is largely
+              user-generated. The Service is for informational purposes only and does
+              not provide legal, financial, housing, or professional advice.
             </p>
             <p>
-              Content on the Service is user-generated. Reviews are personal
-              experiences and opinions, not professional inspections, legal advice, or
-              guaranteed facts. Rent figures, amenities, and scores depend on what
-              users submit and may be incomplete or outdated.
+              We may update, suspend, or discontinue any feature at any time, with or
+              without notice, as permitted by law.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Eligibility and accounts
+              3) Eligibility and account registration
             </h2>
             <p>
-              You must be able to form a binding contract where you live. The Service is
-              intended for users who are at least <strong>18 years old</strong>. You
-              are responsible for your account credentials and for all activity under
-              your account. Keep your password confidential. You may sign in with
-              Google or, where offered, email and password with email verification.
+              You must be at least 18 years old and legally capable of entering a
+              binding agreement to use the Service. You agree to provide accurate,
+              current account information and to keep your credentials secure. You are
+              responsible for activity under your account.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Reviews, limits, and moderation
+              4) User content and license
             </h2>
             <p>
-              You may submit reviews only for Boston addresses and lease-start years
-              permitted by the Service rules (including limits on how many reviews an
-              account may submit overall and one review per address per lease-start
-              year). You must provide accurate attestations where the product asks you
-              to confirm that a review reflects your experience for the selected lease
-              period.
+              “User Content” includes reviews, scores, messages, reports, and other
+              material you submit. You retain ownership of your User Content. By
+              submitting User Content, you grant us a worldwide, non-exclusive,
+              royalty-free, transferable, sublicensable license to host, store,
+              reproduce, modify (for formatting, moderation, and safety), publish,
+              display, and distribute that content to operate and improve the Service.
             </p>
             <p>
-              We moderate content to promote a useful and lawful community. Reviews
-              may be approved, held for manual review, or rejected. Automated checks may
-              flag content (for example, text that appears to include individual
-              names). Optional SMS verification on your profile can help automated
-              approval when other checks pass; otherwise manual review may apply, with
-              target timeframes described in the product. We may update moderation
-              practices as the Service evolves.
-            </p>
-            <p>
-              You are responsible for your submissions. You must not post content that
-              is illegal, fraudulent, or violates others’ rights. You must comply with{" "}
-              <strong>fair housing</strong> laws: do not use the Service to harass,
-              discriminate against, or steer people based on protected characteristics,
-              or to publish content that could reasonably be understood as doing so.
-              You must not post another person’s private contact information without
-              permission, threaten or abuse others, or submit knowingly false
-              statements of fact that harm others. Counsel should align this section
-              with your enforcement playbook and appeals process.
+              You represent and warrant that you have all rights necessary to submit
+              User Content and that your submissions do not violate law, these Terms,
+              or any third-party rights.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Public display and anonymity
+              5) Acceptable use rules
             </h2>
             <p>
-              The Service is designed so that your <strong>account email is not</strong>{" "}
-              shown on public review cards. You may have options for how your review
-              appears (for example, a fully anonymous label). A successful SMS
-              verification may display a verification indicator next to your public
-              reviews. Your profile display name is for your account experience; align
-              marketing copy and these Terms with what the UI actually shows.
+              You agree not to:
+            </p>
+            <ul className="list-inside list-disc space-y-1 pl-1">
+              <li>Post false, defamatory, fraudulent, or misleading content;</li>
+              <li>Post personal data about others without authorization;</li>
+              <li>Harass, threaten, stalk, or abuse any person;</li>
+              <li>
+                Use the Service in a discriminatory manner or in violation of fair
+                housing or civil rights laws;
+              </li>
+              <li>
+                Circumvent security, scrape data at scale, or interfere with the
+                Service’s operation;
+              </li>
+              <li>Impersonate others or misrepresent your affiliation; or</li>
+              <li>Use bots or automation except as expressly authorized by us.</li>
+            </ul>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-semibold text-muted-blue-hover">
+              6) Moderation and enforcement
+            </h2>
+            <p>
+              We may monitor, moderate, remove, restrict, or refuse User Content and
+              may suspend or terminate accounts for suspected violations of these Terms,
+              legal obligations, or platform safety requirements. We may also preserve
+              and disclose relevant information where required by law or to protect
+              rights, users, and the Service.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Private messages, blocking, and voting
+              7) Public content, ratings, and anonymity
             </h2>
             <p>
-              The Service may allow short private messages between signed-in renters in
-              connection with published reviews. You must not use messages—or any part
-              of the Service—to harass, threaten, intimidate, or coerce anyone. Do not
-              share another person’s private contact information without permission.
-            </p>
-            <p>
-              Users may block other accounts; blocking may limit messaging and certain
-              interactions. Users may mark reviews as “helpful.” Automated filters may
-              apply to messages; they are not a guarantee of safety. For emergencies,
-              contact local authorities.
+              Review content, scores, and related property information may be displayed
+              publicly or to authenticated users depending on product settings. Public
+              presentation is designed to avoid exposing account email addresses.
+              Verification badges, score labels, and map displays reflect product logic
+              and may change over time.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Maps, search, and location
+              8) Messaging, voting, and community features
             </h2>
             <p>
-              The Service may show properties on a map and use geocoded coordinates for
-              exploration and analytics. Map presentation may use approximate locations
-              (for example, block-level positioning) rather than precise doorsteps. Your
-              counsel can refine this section if you add features that change location
-              precision.
+              If enabled, messaging, voting, reporting, and blocking tools are provided
+              as community features. You must use them lawfully and respectfully. We do
+              not guarantee delivery, visibility, or permanence of any communication.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Email and SMS
+              9) Third-party services and links
             </h2>
             <p>
-              We send transactional emails (such as authentication). We may send
-              optional retention or reminder emails and optional daily activity
-              summaries as described in the product; you can control certain
-              non-transactional emails in your profile where available. SMS is used for
-              optional phone verification through a third-party provider; message and
-              data rates may apply.
+              The Service may rely on or link to third-party services (for example,
+              authentication providers, mapping/geocoding services, messaging vendors,
+              and analytics tools). Your use of third-party services may be subject to
+              their terms and privacy policies.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Reporting, enforcement, and intellectual property
+              10) Intellectual property
             </h2>
             <p>
-              We provide ways to report content that may violate these Terms or our
-              policies. We may remove or restrict content, suspend or terminate
-              accounts, and take other steps we reasonably believe are necessary.
-              Repeat infringement of intellectual property rights may result in
-              termination. If you allow user photos or uploads beyond text, a DMCA
-              agent designation and takedown process should be added here with the
-              correct name, address, and email for legal notices.
+              Except for User Content, the Service and its software, branding, design,
+              and content are owned by us or our licensors and are protected by
+              intellectual property laws. You may not copy, distribute, modify, reverse
+              engineer, or create derivative works from the Service except as permitted
+              by law or our written permission.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Privacy
+              11) Privacy
             </h2>
             <p>
-              Our collection and use of personal information are described in the{" "}
+              Our collection and use of personal information is described in the{" "}
               <Link href="/legal/privacy" className={linkInlineClass}>
                 Privacy Policy
               </Link>
-              , including subprocessors used for hosting, email, SMS, maps, analytics,
-              and authentication.
+              .
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Disclaimers
+              12) Disclaimers
             </h2>
             <p>
               THE SERVICE IS PROVIDED “AS IS” AND “AS AVAILABLE,” WITHOUT WARRANTIES OF
-              ANY KIND, EXPRESS OR IMPLIED, TO THE FULLEST EXTENT PERMITTED BY LAW—
-              INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-              PURPOSE, AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL BE
-              UNINTERRUPTED, ERROR-FREE, OR FREE OF HARMFUL COMPONENTS.
-            </p>
-            <p>
-              Your lawyer should confirm whether and how caps, exclusions, and
-              disclaimers apply in Massachusetts and elsewhere.
+              ANY KIND, EXPRESS OR IMPLIED, INCLUDING IMPLIED WARRANTIES OF
+              MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND
+              NON-INFRINGEMENT, TO THE MAXIMUM EXTENT PERMITTED BY LAW. WE DO NOT
+              GUARANTEE THE ACCURACY, COMPLETENESS, OR RELIABILITY OF USER-GENERATED
+              CONTENT OR THAT THE SERVICE WILL BE UNINTERRUPTED OR ERROR-FREE.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Limitation of liability
+              13) Limitation of liability
             </h2>
             <p>
               TO THE FULLEST EXTENT PERMITTED BY LAW, RENT REVIEW BOSTON AND ITS
@@ -257,7 +230,7 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Indemnity
+              14) Indemnification
             </h2>
             <p>
               To the fullest extent permitted by law, you agree to defend, indemnify,
@@ -265,48 +238,43 @@ export default function TermsPage() {
               officers, and employees from any claims, damages, losses, or expenses
               (including reasonable attorneys’ fees) arising from your content, your
               use of the Service, or your violation of these Terms or applicable law.
-              Your counsel should tune this clause for your entity structure and risk
-              tolerance.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Changes to the Service and Terms
+              15) Termination, governing law, and updates
             </h2>
             <p>
-              We may modify the Service or these Terms. We will post updated Terms on
-              this page. If changes are material, we may provide additional notice as
-              required by law. Continued use after changes become effective constitutes
-              acceptance unless applicable law requires otherwise.
+              We may suspend or terminate access to the Service at our discretion for
+              violations of these Terms, legal requirements, or safety concerns. These
+              Terms are governed by the laws of the Commonwealth of Massachusetts,
+              excluding conflict-of-law principles. We may revise these Terms from time
+              to time by posting updated versions on this page. Continued use after an
+              effective date constitutes acceptance of revised Terms, to the extent
+              permitted by law.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Governing law and disputes
+              16) Contact and effective date
             </h2>
-            <p>
-              These Terms are governed by the laws of the Commonwealth of Massachusetts,
-              excluding conflict-of-law rules. Venue and dispute resolution (courts vs.
-              arbitration), class-action waivers, and consumer protections should be
-              chosen with counsel—Massachusetts has specific consumer and tenant-
-              protection statutes that may affect enforceability of certain clauses.
-            </p>
-          </section>
-
-          <section className="space-y-2">
-            <h2 className="text-base font-semibold text-muted-blue-hover">
-              General
-            </h2>
-            <p>
-              These Terms, together with the Privacy Policy, are the entire agreement
-              between you and us regarding the Service. If a provision is unenforceable,
-              the remaining provisions remain in effect. Failure to enforce a provision
-              is not a waiver. You may not assign these Terms without our consent; we
-              may assign them in connection with a merger, acquisition, or sale of
-              assets.
-            </p>
+            {support ? (
+              <p>
+                Questions about these Terms may be sent to{" "}
+                <a className={linkInlineClass} href={`mailto:${support}`}>
+                  {support}
+                </a>
+                .
+              </p>
+            ) : (
+              <p>
+                Questions about these Terms may be directed through the support contact
+                listed on the site.
+              </p>
+            )}
+            <p className="text-xs text-zinc-500">Effective date: April 17, 2026</p>
           </section>
         </div>
       </SurfacePanel>

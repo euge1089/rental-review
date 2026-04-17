@@ -19,32 +19,16 @@ export default function PrivacyPage() {
         eyebrow="Legal"
         title="Privacy Policy"
         description={
-          <div className="space-y-2">
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-              <strong>Not legal advice.</strong> This policy describes how Rent Review
-              Boston is designed to work today. A qualified attorney should review it
-              against your actual data flows, vendors, and obligations (including
-              Massachusetts privacy rules and, if you have users in other regions,
-              laws such as GDPR or state consumer privacy statutes).
+          support ? (
+            <p className="text-sm text-zinc-600">
+              Questions about this policy or requests regarding your personal
+              information can be sent to{" "}
+              <a className={linkInlineClass} href={`mailto:${support}`}>
+                {support}
+              </a>
+              .
             </p>
-            {support ? (
-              <p className="text-sm text-zinc-600">
-                Privacy questions and requests:{" "}
-                <a className={linkInlineClass} href={`mailto:${support}`}>
-                  {support}
-                </a>
-              </p>
-            ) : (
-              <p className="text-sm text-zinc-600">
-                Set{" "}
-                <code className="rounded bg-zinc-100 px-1">SUPPORT_EMAIL</code> or{" "}
-                <code className="rounded bg-zinc-100 px-1">
-                  NEXT_PUBLIC_SUPPORT_EMAIL
-                </code>{" "}
-                in production to show a contact for privacy requests.
-              </p>
-            )}
-          </div>
+          ) : null
         }
       />
 
@@ -52,14 +36,15 @@ export default function PrivacyPage() {
         <div className="max-w-none space-y-6 text-sm leading-relaxed text-zinc-700">
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Who we are and scope
+              1) Who we are
             </h2>
             <p>
-              This policy applies to the website and online services branded{" "}
-              <strong>Rent Review Boston</strong> (the “Service”). The Service is
-              focused on address-level rental experiences in the{" "}
-              <strong>City of Boston, Massachusetts</strong>. By using the Service,
-              you agree to this Privacy Policy together with our{" "}
+              This Privacy Policy explains how <strong>Rent Review Boston</strong>{" "}
+              (“we,” “us,” or “our”) collects, uses, shares, and retains information
+              when you use our website and related services (the “Service”).
+            </p>
+            <p>
+              This policy should be read together with our{" "}
               <Link href="/legal/terms" className={linkInlineClass}>
                 Terms of Service
               </Link>
@@ -69,246 +54,250 @@ export default function PrivacyPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Information we collect
+              2) Scope and eligibility
             </h2>
             <p>
-              We collect information in the categories below, depending on how you use
-              the Service.
+              The Service is focused on rental experiences in Boston, Massachusetts.
+              This policy applies to information collected through the Service,
+              including when you browse public content, create an account, submit
+              reviews, use messaging, or contact support.
             </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-semibold text-muted-blue-hover">
+              3) Information we collect
+            </h2>
+            <p>Depending on how you use the Service, we may collect:</p>
             <ul className="list-inside list-disc space-y-2 pl-1">
               <li>
-                <strong>Account and profile.</strong> Email address; optional display
-                name; optional profile field for the first calendar year you started
-                renting in Boston (used to enforce which lease years you may select
-                when submitting reviews). For email-and-password sign-up, we store a
-                password hash and use one-time email verification codes during
-                registration (codes are not retained after successful verification).
+                <strong>Account information.</strong> Email address, authentication
+                data, optional display name, and related account settings.
               </li>
               <li>
-                <strong>Authentication.</strong> If you sign in with Google, we
-                receive profile information from Google as part of OAuth (typically
-                email and name). We use that to create or update your account.
+                <strong>Verification and trust signals.</strong> If you complete phone
+                verification, we store verification status and related anti-abuse
+                metadata.
               </li>
               <li>
-                <strong>SMS verification (optional).</strong> If you choose to verify
-                your phone number, we send verification codes through our SMS provider.
-                Successful verification is stored on your account as a{" "}
-                <strong>verification flag</strong> (for example, to show a
-                “verified” indicator on your public reviews and to streamline
-                moderation). We do <strong>not</strong> need to retain your phone
-                number in our database for that purpose after verification completes;
-                phone numbers are processed by the SMS vendor when you enter them for
-                verification.
+                <strong>Review content and property data.</strong> Information you
+                submit in reviews, including property/address details, rent and unit
+                details, ratings, amenity details, free-text comments, timestamps, and
+                moderation status.
               </li>
               <li>
-                <strong>Reviews and property content.</strong> Address information (City
-                of Boston only), lease-start year, rent and unit details you provide,
-                amenity flags, numeric scores, free-text review body, moderation
-                status, moderation reasons, timestamps, and optional settings such as
-                fully anonymous public display (where enabled).
+                <strong>Derived location data.</strong> Geocoded coordinates derived
+                from address data for maps, analytics, and search functionality.
               </li>
               <li>
-                <strong>Derived property location data.</strong> We may geocode
-                property addresses to latitude and longitude to power search,
-                analytics, and map features. Map views use privacy-conscious
-                positioning (for example, coordinates adjusted to a block-level grid)
-                so pins do not pinpoint an exact street address on the map.
+                <strong>Community interactions.</strong> Votes, bookmarks, reports,
+                blocks, and private messages between users where messaging is enabled.
               </li>
               <li>
-                <strong>Community features.</strong> “Helpful” votes on reviews;
-                private message threads tied to reviews; user block relationships;
-                bookmarks (saved addresses).
+                <strong>Communications preferences.</strong> Email preference settings
+                and records about service emails (for example, delivery and campaign
+                activity).
               </li>
               <li>
-                <strong>Reports and safety.</strong> When you report content, we
-                collect the report reason and associated review and account
-                identifiers. Administrators may review account and content records to
-                enforce policies.
+                <strong>Technical and usage data.</strong> Device/browser data, IP
+                address, server logs, and events used for security, diagnostics, fraud
+                prevention, and analytics.
               </li>
               <li>
-                <strong>Email programs.</strong> Transactional emails (such as sign-in
-                and verification). Optional retention and reminder emails for people
-                who have joined but not yet submitted a review, and optional
-                follow-ups, subject to your email preferences. An optional daily
-                activity email summarizing new “helpful” votes on your reviews and new
-                private messages, which you can turn off separately. We may log which
-                campaigns were sent and whether certain tracked links were clicked, to
-                avoid duplicate sends and measure engagement.
-              </li>
-              <li>
-                <strong>Technical and security data.</strong> Server logs, IP
-                addresses, and similar data used for security, abuse prevention,
-                debugging, and rate limiting. We may use cookies or similar
-                technologies for session management and, when configured, analytics.
+                <strong>Information from third parties.</strong> If you sign in through
+                a third-party identity provider (such as Google), we receive profile
+                fields those providers share with us (for example, email address).
               </li>
             </ul>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              How we use information
+              4) How we use information
             </h2>
-            <p>We use the information above to:</p>
+            <p>We use information we collect to:</p>
             <ul className="list-inside list-disc space-y-1 pl-1">
-              <li>Provide, operate, and improve the Service;</li>
-              <li>Authenticate users and maintain sessions;</li>
+              <li>Provide, operate, maintain, and improve the Service;</li>
+              <li>Create and manage user accounts and authentication sessions;</li>
+              <li>Publish and organize review content and property information;</li>
               <li>
-                Moderate content (including automated checks, such as flagging
-                submissions that may contain individual names, and manual review where
-                applicable);
+                Moderate and enforce our community rules (including abuse and safety
+                review);
               </li>
-              <li>
-                Display public property and review information according to our access
-                rules (including teaser-only content for signed-out visitors where
-                implemented);
-              </li>
-              <li>
-                Show verification indicators, helpful votes, and messaging features as
-                described in the product;
-              </li>
-              <li>
-                Send transactional and optional emails in line with your preferences;
-              </li>
-              <li>Detect, prevent, and respond to fraud, abuse, and security issues;</li>
-              <li>Comply with law and enforce our Terms; and</li>
-              <li>Analyze usage when analytics tools are enabled.</li>
+              <li>Enable messaging, voting, reporting, and other community features;</li>
+              <li>Send service communications and optional product emails;</li>
+              <li>Maintain platform security and detect fraud or misuse;</li>
+              <li>Comply with legal obligations and resolve disputes; and</li>
+              <li>Analyze usage trends and product performance.</li>
             </ul>
             <p>
-              We do <strong>not</strong> sell your personal information as a commodity.
-              We do not use your information for third-party marketing unrelated to the
-              Service, except as part of standard analytics or infrastructure
-              processing by vendors described below.
+              We do not sell personal information for money. We also do not use your
+              personal information for third-party advertising unrelated to the
+              operation of the Service.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              How we share information
+              5) Legal bases for processing (where applicable)
             </h2>
-            <p>We share information only as needed to run the Service:</p>
+            <p>
+              If data-protection laws that require a legal basis apply to your use of
+              the Service (for example in certain jurisdictions), we generally process
+              information based on one or more of the following:
+            </p>
+            <ul className="list-inside list-disc space-y-1 pl-1">
+              <li>Performance of our contract with you (providing the Service);</li>
+              <li>Our legitimate interests (security, moderation, improvements);</li>
+              <li>
+                Compliance with legal obligations; and/or
+              </li>
+              <li>Your consent (where we ask for it).</li>
+            </ul>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-semibold text-muted-blue-hover">
+              6) How and when we share information
+            </h2>
+            <p>We may share information in the following circumstances:</p>
             <ul className="list-inside list-disc space-y-1 pl-1">
               <li>
-                <strong>Service providers.</strong> We use third-party vendors for
-                hosting and infrastructure, database storage, email delivery, SMS
-                verification, maps and geocoding, authentication (e.g., Google
-                sign-in), and optional web analytics. Those providers process data on
-                our behalf subject to their terms and our agreements.
+                <strong>Public-facing content.</strong> Review and property information
+                is shown to users and visitors based on product rules. We design public
+                presentation to avoid exposing account email addresses.
               </li>
               <li>
-                <strong>Public content.</strong> Reviews and related property
-                information you submit may be shown to other users and visitors in
-                accordance with product rules. Public review display is designed so
-                that your account email is not shown on review cards; optional
-                anonymity settings may apply. A verified-phone indicator may appear on
-                your public reviews when applicable.
+                <strong>Service providers.</strong> Trusted vendors who provide
+                infrastructure, database/storage, identity/authentication, maps and
+                geocoding, communications (email/SMS), moderation tooling, and analytics.
               </li>
               <li>
-                <strong>Legal and safety.</strong> We may disclose information if
-                required by law, legal process, or a good-faith belief that disclosure
-                is necessary to protect rights, safety, or the integrity of the
-                Service.
+                <strong>Business transfers.</strong> In connection with a merger,
+                financing, acquisition, or sale of assets, subject to customary
+                confidentiality protections.
+              </li>
+              <li>
+                <strong>Legal and safety disclosures.</strong> To comply with law,
+                legal process, or valid governmental requests, and to protect users,
+                rights, property, and the Service.
+              </li>
+              <li>
+                <strong>With your direction.</strong> Where you request or authorize us
+                to share information.
               </li>
             </ul>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-semibold text-muted-blue-hover">
+              7) Cookies and analytics
+            </h2>
             <p>
-              Subprocessors and categories may change; your counsel may wish to
-              maintain an internal list (for example: cloud host, PostgreSQL provider,
-              Resend for email, Twilio for SMS verification, Mapbox for maps and
-              geocoding, Google OAuth, Google Analytics when{" "}
-              <code className="rounded bg-zinc-100 px-1">
-                NEXT_PUBLIC_GA_MEASUREMENT_ID
-              </code>{" "}
-              is set, optional Upstash Redis for rate limiting).
+              We use cookies and similar technologies for session management, security,
+              and product functionality. When analytics is enabled, analytics providers
+              may collect usage and device data (for example, page views and interaction
+              events). You can control cookies through browser settings, though some
+              features may not function properly without required cookies.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Cookies and analytics
+              8) Data retention
             </h2>
             <p>
-              We use cookies and similar technologies as needed for sign-in sessions.
-              When a Google Analytics measurement ID is configured, GA4 may collect
-              usage and device data according to Google’s policies. You can control
-              cookies through your browser; blocking certain cookies may limit
-              functionality.
+              We retain personal information for as long as needed to provide the
+              Service, maintain security and moderation records, comply with legal
+              obligations, resolve disputes, and enforce our agreements. Retention
+              periods vary by data type and purpose. Backup copies may persist for a
+              limited time before deletion.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Retention
+              9) Security
             </h2>
             <p>
-              We retain account and content information for as long as your account is
-              active and as needed to provide the Service, comply with law, resolve
-              disputes, and enforce our agreements. Backup systems may retain data for
-              a period after deletion. Specific retention schedules should be finalized
-              with counsel and your hosting setup.
+              We use administrative, technical, and organizational safeguards designed
+              to protect personal information. No security method is perfect, and we
+              cannot guarantee absolute security.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Security
+              10) Your choices and rights
             </h2>
             <p>
-              We use reasonable administrative, technical, and organizational measures
-              appropriate to the nature of the Service. No method of transmission or
-              storage is completely secure.
+              You can access and update certain account details from your profile.
+              Depending on your jurisdiction, you may also have rights to request
+              access, correction, deletion, or portability of personal information, and
+              to object to or restrict certain processing. We may need to verify your
+              identity before processing rights requests.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Your choices and rights
+              11) Children’s privacy
             </h2>
             <p>
-              Depending on where you live, you may have rights to access, correct,
-              delete, or export personal information, or to opt out of certain
-              processing. You can update much of your account information in your
-              profile (including email preferences for optional emails). For other
-              requests, contact us using the email above. We may need to verify your
-              identity before fulfilling requests.
+              The Service is not directed to children under 13, and we do not knowingly
+              collect personal information from children under 13 in violation of
+              applicable law. If you believe a child provided personal information to
+              us, please contact us so we can investigate and take appropriate action.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Children
+              12) International users and transfers
             </h2>
             <p>
-              The Service is not directed to children under 13, and we do not
-              knowingly collect personal information from children under 13 in a manner
-              inconsistent with applicable law. Our Terms describe an intended minimum
-              age for account holders; align both documents with your age gate and
-              counsel’s advice.
+              The Service is operated in the United States. If you access it from
+              outside the U.S., your information may be processed in the U.S. or other
+              countries where our service providers operate, subject to applicable legal
+              requirements.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              International users
+              13) Changes to this Privacy Policy
             </h2>
             <p>
-              The Service is operated from the United States and is Boston-focused. If
-              you access it from elsewhere, your information may be processed in the
-              U.S. and in the locations where our vendors operate. Cross-border
-              transfers should be reviewed with counsel if you market outside the U.S.
+              We may update this Privacy Policy from time to time. When we do, we will
+              post the revised version on this page and update the effective date below.
+              For material changes, we may provide additional notice where required by
+              law.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              Changes to this policy
+              14) Contact us
             </h2>
-            <p>
-              We may update this Privacy Policy from time to time. We will post the
-              updated policy on this page and may notify you as required by law or as
-              we reasonably deem appropriate.
-            </p>
+            {support ? (
+              <p>
+                To ask questions about privacy or submit a rights request, contact{" "}
+                <a className={linkInlineClass} href={`mailto:${support}`}>
+                  {support}
+                </a>
+                .
+              </p>
+            ) : (
+              <p>
+                For privacy questions, contact us through the support channel listed on
+                the site.
+              </p>
+            )}
           </section>
 
-          <p className="text-sm text-zinc-600">
+          <p className="text-xs text-zinc-500">Effective date: April 17, 2026</p>
+
+          <p className="text-sm text-zinc-600 pt-1">
             See also{" "}
             <Link href="/legal/terms" className={linkInlineClass}>
               Terms of Service
