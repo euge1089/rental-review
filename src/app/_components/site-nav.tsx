@@ -126,7 +126,7 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
                 Rent Review Boston
               </p>
               <p className="mt-1 text-xl font-semibold tracking-tight text-zinc-900">
-                Menu
+                Main Menu
               </p>
             </div>
             <button
@@ -139,16 +139,7 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
             </button>
           </div>
 
-          <nav className="flex flex-col gap-1 px-3 py-3" aria-label="Primary">
-            <Link
-              href="/properties"
-              onClick={() => setIsMenuOpen(false)}
-              className={mobileDrawerLinkClass(
-                isActiveHref(pathname, "/properties"),
-              )}
-            >
-              Browse Addresses
-            </Link>
+          <nav className="flex flex-col gap-1.5 px-3 py-3" aria-label="Primary">
             <Link
               href="/analytics"
               onClick={() => setIsMenuOpen(false)}
@@ -157,6 +148,15 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
               )}
             >
               Rental Analytics
+            </Link>
+            <Link
+              href="/properties"
+              onClick={() => setIsMenuOpen(false)}
+              className={mobileDrawerLinkClass(
+                isActiveHref(pathname, "/properties"),
+              )}
+            >
+              Browse Addresses
             </Link>
             <Link
               href="/profile"
@@ -221,16 +221,16 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
             Submit
           </Link>
           <Link
-            href="/properties"
-            className={desktopNavLinkClass(isActiveHref(pathname, "/properties"))}
-          >
-            Browse Addresses
-          </Link>
-          <Link
             href="/analytics"
             className={desktopNavLinkClass(isActiveHref(pathname, "/analytics"))}
           >
             Rental Analytics
+          </Link>
+          <Link
+            href="/properties"
+            className={desktopNavLinkClass(isActiveHref(pathname, "/properties"))}
+          >
+            Browse Addresses
           </Link>
           <NavUser adminEmail={adminEmail} />
         </div>
@@ -238,7 +238,7 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
         <div className="flex items-center gap-2 sm:hidden">
           <Link
             href="/submit"
-            className="inline-flex min-h-11 items-center rounded-full bg-muted-blue px-3 py-2 text-sm font-semibold text-white transition active:bg-muted-blue-hover"
+            className="inline-flex min-h-11 items-center rounded-xl bg-muted-blue px-3 py-2 text-sm font-semibold text-white transition active:bg-muted-blue-hover"
           >
             Submit
           </Link>

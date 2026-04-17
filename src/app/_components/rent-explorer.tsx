@@ -76,13 +76,13 @@ const MAP_ENABLED = process.env.NEXT_PUBLIC_ENABLE_RENT_EXPLORER_MAP === "1";
 
 /** ~1pt up from `text-xs` (12px): section eyebrows / labels */
 const explorerEyebrowClass =
-  "text-[13px] font-semibold uppercase tracking-[0.2em] text-muted-blue";
+  "text-[13px] font-semibold uppercase tracking-[0.2em] text-pop-hover";
 /** ~2pt up from `text-sm` (14px): supporting paragraphs */
 const explorerBodyLeadClass = "text-[1.04rem] leading-relaxed text-zinc-600";
 const explorerLabelClass = "text-[13px] font-medium text-zinc-600";
 /** Phone-only Your search fields: clearer, warmer labels */
 const explorerMobileSearchFieldLabelClass =
-  "text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-blue";
+  "text-[11px] font-semibold uppercase tracking-[0.14em] text-pop-hover";
 const explorerMobileSearchControlClass =
   "border-muted-blue/30 bg-white shadow-sm ring-1 ring-muted-blue/15 focus:border-muted-blue/55 focus:ring-2 focus:ring-muted-blue/25";
 
@@ -1121,14 +1121,14 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
       ) : null}
 
       {MAP_ENABLED ? (
-        <section className={`${mobileEdgeToEdgeClass} -my-2 sm:hidden`}>
+        <section className={`${mobileEdgeToEdgeClass} -my-1 sm:hidden`}>
           <div className="grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200/80 bg-white p-1.5">
             <button
               type="button"
               onClick={() => setMobileResultsView("map")}
-              className={`inline-flex min-h-[2.75rem] items-center justify-center rounded-xl text-sm font-semibold transition ${
+              className={`inline-flex min-h-[3.3rem] items-center justify-center rounded-xl text-sm font-semibold transition ${
                 mobileResultsView === "map"
-                  ? "bg-muted-blue-tint text-muted-blue-hover"
+                  ? "bg-muted-blue-hover text-white shadow-[0_8px_20px_-12px_rgb(21_42_69/0.75)]"
                   : "text-zinc-600"
               }`}
             >
@@ -1137,9 +1137,9 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             <button
               type="button"
               onClick={() => setMobileResultsView("analytics")}
-              className={`inline-flex min-h-[2.75rem] items-center justify-center rounded-xl text-sm font-semibold transition ${
+              className={`inline-flex min-h-[3.3rem] items-center justify-center rounded-xl text-sm font-semibold transition ${
                 mobileResultsView === "analytics"
-                  ? "bg-muted-blue-tint text-muted-blue-hover"
+                  ? "bg-muted-blue-hover text-white shadow-[0_8px_20px_-12px_rgb(21_42_69/0.75)]"
                   : "text-zinc-600"
               }`}
             >
@@ -1151,7 +1151,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
       {MAP_ENABLED ? (
         <section
-          className={`${mobileResultsView === "map" ? "block" : "hidden"} ${mobileEdgeToEdgeClass} space-y-3 bg-white py-4 max-sm:pb-0 sm:block sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-6 sm:shadow-elevated`}
+          className={`${mobileResultsView === "map" ? "block" : "hidden"} ${mobileEdgeToEdgeClass} space-y-3 bg-white py-4 max-sm:bg-muted-blue-tint max-sm:pb-0 sm:block sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-6 sm:shadow-elevated`}
         >
           <div className="space-y-1 pt-1">
             <p className={explorerEyebrowClass}>

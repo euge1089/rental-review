@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProfileAccordionSection } from "@/app/_components/profile-accordion-section";
 
-const SUMMARY =
-  "Control reminder nudges and optional daily activity summary emails.";
+const SUMMARY = "Control reminder nudges and optional daily activity summary emails.";
 
 type Props = {
   initialOptOut: boolean;
@@ -19,8 +18,7 @@ export function ProfileRetentionEmailPrefs({
   const router = useRouter();
   const [optOut, setOptOut] = useState(initialOptOut);
   const [messageOptOut, setMessageOptOut] = useState(initialMessageEmailsOptOut);
-  const [loadingRetention, setLoadingRetention] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,49 +29,29 @@ export function ProfileRetentionEmailPrefs({
     setMessageOptOut(initialMessageEmailsOptOut);
   }, [initialMessageEmailsOptOut]);
 
-  async function onRetentionChange(next: boolean) {
-    setError(null);
-    setLoadingRetention(true);
-    const prev = optOut;
-    setOptOut(next);
-    try {
-      const res = await fetch("/api/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ retentionEmailsOptOut: next }),
-      });
-      const data = (await res.json()) as { ok?: boolean; error?: string };
-      if (!res.ok) {
-        setOptOut(prev);
-        setError(data.error ?? "Could not update.");
-        return;
-      }
-      router.refresh();
-    } finally {
-      setLoadingRetention(false);
-    }
-  }
+  const hasChanges =
+    optOut !== initialOptOut || messageOptOut !== initialMessageEmailsOptOut;
 
-  async function onMessageOptOutChange(next: boolean) {
+  async function onSave() {
     setError(null);
-    setLoadingMessage(true);
-    const prev = messageOptOut;
-    setMessageOptOut(next);
+    setSaving(true);
     try {
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messageEmailsOptOut: next }),
+        body: JSON.stringify({
+          retentionEmailsOptOut: optOut,
+          messageEmailsOptOut: messageOptOut,
+        }),
       });
       const data = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok) {
-        setMessageOptOut(prev);
         setError(data.error ?? "Could not update.");
         return;
       }
       router.refresh();
     } finally {
-      setLoadingMessage(false);
+      setSaving(false);
     }
   }
 
@@ -95,8 +73,8 @@ export function ProfileRetentionEmailPrefs({
           type="checkbox"
           className="mt-1 size-4 rounded border-zinc-300 text-muted-blue focus:ring-muted-blue/40"
           checked={optOut}
-          disabled={loadingRetention || loadingMessage}
-          onChange={(e) => onRetentionChange(e.target.checked)}
+          disabled={saving}
+          onChange={(e) => setOptOut(e.target.checked)}
         />
         <span>
           <span className="font-medium">Opt out of reminder emails</span>
@@ -111,15 +89,14 @@ export function ProfileRetentionEmailPrefs({
           type="checkbox"
           className="mt-1 size-4 rounded border-zinc-300 text-muted-blue focus:ring-muted-blue/40"
           checked={messageOptOut}
-          disabled={loadingRetention || loadingMessage}
-          onChange={(e) => onMessageOptOutChange(e.target.checked)}
+          disabled={saving}
+          onChange={(e) => setMessageOptOut(e.target.checked)}
         />
         <span>
           <span className="font-medium">Opt out of activity summary emails</span>
           <span className="mt-0.5 block text-zinc-600">
             When off (default), we send at most one email per day (evening Eastern Time)
-            summarizing helpful votes on your reviews and new private messages. Turn
-            this on to skip that digest.
+            summarizing helpful votes on your reviews. Turn this on to skip that digest.
           </span>
         </span>
       </label>
@@ -128,6 +105,16 @@ export function ProfileRetentionEmailPrefs({
           {error}
         </p>
       ) : null}
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={() => void onSave()}
+          disabled={saving || !hasChanges}
+          className="inline-flex min-h-10 items-center justify-center rounded-full bg-muted-blue px-5 py-2 text-sm font-semibold text-white transition hover:bg-muted-blue-hover disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {saving ? "Saving..." : "Save preferences"}
+        </button>
+      </div>
     </ProfileAccordionSection>
   );
 }

@@ -147,7 +147,7 @@ export default async function ProfilePage({ searchParams }: Props) {
       />
       <div className="flex flex-col gap-5 sm:gap-8">
         <PageHeader
-          className="order-2 sm:order-1"
+          className="sm:order-1"
           eyebrow="Profile"
           title="Your reviews and saved apartments"
           description={
@@ -170,17 +170,17 @@ export default async function ProfilePage({ searchParams }: Props) {
             </div>
           }
         />
-        <ProfileSectionNav
-          sections={[
-            { id: "profile-account", label: "Account" },
-            { id: "profile-reviews", label: "Reviews" },
-            { id: "profile-saved", label: "Saved" },
-            { id: "profile-privacy", label: "Privacy" },
-          ]}
-          supportEmail={supportEmail}
-          className="order-1 sticky top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 w-full min-w-0 border-y border-zinc-200/80 bg-white/95 px-3 max-sm:py-1.5 backdrop-blur max-sm:-mx-[calc(0.5rem+1rem)] max-sm:w-[calc(100%+3rem)] max-sm:max-w-none sm:static sm:order-2 sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none"
-        />
       </div>
+      <ProfileSectionNav
+        sections={[
+          { id: "profile-account", label: "Account" },
+          { id: "profile-reviews", label: "Reviews" },
+          { id: "profile-saved", label: "Saved" },
+          { id: "profile-privacy", label: "Privacy" },
+        ]}
+        supportEmail={supportEmail}
+        className="sticky top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 w-full min-w-0 border-y border-zinc-200/80 bg-white/95 px-3 max-sm:py-1.5 backdrop-blur max-sm:-mx-[calc(0.5rem+1rem)] max-sm:w-[calc(100%+3rem)] max-sm:max-w-none sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none"
+      />
       {bostonRentingSinceYear != null &&
       eligibleYearsWithoutAnyReview.length > 0 ? (
         <section
@@ -188,7 +188,7 @@ export default async function ProfilePage({ searchParams }: Props) {
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-blue">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-pop-hover">
                 Grow your impact
               </p>
               <p className="mt-2 text-base font-semibold leading-snug text-muted-blue-hover">
@@ -231,8 +231,39 @@ export default async function ProfilePage({ searchParams }: Props) {
               : "space-y-5"
           }
         >
+          {isAdmin ? (
+            <section className={mobileSectionShell}>
+              <h2 className="text-base font-semibold text-muted-blue-hover">
+                Admin tools
+              </h2>
+              <p className="mt-2 text-sm text-zinc-600">
+                As an admin, you can review and moderate reported or flagged reviews.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link
+                  href="/admin/dashboard"
+                  className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
+                >
+                  Open admin dashboard
+                </Link>
+                <Link
+                  href="/admin/reviews"
+                  className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
+                >
+                  Review moderation queue
+                </Link>
+                <Link
+                  href="/admin/users"
+                  className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
+                >
+                  Users
+                </Link>
+              </div>
+            </section>
+          ) : null}
+
           <section id="profile-account" className="space-y-2 scroll-mt-24">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-pop-hover">
               Account
             </p>
           </section>
@@ -283,7 +314,7 @@ export default async function ProfilePage({ searchParams }: Props) {
             id="profile-saved"
             className={`${mobileSectionShell} scroll-mt-24 space-y-2 sm:space-y-0`}
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 sm:hidden">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-pop-hover sm:hidden">
               Saved listings
             </p>
             <details className="group sm:hidden" open>
@@ -307,39 +338,8 @@ export default async function ProfilePage({ searchParams }: Props) {
             </div>
           </section>
 
-          {isAdmin ? (
-            <section className={mobileSectionShell}>
-              <h2 className="text-base font-semibold text-muted-blue-hover">
-                Admin tools
-              </h2>
-              <p className="mt-2 text-sm text-zinc-600">
-                As an admin, you can review and moderate reported or flagged reviews.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Link
-                  href="/admin/dashboard"
-                  className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
-                >
-                  Open admin dashboard
-                </Link>
-                <Link
-                  href="/admin/reviews"
-                  className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
-                >
-                  Review moderation queue
-                </Link>
-                <Link
-                  href="/admin/users"
-                  className="inline-flex rounded-full border border-muted-blue/25 bg-white px-4 py-2 text-xs font-semibold text-muted-blue-hover shadow-sm transition hover:border-muted-blue/40 hover:bg-muted-blue-tint/50"
-                >
-                  Users
-                </Link>
-              </div>
-            </section>
-          ) : null}
-
           <section id="profile-reviews" className="scroll-mt-24 space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 sm:hidden">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-pop-hover sm:hidden">
               Your reviews
             </p>
             <ProfileReviewsGrouped

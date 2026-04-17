@@ -69,7 +69,7 @@ export function PageHeader({
   return (
     <header className={`space-y-3 sm:space-y-4 ${className ?? ""}`}>
       {eyebrow ? (
-        <p className="text-[13px] font-semibold uppercase tracking-[0.2em] text-muted-blue">
+        <p className="text-[13px] font-semibold uppercase tracking-[0.2em] text-pop-hover">
           {eyebrow}
         </p>
       ) : null}
