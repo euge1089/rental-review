@@ -341,7 +341,7 @@ export function GiveawayPromoStrip({
             aria-hidden
           />
           <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-3">
-            <div className="relative shrink-0 max-sm:mx-auto">
+            <div className="relative shrink-0 max-sm:mx-auto sm:hidden">
               <div
                 className="absolute -inset-1 rounded-xl bg-muted-blue-tint/50"
                 aria-hidden
@@ -354,7 +354,7 @@ export function GiveawayPromoStrip({
                 <GiftIcon className="text-muted-blue-hover" width={20} height={20} />
               </div>
             </div>
-            <div className="min-w-0 flex-1 pt-0.5 sm:pl-0.5">
+            <div className="min-w-0 flex-1 pt-0.5">
               <p className="text-center text-sm font-semibold uppercase tracking-[0.14em] text-pop sm:text-left sm:text-[0.9375rem]">
                 April giveaway
               </p>
@@ -362,8 +362,8 @@ export function GiveawayPromoStrip({
                 $200
               </p>
               <p className="mt-2 text-center text-pretty text-sm leading-snug text-zinc-700 sm:text-left sm:text-[0.9375rem]">
-                Eight $25 Boston dining gift cards ($200 total), up to eight
-                winners, one card each.
+                Eight $25 Boston dining gift cards ($200 total), eight winners,
+                one card each.
               </p>
               <p className="mt-1.5 text-center text-pretty text-sm leading-snug text-zinc-700 sm:text-left sm:text-[0.9375rem]">
                 One quick anonymous review enters you.
@@ -456,7 +456,7 @@ export function GiveawayPromoStrip({
                   <strong className="font-semibold text-muted-blue-hover">Eight $25</strong>{" "}
                   Boston dining gift cards (
                   <strong className="font-semibold text-muted-blue-hover">$200</strong>{" "}
-                  total), up to eight winners, one card each
+                  total), eight winners, one card each
                   {isPropertiesBrowse ? (
                     <>
                       <span className="hidden sm:inline"> will be awarded</span> - enter by

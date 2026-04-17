@@ -109,8 +109,8 @@ export default function GiveawayRulesPage() {
             </p>
             <p>
               Each $25 gift card is intended to be awarded to a separate
-              potential winner (up to eight (8) winners per month), as described
-              in section 6.
+              potential winner (eight (8) winners per month), as described in
+              section 6.
             </p>
             <p>
               Odds of winning depend on the number of eligible entries received
@@ -123,7 +123,7 @@ export default function GiveawayRulesPage() {
               6) Winner selection and notification
             </h2>
             <p>
-              After the promotion period, up to eight (8) potential winners are
+              After the promotion period, eight (8) potential winners are
               selected by random draw from eligible entries. Each potential
               winner, if verified and eligible, will be awarded one (1) of the
               $25 gift cards described in section 5. Sponsor may contact potential
