@@ -124,7 +124,7 @@ export function HomePageSections({
       value: bostonPropertyCount > 0 ? String(bostonPropertyCount) : "-",
       label: "Boston addresses on the map",
     },
-    { value: "100%", label: "Anonymous" },
+    { value: "100%", label: "Renter-written, always anonymous" },
     {
       value: "$0",
       label: "Always free, no hidden costs",
