@@ -108,8 +108,8 @@ function CountdownDisplay({
     <span
       className={
         large
-          ? "text-base font-medium tabular-nums tracking-tight text-pop sm:text-lg"
-          : "text-sm font-medium tabular-nums tracking-tight text-pop"
+          ? "text-base font-bold tabular-nums tracking-tight text-pop sm:text-lg"
+          : "text-sm font-bold tabular-nums tracking-tight text-pop"
       }
     >
       {days}d {hours}h {minutes}m {seconds}s
@@ -358,13 +358,11 @@ export function GiveawayPromoStrip({
               <p className="text-center text-sm font-semibold uppercase tracking-[0.14em] text-pop sm:text-left sm:text-[0.9375rem]">
                 April giveaway
               </p>
-              <p className="mt-3 text-center text-pretty text-sm leading-snug text-zinc-700 sm:text-left sm:text-[0.9375rem]">
-                We are giving $25 Boston dining gift cards (
-                <strong className="font-semibold text-muted-blue-hover">$200 total</strong>
-                ) to eight winners.
+              <p className="mt-1 text-center text-[1.75rem] font-extrabold leading-none tracking-tight text-muted-blue-hover sm:text-left sm:text-[2.125rem]">
+                $25 GIFT CARDS
               </p>
-              <p className="mt-1.5 text-center text-pretty text-sm leading-snug text-zinc-700 sm:text-left sm:text-[0.9375rem]">
-                One quick anonymous review enters you.
+              <p className="mt-2 text-center text-pretty text-sm leading-snug text-zinc-700 sm:text-left sm:text-[0.9375rem]">
+                We are giving $25 Boston dining gift cards to eight winners.
               </p>
               <Link
                 href="/submit"
@@ -455,15 +453,7 @@ export function GiveawayPromoStrip({
                   <strong className="font-semibold text-muted-blue-hover">$25</strong>{" "}
                   Boston dining gift cards (
                   <strong className="font-semibold text-muted-blue-hover">$200</strong>{" "}
-                  total) to eight winners
-                  {isPropertiesBrowse ? (
-                    <>
-                      <span className="hidden sm:inline"> will be awarded</span> - enter by
-                      sharing an{" "}
-                    </>
-                  ) : (
-                    <> will be awarded - enter by sharing an </>
-                  )}
+                  total) to eight winners - enter by sharing an{" "}
                   <strong className="font-semibold text-muted-blue-hover">anonymous</strong>{" "}
                   rental review.{" "}
                   <Link
