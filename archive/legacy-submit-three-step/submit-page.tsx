@@ -437,6 +437,7 @@ export default function SubmitReviewPage() {
     } catch {
       // ignore
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only draft hydration; adding persistDraft would retrigger on form changes
   }, []);
 
   const persistDraft = useCallback(

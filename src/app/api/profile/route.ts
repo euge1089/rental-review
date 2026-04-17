@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { normalizeEmail } from "@/lib/normalize-email";
 import { isValidBostonRentingSinceYear } from "@/lib/policy";
-import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 
 const patchSchema = z
   .object({
@@ -57,7 +57,6 @@ export async function PATCH(request: Request) {
   }
   const email = normalizeEmail(emailRaw);
 
-  const ip = getClientIp(request);
   const rl = await rateLimit(`profile:patch:${email}`, 30, 3_600_000);
   if (!rl.ok) {
     return NextResponse.json(

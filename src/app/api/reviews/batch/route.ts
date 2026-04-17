@@ -204,7 +204,6 @@ export async function POST(request: Request) {
     });
 
     const count = reviewIds.length;
-    const plural = count > 1 ? "s" : "";
     const combinedMessage =
       count > 1
         ? `${count} reviews submitted. ${userMessage ?? "Thanks for sharing."}`

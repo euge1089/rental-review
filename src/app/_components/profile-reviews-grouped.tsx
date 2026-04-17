@@ -82,10 +82,10 @@ export function ProfileReviewsGrouped({ reviews, reviewTotalCount }: Props) {
 
   return (
     <section className={`${surfaceElevatedClass} p-5 sm:p-7`}>
-      <h2 className="text-base font-semibold text-muted-blue-hover">
+      <h2 className="hidden text-base font-semibold text-muted-blue-hover sm:block">
         Your reviews
       </h2>
-      <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+      <p className="mt-0 text-sm leading-relaxed text-zinc-600 sm:mt-2">
         {PRODUCT_POLICY.reviews.oneReviewPerLeaseStartYearShort}
       </p>
       <p className="mt-1 text-xs text-zinc-500">

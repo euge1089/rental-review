@@ -141,38 +141,41 @@ export default async function ProfilePage({ searchParams }: Props) {
         reviewCount={reviews.length}
         bostonRentingSinceYear={bostonRentingSinceYear}
       />
-      <PageHeader
-        eyebrow="Profile"
-        title="Your reviews and saved apartments"
-        description={
-          <div className="flex flex-wrap items-center gap-2">
-            <span>
-              Signed in as{" "}
-              <span className="font-medium text-zinc-800">
-                {displayName?.trim() ? displayName.trim() : email}
+      <div className="flex flex-col gap-5 sm:gap-8">
+        <PageHeader
+          className="order-2 sm:order-1"
+          eyebrow="Profile"
+          title="Your reviews and saved apartments"
+          description={
+            <div className="flex flex-wrap items-center gap-2">
+              <span>
+                Signed in as{" "}
+                <span className="font-medium text-zinc-800">
+                  {displayName?.trim() ? displayName.trim() : email}
+                </span>
+                {displayName?.trim() ? (
+                  <span className="text-zinc-500"> ({email})</span>
+                ) : null}
+                .
               </span>
-              {displayName?.trim() ? (
-                <span className="text-zinc-500"> ({email})</span>
+              {user?.phoneVerified ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-600/15">
+                  SMS verified
+                </span>
               ) : null}
-              .
-            </span>
-            {user?.phoneVerified ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-600/15">
-                SMS verified
-              </span>
-            ) : null}
-          </div>
-        }
-      />
-      <ProfileSectionNav
-        sections={[
-          { id: "profile-account", label: "Account" },
-          { id: "profile-reviews", label: "Reviews" },
-          { id: "profile-saved", label: "Saved" },
-          { id: "profile-privacy", label: "Privacy" },
-        ]}
-        className="-mx-4 sticky top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 flex gap-2 overflow-x-auto border-y border-zinc-200/80 bg-white/95 px-4 py-2 backdrop-blur sm:static sm:mx-0 sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none"
-      />
+            </div>
+          }
+        />
+        <ProfileSectionNav
+          sections={[
+            { id: "profile-account", label: "Account" },
+            { id: "profile-reviews", label: "Reviews" },
+            { id: "profile-saved", label: "Saved" },
+            { id: "profile-privacy", label: "Privacy" },
+          ]}
+          className="order-1 -mx-4 sticky top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 grid w-full grid-cols-4 gap-2 border-y border-zinc-200/80 bg-white/95 px-4 py-2 backdrop-blur sm:static sm:order-2 sm:mx-0 sm:flex sm:flex-wrap sm:gap-2 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none"
+        />
+      </div>
       {bostonRentingSinceYear != null &&
       eligibleYearsWithoutAnyReview.length > 0 ? (
         <section
@@ -271,11 +274,17 @@ export default async function ProfilePage({ searchParams }: Props) {
             </section>
           ) : null}
 
-          <section id="profile-saved" className={`${mobileSectionShell} scroll-mt-24`}>
+          <section
+            id="profile-saved"
+            className={`${mobileSectionShell} scroll-mt-24 space-y-2 sm:space-y-0`}
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 sm:hidden">
+              Saved listings
+            </p>
             <details className="group sm:hidden" open>
-              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-muted-blue-hover [&::-webkit-details-marker]:hidden">
-                Saved apartments
-                <span className="text-zinc-400 transition group-open:rotate-180">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-end gap-2 text-muted-blue-hover [&::-webkit-details-marker]:hidden">
+                <span className="sr-only">Show or hide saved listings</span>
+                <span className="text-zinc-400 transition group-open:rotate-180" aria-hidden>
                   ▼
                 </span>
               </summary>
@@ -285,7 +294,7 @@ export default async function ProfilePage({ searchParams }: Props) {
             </details>
             <div className="hidden sm:block">
               <h2 className="text-base font-semibold text-muted-blue-hover">
-                Saved apartments
+                Saved listings
               </h2>
               <div className="mt-3">
                 <ProfileBookmarks />
@@ -325,6 +334,9 @@ export default async function ProfilePage({ searchParams }: Props) {
           ) : null}
 
           <section id="profile-reviews" className="scroll-mt-24 space-y-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 sm:hidden">
+              Your reviews
+            </p>
             <ProfileReviewsGrouped
               reviews={reviews as ProfileReviewForList[]}
               reviewTotalCount={reviewTotalCount}

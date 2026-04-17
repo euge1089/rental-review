@@ -64,7 +64,7 @@ export function ProfileSectionNav({
             key={section.id}
             href={`#${section.id}`}
             aria-current={active ? "true" : undefined}
-            className={`inline-flex min-h-10 shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+            className={`flex min-h-10 w-full min-w-0 items-center justify-center rounded-full border px-2 py-1.5 text-center text-xs font-semibold transition sm:inline-flex sm:w-auto sm:shrink-0 sm:px-3 ${
               active
                 ? "border-muted-blue/45 bg-muted-blue-tint text-muted-blue-hover"
                 : "border-zinc-200 bg-white text-muted-blue-hover hover:border-muted-blue/35 hover:bg-muted-blue-tint/30"

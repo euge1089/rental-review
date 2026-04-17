@@ -9,8 +9,6 @@ const caveatHint = Caveat({
   subsets: ["latin"],
   weight: ["600"],
 });
-import { GiveawayPromoStrip } from "@/app/_components/giveaway-promo-strip";
-import { HomeGiveawayPromoModal } from "@/app/_components/home-giveaway-promo-modal";
 import { HeroSignUpOverlay } from "@/app/_components/hero-sign-up-overlay";
 import { HomeKeywordStrip } from "@/app/_components/home-keyword-strip";
 import { HomeSearch } from "@/app/_components/home-search";
@@ -58,11 +56,17 @@ function formatBedBathFromReviews(
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
-function HomeDivider({ fw }: { fw: boolean }) {
+function HomeDivider({
+  fw,
+  className,
+}: {
+  fw: boolean;
+  className?: string;
+}) {
   if (fw) {
     return (
       <div
-        className="w-full px-8 py-7 sm:px-12 sm:py-8 xl:px-20"
+        className={`w-full px-8 py-7 sm:px-12 sm:py-8 xl:px-20 ${className ?? ""}`}
         aria-hidden
       >
         <div className="mx-auto flex max-w-[min(88rem,calc(100%-2rem))] items-center gap-5">
@@ -78,7 +82,7 @@ function HomeDivider({ fw }: { fw: boolean }) {
   }
   return (
     <div
-      className="mx-auto my-16 h-px max-w-md bg-gradient-to-r from-transparent via-zinc-300/80 to-transparent sm:max-w-lg"
+      className={`mx-auto my-16 h-px max-w-md bg-gradient-to-r from-transparent via-zinc-300/80 to-transparent sm:max-w-lg ${className ?? ""}`}
       aria-hidden
     />
   );
@@ -99,7 +103,6 @@ type Props = {
 export function HomePageSections({
   layout,
   showHeroSignUp = true,
-  homeGiveawaySignedIn = false,
   southBostonTop,
   approvedReviewCount,
   bostonPropertyCount,
@@ -122,7 +125,11 @@ export function HomePageSections({
       label: "Boston addresses on the map",
     },
     { value: "100%", label: "Renter-written, not broker copy" },
-    { value: "$0", label: "To browse & read (sign in free)", accent: true },
+    {
+      value: "$0",
+      label: "Always free, no hidden costs",
+      accent: true,
+    },
   ];
 
   const heroSectionClass = fw
@@ -183,8 +190,8 @@ export function HomePageSections({
                 <p
                   className={
                     fw
-                      ? "inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/90 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-blue shadow-sm"
-                      : "text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-blue sm:text-[10px]"
+                      ? "inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/90 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-blue shadow-sm max-sm:mb-2"
+                      : "text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-blue max-sm:mb-2 sm:text-[10px]"
                   }
                 >
                   {fw ? (
@@ -193,7 +200,7 @@ export function HomePageSections({
                       aria-hidden
                     />
                   ) : null}
-                  Boston renters · Citywide intelligence
+                  Boston Rental Database
                 </p>
                 <h1
                   className={
@@ -344,13 +351,13 @@ export function HomePageSections({
           </section>
         )}
 
-        <HomeDivider fw={fw} />
+        <HomeDivider fw={fw} className="max-sm:hidden" />
 
         {/* Feature trio - top-accent cards, borderless elevation */}
         <section
           className={
             fw
-              ? "w-full overflow-x-visible border-b border-zinc-100 bg-[#f5f5f6] py-16 lg:py-20"
+              ? "w-full overflow-x-visible border-b border-zinc-100 bg-[#f5f5f6] py-16 max-sm:border-b-0 lg:py-20"
               : "overflow-x-visible"
           }
         >
@@ -502,7 +509,7 @@ export function HomePageSections({
           </SectionMaxW>
         </section>
 
-        <HomeDivider fw={fw} />
+        <HomeDivider fw={fw} className="max-sm:hidden" />
 
         {/* How it works - solid neutral blue-gray (no gradient) */}
         <section

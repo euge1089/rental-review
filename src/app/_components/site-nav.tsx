@@ -101,7 +101,9 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
   }, [isMenuOpen]);
 
   useEffect(() => {
-    setIsMenuOpen(false);
+    queueMicrotask(() => {
+      setIsMenuOpen(false);
+    });
   }, [pathname]);
 
   const mobileMenuOverlay =

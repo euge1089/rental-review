@@ -415,6 +415,8 @@ export default function SubmitReviewPage() {
     } catch {
       // ignore
     }
+    // Mount-only: hydrate from localStorage once; deps omitted intentionally.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- persistDraft/clearLeaseYearsState would retrigger on every form change
   }, []);
 
   const persistDraft = useCallback(
