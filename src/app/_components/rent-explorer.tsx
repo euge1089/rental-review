@@ -629,7 +629,71 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           </p>
         </div>
         <div className="space-y-5">
-          <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
+          {/* Phones: ZIP + monthly rent on one row; bedrooms live in More filters sheet */}
+          <div className="space-y-3 sm:hidden">
+            <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
+              <div className="grid shrink-0 gap-1.5">
+                <label className={explorerLabelClass}>ZIP</label>
+                <select
+                  value={zip}
+                  onChange={(e) => setZip(e.target.value)}
+                  className={`${selectClass} w-[7.25rem]`}
+                >
+                  <option value="any">Any</option>
+                  {BOSTON_ZIPS.map((z) => (
+                    <option key={z} value={z}>
+                      {z}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid min-w-0 flex-1 gap-1.5">
+                <label className={explorerLabelClass}>
+                  Monthly rent range
+                </label>
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <input
+                    type="number"
+                    min={0}
+                    value={minRent}
+                    onChange={(e) => setMinRent(e.target.value)}
+                    placeholder="Min"
+                    className={`${formInputCompactClass} min-w-0 max-w-[5.25rem] shrink flex-1`}
+                  />
+                  <span className="shrink-0 text-[13px] text-zinc-400">to</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={maxRent}
+                    onChange={(e) => setMaxRent(e.target.value)}
+                    placeholder="Max"
+                    className={`${formInputCompactClass} min-w-0 max-w-[5.25rem] shrink flex-1`}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex w-full flex-nowrap items-stretch gap-3">
+              <button
+                type="button"
+                onClick={handleUpdate}
+                disabled={isLoading}
+                className="inline-flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-xl bg-muted-blue px-4 py-2.5 text-[calc(1.04rem-1pt)] font-semibold text-white shadow-[0_10px_28px_-8px_rgb(92_107_127/0.35)] transition active:bg-muted-blue-hover/95 hover:bg-muted-blue-hover disabled:opacity-60"
+              >
+                {isLoading ? "Updating…" : "Show results"}
+              </button>
+              <button
+                type="button"
+                onClick={handleClear}
+                disabled={isLoading}
+                className="inline-flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-[calc(1.04rem-1pt)] font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 disabled:opacity-60"
+              >
+                Reset filters
+              </button>
+            </div>
+          </div>
+
+          {/* Tablet/desktop: full filter row including bedrooms */}
+          <div className="hidden flex-wrap items-end gap-x-6 gap-y-4 sm:flex">
             <div className="grid gap-1.5">
               <label className={explorerLabelClass}>ZIP</label>
               <select
@@ -859,6 +923,44 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             </div>
             <div className="space-y-4">
               <div className="grid gap-1.5">
+                <label className={explorerLabelClass}>
+                  Bedrooms (min and max)
+                </label>
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <select
+                    value={minBedroomBand}
+                    onChange={(e) =>
+                      setMinBedroomBand(e.target.value as ExplorerBedroomBand)
+                    }
+                    className={`${selectClass} min-w-0 max-w-full flex-1`}
+                  >
+                    <option value="Any">Any</option>
+                    <option value="Studio">Studio</option>
+                    <option value="1BR">1+</option>
+                    <option value="2BR">2+</option>
+                    <option value="3BR">3+</option>
+                    <option value="4BR">4+</option>
+                    <option value="5BR+">5+</option>
+                  </select>
+                  <span className="shrink-0 text-[13px] text-zinc-400">to</span>
+                  <select
+                    value={maxBedroomBand}
+                    onChange={(e) =>
+                      setMaxBedroomBand(e.target.value as ExplorerBedroomBand)
+                    }
+                    className={`${selectClass} min-w-0 max-w-full flex-1`}
+                  >
+                    <option value="Any">Any</option>
+                    <option value="Studio">Studio</option>
+                    <option value="1BR">1</option>
+                    <option value="2BR">2</option>
+                    <option value="3BR">3</option>
+                    <option value="4BR">4</option>
+                    <option value="5BR+">5+</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid gap-1.5">
                 <label className={explorerLabelClass}>Bathrooms</label>
                 <select
                   value={minBathrooms}
@@ -947,11 +1049,11 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
       {MAP_ENABLED ? (
         <section className={`${mobileEdgeToEdgeClass} -my-2 sm:hidden`}>
-          <div className="grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200/80 bg-white p-1">
+          <div className="grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200/80 bg-white p-1.5">
             <button
               type="button"
               onClick={() => setMobileResultsView("map")}
-              className={`inline-flex min-h-10 items-center justify-center rounded-xl text-sm font-semibold transition ${
+              className={`inline-flex min-h-[2.75rem] items-center justify-center rounded-xl text-sm font-semibold transition ${
                 mobileResultsView === "map"
                   ? "bg-muted-blue-tint text-muted-blue-hover"
                   : "text-zinc-600"
@@ -962,7 +1064,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             <button
               type="button"
               onClick={() => setMobileResultsView("list")}
-              className={`inline-flex min-h-10 items-center justify-center rounded-xl text-sm font-semibold transition ${
+              className={`inline-flex min-h-[2.75rem] items-center justify-center rounded-xl text-sm font-semibold transition ${
                 mobileResultsView === "list"
                   ? "bg-muted-blue-tint text-muted-blue-hover"
                   : "text-zinc-600"

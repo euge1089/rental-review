@@ -198,12 +198,12 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
         <div className="flex min-w-0 items-center">
           <Link
             href="/"
-            className="inline-flex min-h-11 min-w-0 items-baseline gap-1.5 rounded-md py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-muted-blue-hover"
+            className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-md py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-muted-blue-hover sm:items-baseline"
           >
-            <span className="text-[calc(1rem+2pt)] font-semibold tracking-tight text-muted-blue-hover sm:text-lg">
+            <span className="text-[calc(1rem+3pt)] font-semibold tracking-tight text-muted-blue-hover sm:text-lg">
               Rent Review
             </span>
-            <span className="text-[calc(1rem+2pt)] font-bold tracking-tight text-muted-blue sm:text-lg">
+            <span className="text-[calc(1rem+3pt)] font-bold tracking-tight text-muted-blue sm:text-lg">
               Boston
             </span>
           </Link>

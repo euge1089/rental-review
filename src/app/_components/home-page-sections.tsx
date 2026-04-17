@@ -124,7 +124,7 @@ export function HomePageSections({
       value: bostonPropertyCount > 0 ? String(bostonPropertyCount) : "-",
       label: "Boston addresses on the map",
     },
-    { value: "100%", label: "Renter-written, not broker copy" },
+    { value: "100%", label: "Anonymous" },
     {
       value: "$0",
       label: "Always free, no hidden costs",
@@ -209,7 +209,9 @@ export function HomePageSections({
                       : "mt-4 text-[clamp(0.9rem,3.2vw,2.6rem)] font-semibold leading-[1.12] tracking-tight text-muted-blue-hover sm:mt-5"
                   }
                 >
-                  <span className="block">Built by Boston renters</span>
+                  <span className="block max-sm:text-[calc(1em+1pt)]">
+                    Built by Boston renters
+                  </span>
                   <span
                     className={
                       fw
