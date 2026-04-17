@@ -17,6 +17,8 @@ type Props = {
   variant?: Variant;
   /** Browse page: phone-only shorter copy and tighter layout for the promo strip. */
   placement?: Placement;
+  showMobileDismiss?: boolean;
+  onMobileDismiss?: () => void;
   className?: string;
 };
 
@@ -251,6 +253,8 @@ function EntryProgressBar({
 export function GiveawayPromoStrip({
   variant = "home",
   placement = "default",
+  showMobileDismiss = false,
+  onMobileDismiss,
   className = "",
 }: Props) {
   const [mounted, setMounted] = useState(false);
@@ -389,6 +393,18 @@ export function GiveawayPromoStrip({
     >
       <div className={innerAccent}>
         <div className="min-w-0 flex-1">
+          {showMobileDismiss ? (
+            <div className="mb-2 flex justify-end sm:hidden">
+              <button
+                type="button"
+                onClick={onMobileDismiss}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-600 transition active:bg-zinc-100"
+                aria-label="Dismiss giveaway"
+              >
+                ×
+              </button>
+            </div>
+          ) : null}
           <div
             className={
               isHome

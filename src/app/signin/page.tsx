@@ -68,7 +68,7 @@ export default async function SignInPage({ searchParams }: Props) {
   const safe =
     callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")
       ? callbackUrl
-      : "/";
+      : "/submit";
   const errorGuide = errorCode ? signInErrorGuidance(errorCode) : null;
 
   return (

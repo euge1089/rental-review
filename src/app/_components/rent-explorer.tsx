@@ -1556,7 +1556,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
         {explorerLocked ? (
           <div
-            className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center p-6 sm:p-10"
+            className="pointer-events-none absolute inset-0 z-10 flex items-start justify-center p-6 pt-3 sm:items-center sm:p-10"
             role="presentation"
           >
             <div

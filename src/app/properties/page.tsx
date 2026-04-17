@@ -110,6 +110,9 @@ export default function PropertiesPage() {
     const params = new URLSearchParams(window.location.search);
     return parseSortParam(params.get("sort"));
   });
+  const [reviewCount, setReviewCount] = useState<number | null>(null);
+  const [dismissedMobileGiveaway, setDismissedMobileGiveaway] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -125,15 +128,58 @@ export default function PropertiesPage() {
     void load();
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(max-width: 639px)");
+    const update = () => setIsMobileViewport(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (!loggedIn) {
+      setReviewCount(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/reviews/my-count");
+        const data = (await res.json()) as { ok?: boolean; count?: number };
+        if (!cancelled && data.ok && typeof data.count === "number") {
+          setReviewCount(data.count);
+        }
+      } catch {
+        if (!cancelled) setReviewCount(0);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [loggedIn]);
+
   const previewLimit = 8;
+  const mobileReviewUnlockLimit = 10;
   const isLoggedOutBrowse = loggedIn === false;
+  const isLoggedInWithoutReview = loggedIn === true && (reviewCount ?? 0) < 1;
+  const isMobileNoReviewGate = isMobileViewport && isLoggedInWithoutReview;
 
   const poolForFilter = useMemo(() => {
     if (loggedIn === false) {
       return properties.slice(0, previewLimit);
     }
+    if (isMobileNoReviewGate) {
+      return sortProperties(properties, "recent").slice(0, mobileReviewUnlockLimit);
+    }
     return properties;
-  }, [properties, loggedIn, previewLimit]);
+  }, [
+    isMobileNoReviewGate,
+    mobileReviewUnlockLimit,
+    previewLimit,
+    properties,
+    loggedIn,
+  ]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -177,13 +223,21 @@ export default function PropertiesPage() {
   }
   const showSignInTeaser =
     isLoggedOutBrowse && properties.length > previewLimit;
+  const showMobileNoReviewTeaser = isMobileNoReviewGate && properties.length > mobileReviewUnlockLimit;
 
   const propertiesCallback = encodeURIComponent("/properties");
   const mobileSectionShell = "-mx-4 px-4 sm:mx-0 sm:px-0";
 
   return (
     <AppPageShell gapClass="gap-6">
-      <GiveawayPromoStrip variant="home" placement="properties" />
+      {!isMobileNoReviewGate || !dismissedMobileGiveaway ? (
+        <GiveawayPromoStrip
+          variant="home"
+          placement="properties"
+          showMobileDismiss={isMobileNoReviewGate}
+          onMobileDismiss={() => setDismissedMobileGiveaway(true)}
+        />
+      ) : null}
       <div
         className={`${mobileSectionShell} flex flex-col gap-6 bg-white py-4 sm:rounded-2xl sm:border sm:border-zinc-200/80 sm:bg-transparent sm:px-5 sm:py-5 sm:flex-row sm:items-end sm:justify-between`}
       >
@@ -198,6 +252,11 @@ export default function PropertiesPage() {
                   Sign in to browse and search the full database and open listings for
                   full review details.
                 </p>
+              ) : isMobileNoReviewGate ? (
+                <p>
+                  You&apos;re seeing the {mobileReviewUnlockLimit} most recent listings.
+                  Leave your first review to unlock all browse results on mobile.
+                </p>
               ) : (
                 <p>
                   Addresses will appear first as you add more reviews there. Start typing a
@@ -208,6 +267,10 @@ export default function PropertiesPage() {
                 <p className="mt-2 text-xs text-zinc-500">
                   Search below only filters these preview cards - not every address we have
                   on file.
+                </p>
+              ) : isMobileNoReviewGate ? (
+                <p className="mt-2 text-xs text-zinc-500">
+                  Once you post your first review, this gate is removed and full browsing is unlocked.
                 </p>
               ) : loggedIn === true ? (
                 <p className="mt-2 text-xs text-zinc-500">
@@ -225,6 +288,8 @@ export default function PropertiesPage() {
             >
               {isLoggedOutBrowse
                 ? `Filter these ${previewLimit} preview addresses`
+                : isMobileNoReviewGate
+                  ? `Filter these ${mobileReviewUnlockLimit} unlocked listings`
                 : "Search by street or ZIP"}
             </label>
             <input
@@ -251,6 +316,8 @@ export default function PropertiesPage() {
               placeholder={
                 isLoggedOutBrowse
                   ? `Searches only these ${previewLimit} cards`
+                  : isMobileNoReviewGate
+                    ? `Searches only these ${mobileReviewUnlockLimit} cards`
                   : "e.g. West 3rd, 02127"
               }
               aria-describedby={
@@ -328,48 +395,50 @@ export default function PropertiesPage() {
         )
       ) : (
         <div className="space-y-0">
-          <ul className="grid gap-4 md:grid-cols-2">
-            {visibleProperties.map((property) => (
-              <li
-                key={property.id}
-                className={`-mx-4 sm:mx-0`}
-              >
-                <Link
-                  href={`/properties/${property.id}`}
-                  className={`group block ${surfaceSubtleClass} border-zinc-200/80 bg-white px-4 py-5 transition hover:border-muted-blue/25 sm:p-5 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.08)]`}
+          <div className="max-sm:max-h-[62vh] max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:pr-1">
+            <ul className="grid gap-4 md:grid-cols-2">
+              {visibleProperties.map((property) => (
+                <li
+                  key={property.id}
+                  className={`-mx-4 sm:mx-0`}
                 >
-                  <p className="break-words text-pretty text-lg font-semibold text-muted-blue-hover underline-offset-2 group-hover:underline">
-                    {property.addressLine1}
-                  </p>
-                  <p className="mt-1 text-sm text-zinc-600">
-                    {property.city}, {property.state} {property.postalCode ?? ""}
-                  </p>
-                  <p className="mt-2 text-sm text-zinc-600">
-                    {property.reviewCount} review
-                    {property.reviewCount === 1 ? "" : "s"}
-                    {typeof property.averageRent === "number"
-                      ? ` · approx. $${property.averageRent.toLocaleString()} / month`
-                      : null}
-                  </p>
-                  <div
-                    className={`hidden overflow-hidden transition-all duration-200 md:block ${
-                      property.topAmenities && property.topAmenities.length > 0
-                        ? "max-h-0 opacity-0 group-hover:mt-3 group-hover:max-h-20 group-hover:opacity-100"
-                        : "max-h-0 opacity-0"
-                    }`}
-                    aria-hidden
+                  <Link
+                    href={`/properties/${property.id}`}
+                    className={`group block ${surfaceSubtleClass} border-zinc-200/80 bg-white px-4 py-5 transition hover:border-muted-blue/25 sm:p-5 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.08)]`}
                   >
-                    <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                      Amenities from reviews
+                    <p className="break-words text-pretty text-lg font-semibold text-muted-blue-hover underline-offset-2 group-hover:underline">
+                      {property.addressLine1}
                     </p>
                     <p className="mt-1 text-sm text-zinc-600">
-                      {property.topAmenities?.join(" · ")}
+                      {property.city}, {property.state} {property.postalCode ?? ""}
                     </p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
+                    <p className="mt-2 text-sm text-zinc-600">
+                      {property.reviewCount} review
+                      {property.reviewCount === 1 ? "" : "s"}
+                      {typeof property.averageRent === "number"
+                        ? ` · approx. $${property.averageRent.toLocaleString()} / month`
+                        : null}
+                    </p>
+                    <div
+                      className={`hidden overflow-hidden transition-all duration-200 md:block ${
+                        property.topAmenities && property.topAmenities.length > 0
+                          ? "max-h-0 opacity-0 group-hover:mt-3 group-hover:max-h-20 group-hover:opacity-100"
+                          : "max-h-0 opacity-0"
+                      }`}
+                      aria-hidden
+                    >
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                        Amenities from reviews
+                      </p>
+                      <p className="mt-1 text-sm text-zinc-600">
+                        {property.topAmenities?.join(" · ")}
+                      </p>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {showSignInTeaser ? (
             <div className={`${mobileSectionShell} relative mt-6`}>
@@ -409,6 +478,24 @@ export default function PropertiesPage() {
                     </Link>
                   </div>
                 </div>
+              </div>
+            </div>
+          ) : null}
+          {showMobileNoReviewTeaser ? (
+            <div className={`${mobileSectionShell} mt-4`}>
+              <div className="rounded-2xl border border-zinc-200/90 bg-zinc-100/45 px-5 py-6 text-center backdrop-blur-md">
+                <p className="text-base font-semibold tracking-tight text-zinc-900">
+                  Unlock all browse results
+                </p>
+                <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-zinc-600">
+                  You&apos;ve unlocked the latest {mobileReviewUnlockLimit}. Leave your first review to open the full list.
+                </p>
+                <Link
+                  href="/submit"
+                  className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-muted-blue px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-muted-blue-hover"
+                >
+                  Leave your first review
+                </Link>
               </div>
             </div>
           ) : null}
