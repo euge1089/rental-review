@@ -33,7 +33,7 @@ export function HomeGiveawayPromoModal() {
       if (isGiveawayPromoActive()) {
         setOpen(true);
       }
-    }, 3000);
+    }, 5000);
 
     return () => {
       window.clearTimeout(id);
