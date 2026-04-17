@@ -340,8 +340,8 @@ export function GiveawayPromoStrip({
             className="pointer-events-none absolute inset-x-0 -top-1 h-px bg-gradient-to-r from-transparent via-muted-blue/35 to-transparent"
             aria-hidden
           />
-          <div className="flex gap-2.5 sm:gap-3">
-            <div className="relative shrink-0">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-3">
+            <div className="relative shrink-0 max-sm:mx-auto">
               <div
                 className="absolute -inset-1 rounded-xl bg-muted-blue-tint/50"
                 aria-hidden

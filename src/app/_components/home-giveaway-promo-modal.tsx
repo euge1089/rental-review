@@ -98,7 +98,7 @@ export function HomeGiveawayPromoModal() {
             />
           </svg>
         </button>
-        <div className="relative px-2 pb-3 pt-9 sm:px-4 sm:pb-4 sm:pt-10">
+        <div className="relative px-3 pb-3 pt-9 sm:px-4 sm:pb-4 sm:pt-10">
           <span id="home-giveaway-promo-title" className="sr-only">
             April giveaway promotion
           </span>
