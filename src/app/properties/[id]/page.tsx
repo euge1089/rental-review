@@ -81,24 +81,24 @@ function ReviewMetadataLine({
   return (
     <>
       <ul className="space-y-1 sm:hidden">
-        <li className="text-xs leading-snug text-zinc-600">
+        <li className="text-sm leading-snug text-zinc-600">
           <span className="font-medium text-zinc-700">When · </span>
           {privacyYearBucket}
         </li>
         {monthlyRent !== undefined ? (
-          <li className="text-xs leading-snug text-zinc-600">
+          <li className="text-sm leading-snug text-zinc-600">
             <span className="font-medium text-zinc-700">Rent · </span>
             {rentDisplay}
           </li>
         ) : null}
         {bedroomCount != null ? (
-          <li className="text-xs leading-snug text-zinc-600">
+          <li className="text-sm leading-snug text-zinc-600">
             <span className="font-medium text-zinc-700">Layout · </span>
             {bedroomCountToBand(bedroomCount)}
           </li>
         ) : null}
         {bathPublicLabel ? (
-          <li className="text-xs leading-snug text-zinc-600">
+          <li className="text-sm leading-snug text-zinc-600">
             <span className="font-medium text-zinc-700">Baths · </span>
             {bathPublicLabel}
           </li>
@@ -360,7 +360,9 @@ export default async function PropertyDetailPage({ params }: Props) {
                           bathPublicLabel={bathPublicLabel}
                         />
                         <div className="flex flex-wrap items-center gap-2 pt-1">
-                          <span className="text-sm text-zinc-500">By {maskedName}</span>
+                          <span className="text-[1.04rem] text-zinc-500 sm:text-sm">
+                            By {maskedName}
+                          </span>
                           {review.user.phoneVerified && (
                             <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200/80">
                               SMS verified
@@ -394,7 +396,7 @@ export default async function PropertyDetailPage({ params }: Props) {
 
                     <details className="group mt-4 rounded-xl border border-zinc-100 bg-zinc-50/50 sm:hidden">
                       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-sm font-semibold text-zinc-800 [&::-webkit-details-marker]:hidden">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
                           Amenities reported
                         </span>
                         <span className="text-zinc-400 transition group-open:rotate-180">
@@ -406,7 +408,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                           {amenities.map((amenity) => (
                             <span
                               key={amenity.key}
-                              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition ${
+                              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] font-bold transition ${
                                 amenity.value
                                   ? "bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200/70"
                                   : "bg-zinc-50 text-zinc-500 ring-1 ring-zinc-200/80"

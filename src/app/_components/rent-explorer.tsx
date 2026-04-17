@@ -279,9 +279,8 @@ function RentRangeBand({
           Rent range
         </p>
         <p className={`mt-2 ${explorerBodyLeadClass}`}>
-          The bar runs from the lowest to the highest rent people reported for your
-          search. The line in the middle is the middle value (half of rents are below it,
-          half above).
+          Use this range to set your plan: see what renters paid at the low and high
+          ends, then set a realistic target before you tour.
         </p>
       </div>
 
@@ -374,6 +373,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [reviewSort, setReviewSort] = useState<ReviewSortMode>("recent");
+  const [desktopReviewCardCap, setDesktopReviewCardCap] = useState<number>(10);
   const [mobileResultsView, setMobileResultsView] = useState<"analytics" | "map">(
     "map",
   );
@@ -647,6 +647,28 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
     });
     return copy;
   }, [items, reviewSort]);
+  const visibleReviewItems = useMemo(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches) {
+      return sortedItems;
+    }
+    return sortedItems.slice(0, desktopReviewCardCap);
+  }, [desktopReviewCardCap, sortedItems]);
+
+  useEffect(() => {
+    function updateDesktopCardCap() {
+      const width = window.innerWidth;
+      if (width >= 1024) {
+        setDesktopReviewCardCap(9);
+      } else if (width >= 640) {
+        setDesktopReviewCardCap(8);
+      } else {
+        setDesktopReviewCardCap(10);
+      }
+    }
+    updateDesktopCardCap();
+    window.addEventListener("resize", updateDesktopCardCap);
+    return () => window.removeEventListener("resize", updateDesktopCardCap);
+  }, []);
 
   const selectClass = `${formSelectCompactClass} min-w-0`;
   const chipBase =
@@ -674,7 +696,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
       <section
         className={`${mobileEdgeToEdgeClass} space-y-5 bg-white py-4 sm:space-y-6 sm:rounded-3xl sm:border sm:border-zinc-100 sm:bg-white sm:p-6 sm:shadow-elevated md:p-8`}
       >
-        <div className="space-y-2 pt-1">
+        <div className="space-y-2 pt-1 pb-1 max-sm:pt-1.5 max-sm:pb-0.5">
           <p className={explorerEyebrowClass}>
             Your search
           </p>
@@ -1231,7 +1253,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Matching reviews
                 </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover max-sm:text-[1.3rem] lg:text-lg">
+                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover max-sm:text-[1.425rem] lg:text-lg">
                   {snapshot.recentCount.toLocaleString()}
                 </p>
                 <p className="mt-1 hidden text-[13px] text-zinc-500 sm:block">
@@ -1244,7 +1266,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 </p>
                 {snapshot.n > 0 ? (
                   <>
-                    <p className="mt-1.5 text-2xl font-semibold leading-snug text-muted-blue-hover max-sm:text-[1.3rem] lg:text-[1.04rem]">
+                    <p className="mt-1.5 text-2xl font-semibold leading-snug text-muted-blue-hover max-sm:text-[1.175rem] lg:text-[1.04rem]">
                       Laundry {snapshot.amenityPercentages.hasInUnitLaundry}% · Parking{" "}
                       {snapshot.amenityPercentages.hasParking}%
                     </p>
@@ -1276,7 +1298,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             snapshot.min != null &&
             snapshot.max != null && (
               <section
-                className={`${mobileEdgeToEdgeClass} hidden border-zinc-200/80 bg-white sm:block sm:rounded-2xl sm:border sm:px-8 sm:py-8 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}
+                className={`${mobileEdgeToEdgeClass} hidden border-zinc-200/80 bg-white sm:block sm:rounded-2xl sm:border sm:px-8 sm:pb-6 sm:pt-8 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}
               >
                 <RentRangeBand
                   min={snapshot.min}
@@ -1301,6 +1323,9 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             <h2 className="mt-1 pb-1 text-xl font-semibold tracking-tight text-muted-blue-hover">
               Reviews that match your search
             </h2>
+            <p className="mt-1 text-[13px] leading-relaxed text-zinc-600 sm:hidden">
+              Click on any property to see details.
+            </p>
             <div className="mt-3 sm:hidden">
               <label
                 htmlFor="rent-explorer-review-sort"
@@ -1321,13 +1346,26 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 <option value="rent-desc">Price: high to low</option>
               </select>
             </div>
-            <p className={`mt-1 hidden max-w-2xl sm:block ${explorerBodyLeadClass}`}>
-              Newest first, up to 10 per page.{" "}
-              <span className="hidden sm:inline">
-                Cards widen with your screen—up to three columns on large displays.{" "}
-              </span>
-              Click any card below to open the full property review page.
-            </p>
+            <div className="mt-3 hidden sm:block sm:max-w-xs">
+              <label
+                htmlFor="rent-explorer-review-sort-desktop"
+                className="mb-1.5 block text-xs font-medium text-zinc-600"
+              >
+                Sort
+              </label>
+              <select
+                id="rent-explorer-review-sort-desktop"
+                value={reviewSort}
+                onChange={(event) =>
+                  setReviewSort(event.target.value as ReviewSortMode)
+                }
+                className={`${formSelectCompactClass} w-full`}
+              >
+                <option value="recent">Most recent</option>
+                <option value="rent-asc">Price: low to high</option>
+                <option value="rent-desc">Price: high to low</option>
+              </select>
+            </div>
           </div>
           {!noMatches && (
             <p className="hidden text-[1.04rem] text-zinc-500 sm:block">Page {page + 1}</p>
@@ -1374,8 +1412,22 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           <>
             <div className="w-full rounded-2xl border border-zinc-100 bg-muted-blue-tint/25 p-2.5 max-sm:max-h-[56vh] max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:[-webkit-overflow-scrolling:touch] sm:p-4">
               <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 md:gap-x-4 md:gap-y-3">
-                {sortedItems.map((item) => {
-                  const bbLabel = bedroomsBathroomsLabel(item);
+                {visibleReviewItems.map((item) => {
+                  const bedroomLabel =
+                    item.bedroomBand && item.bedroomBand !== "Unknown"
+                      ? item.bedroomBand
+                      : null;
+                  const bathLabel = bathroomsToBaAbbrev(item.bathrooms);
+                  const renderBoldLeadingNumber = (label: string) => {
+                    const match = label.match(/^(\d+\+?)(.*)$/);
+                    if (!match) return label;
+                    return (
+                      <>
+                        <span className="font-semibold">{match[1]}</span>
+                        {match[2]}
+                      </>
+                    );
+                  };
                   const amenityLabels: string[] = [];
                   if (item.hasInUnitLaundry) amenityLabels.push("In-unit laundry");
                   if (item.hasParking) amenityLabels.push("Parking");
@@ -1418,14 +1470,21 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                               Rent n/a
                             </span>
                           )}
-                          {bbLabel ? (
-                            <span className="text-[13px] text-zinc-600 sm:text-[1.04rem]">
-                              {bbLabel}
+                          {bedroomLabel || bathLabel ? (
+                            <span className="inline-flex items-center gap-1.5 text-[13px] text-zinc-600 sm:text-[1.04rem]">
+                              <span className="px-0.5 text-zinc-300">|</span>
+                              {bedroomLabel ? (
+                                <span>{renderBoldLeadingNumber(bedroomLabel)}</span>
+                              ) : null}
+                              {bedroomLabel && bathLabel ? (
+                                <span className="px-0.5 text-zinc-300">|</span>
+                              ) : null}
+                              {bathLabel ? <span>{renderBoldLeadingNumber(bathLabel)}</span> : null}
                             </span>
                           ) : null}
                         </div>
                         {amenityLabels.length > 0 ? (
-                          <p className="line-clamp-2 text-[13px] leading-relaxed text-zinc-600 sm:text-sm">
+                          <p className="hidden line-clamp-2 text-[13px] leading-relaxed text-zinc-600 sm:block sm:text-sm">
                             {amenityLabels.join(" · ")}
                           </p>
                         ) : null}
@@ -1446,7 +1505,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             ) : null}
             <div className="flex flex-col gap-3 border-t border-zinc-100 pt-4 text-[1.04rem] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
               <span>
-                Showing {sortedItems.length} of {snapshot ? snapshot.n.toLocaleString() : "?"}{" "}
+                Showing {visibleReviewItems.length} of {snapshot ? snapshot.n.toLocaleString() : "?"}{" "}
                 reviews
               </span>
               <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
