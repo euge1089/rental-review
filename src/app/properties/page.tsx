@@ -185,7 +185,7 @@ export default function PropertiesPage() {
     <AppPageShell gapClass="gap-6">
       <GiveawayPromoStrip variant="home" placement="properties" />
       <div
-        className={`${mobileSectionShell} flex flex-col gap-6 bg-white py-4 sm:rounded-2xl sm:border sm:border-zinc-200/80 sm:bg-transparent sm:py-0 sm:flex-row sm:items-end sm:justify-between`}
+        className={`${mobileSectionShell} flex flex-col gap-6 bg-white py-4 sm:rounded-2xl sm:border sm:border-zinc-200/80 sm:bg-transparent sm:px-5 sm:py-5 sm:flex-row sm:items-end sm:justify-between`}
       >
         <PageHeader
           eyebrow="Browse"
