@@ -96,8 +96,10 @@ export function RentExplorerMap({
   }
 
   return (
-    <div className="relative overflow-hidden bg-white sm:rounded-3xl sm:border sm:border-zinc-200 sm:shadow-[0_8px_30px_-16px_rgb(15_23_42/0.2)]">
-      <Map
+    <div className="relative overflow-hidden bg-white ring-1 ring-muted-blue/20 sm:rounded-3xl sm:border sm:border-muted-blue/25 sm:shadow-[0_10px_36px_-14px_rgb(21_42_69/0.28)]">
+      {/* Slightly richer basemap while keeping the light style: bump saturation/contrast on the canvas only */}
+      <div className="[&_.mapboxgl-canvas]:saturate-[1.22] [&_.mapboxgl-canvas]:contrast-[1.09] [&_.mapboxgl-canvas]:brightness-[1.02]">
+        <Map
         initialViewState={initialViewState}
         style={{ width: "100%", height: 420 }}
         mapStyle="mapbox://styles/mapbox/light-v11"
@@ -135,10 +137,10 @@ export function RentExplorerMap({
                 type="button"
                 onMouseEnter={() => setHoveredPropertyId(marker.propertyId)}
                 onMouseLeave={() => setHoveredPropertyId(null)}
-                className={`grid place-items-center rounded-full border text-xs font-semibold shadow-sm transition ${
+                className={`grid place-items-center rounded-full border text-xs font-semibold transition ${
                   selected
-                    ? "border-muted-blue-hover bg-muted-blue-hover text-white"
-                    : "border-white bg-muted-blue text-white hover:bg-muted-blue-hover"
+                    ? "border-white bg-muted-blue-hover text-white shadow-[0_4px_14px_-2px_rgb(21_42_69/0.55)] ring-2 ring-white/90"
+                    : "border-white/95 bg-muted-blue text-white shadow-[0_3px_12px_-3px_rgb(21_42_69/0.45)] ring-1 ring-muted-blue/40 hover:bg-muted-blue-hover hover:ring-muted-blue-hover/55"
                 }`}
                 style={{ width: size, height: size }}
                 aria-label={`${marker.addressLine1}, ${marker.reviewCount} review${marker.reviewCount === 1 ? "" : "s"}`}
@@ -156,9 +158,9 @@ export function RentExplorerMap({
             closeOnClick={false}
             anchor="top"
             offset={18}
-            className="z-30"
+            className="z-30 [&_.mapboxgl-popup-content]:rounded-xl [&_.mapboxgl-popup-content]:border [&_.mapboxgl-popup-content]:border-muted-blue/20 [&_.mapboxgl-popup-content]:p-3 [&_.mapboxgl-popup-content]:shadow-lg [&_.mapboxgl-popup-tip]:border-muted-blue/20"
           >
-            <div className="min-w-[14rem] space-y-1.5 text-sm text-zinc-700">
+            <div className="min-w-[14rem] space-y-1.5 text-sm text-zinc-800">
               <div className="flex items-start justify-between gap-2">
                 <p className="font-semibold text-muted-blue-hover">
                   {activeMarker.addressLine1}
@@ -176,7 +178,7 @@ export function RentExplorerMap({
                   ×
                 </button>
               </div>
-              <p className="text-zinc-600">
+              <p className="text-zinc-700">
                 {activeMarker.city}, {activeMarker.state} {activeMarker.postalCode ?? ""}
               </p>
               <p>
@@ -201,8 +203,9 @@ export function RentExplorerMap({
           </Popup>
         ) : null}
       </Map>
+      </div>
       {isLoading ? (
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-white/85 px-3 py-2 text-center text-sm font-medium text-zinc-600">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-muted-blue-tint/95 to-white/90 px-3 py-2 text-center text-sm font-semibold text-muted-blue-hover backdrop-blur-[2px]">
           Updating map…
         </div>
       ) : null}
