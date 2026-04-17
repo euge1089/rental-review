@@ -142,12 +142,12 @@ export function PropertyEngagement(props: Props) {
     typeof props.mapSnapshotSrc === "string" && props.mapSnapshotSrc.length > 0;
 
   return (
-    <div className="flex w-full flex-col gap-3 lg:w-[17rem] lg:items-end">
-      <div className="flex w-full flex-col gap-3 lg:items-end">
+    <div className="flex w-full flex-col gap-3">
+      <div className="flex w-full flex-col gap-3 lg:hidden">
         <button
           type="button"
           onClick={toggleBookmark}
-          className={`inline-flex min-h-10 w-full items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition sm:min-h-0 lg:w-[11.75rem] ${
+          className={`inline-flex min-h-10 w-full items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition sm:min-h-0 ${
             isBookmarked
               ? "bg-muted-blue-hover text-white shadow-[0_8px_24px_-10px_rgb(21_42_69/0.45)] hover:bg-[#1a3555]"
               : "border border-zinc-200/90 bg-white text-muted-blue-hover shadow-sm hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
@@ -158,32 +158,54 @@ export function PropertyEngagement(props: Props) {
         </button>
         <Link
           href="/tour-checklist"
-          className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-zinc-200/90 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover shadow-sm transition hover:border-pop/40 hover:bg-pop-tint/50 lg:w-[11.75rem]"
+          className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-zinc-200/90 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover shadow-sm transition hover:border-pop/40 hover:bg-pop-tint/50"
         >
           Tour checklist
         </Link>
       </div>
 
-      <div className="hidden lg:block lg:w-[17rem]">
-        {showMapSnapshot ? (
-          <div className="overflow-hidden rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.06)]">
-            <Image
-              src={props.mapSnapshotSrc!}
-              alt={`Map snapshot for ${props.addressLine1}`}
-              width={320}
-              height={320}
-              className="block h-[12rem] w-full object-cover"
-              unoptimized
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        ) : (
-          <div className="flex h-[12rem] items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white/80 px-4 text-center">
-            <p className="text-xs leading-relaxed text-zinc-500">
-              Map snapshot unavailable for this address.
-            </p>
-          </div>
-        )}
+      <div className="hidden lg:flex lg:items-start lg:gap-4">
+        <div className="lg:w-[14rem]">
+          {showMapSnapshot ? (
+            <div className="overflow-hidden rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.06)]">
+              <Image
+                src={props.mapSnapshotSrc!}
+                alt={`Map snapshot for ${props.addressLine1}`}
+                width={320}
+                height={320}
+                className="block h-[10rem] w-full object-cover"
+                unoptimized
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          ) : (
+            <div className="flex h-[10rem] items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white/80 px-4 text-center">
+              <p className="text-xs leading-relaxed text-zinc-500">
+                Map snapshot unavailable for this address.
+              </p>
+            </div>
+          )}
+        </div>
+        <div className="flex w-[11.75rem] flex-col gap-3">
+          <button
+            type="button"
+            onClick={toggleBookmark}
+            className={`inline-flex min-h-10 w-full items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition ${
+              isBookmarked
+                ? "bg-muted-blue-hover text-white shadow-[0_8px_24px_-10px_rgb(21_42_69/0.45)] hover:bg-[#1a3555]"
+                : "border border-zinc-200/90 bg-white text-muted-blue-hover shadow-sm hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+            }`}
+            disabled={isSaving}
+          >
+            {isBookmarked ? "★ Saved" : "☆ Save apartment"}
+          </button>
+          <Link
+            href="/tour-checklist"
+            className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-zinc-200/90 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover shadow-sm transition hover:border-pop/40 hover:bg-pop-tint/50"
+          >
+            Tour checklist
+          </Link>
+        </div>
       </div>
     </div>
   );
