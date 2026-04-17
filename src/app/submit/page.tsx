@@ -22,7 +22,6 @@ import {
   SUBMIT_STEP1_PREFILL_KEY,
   type SubmitStepOnePrefill,
   applySubmitStepOnePrefill,
-  buildPrefillFromSubmitPayload,
 } from "@/lib/submit-prefill";
 import { trackEvent } from "@/lib/analytics-client";
 import {
@@ -196,6 +195,19 @@ export default function SubmitReviewPage() {
     setRentByYear({});
   }, []);
 
+  /** Clears the form and draft/prefill storage so the next review starts blank. */
+  const resetFormForFreshSubmit = useCallback(() => {
+    formRef.current?.reset();
+    setOverallScore(null);
+    setLandlordScore(null);
+    clearLeaseYearsState();
+    setStep(1);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(DRAFT_KEY);
+      window.localStorage.removeItem(SUBMIT_STEP1_PREFILL_KEY);
+    }
+  }, [clearLeaseYearsState]);
+
   const toggleLeaseYear = useCallback((year: number) => {
     leaseUserTouchedRef.current = true;
     setSelectedLeaseYears((prev) => {
@@ -220,9 +232,6 @@ export default function SubmitReviewPage() {
     max: number;
     atCap: boolean;
   } | null>(null);
-  const [anotherYearPrefill, setAnotherYearPrefill] =
-    useState<SubmitStepOnePrefill | null>(null);
-  const [showAnotherYearCta, setShowAnotherYearCta] = useState(false);
   const [showSubmitSuccessModal, setShowSubmitSuccessModal] = useState(false);
   const [bostonFloor, setBostonFloor] = useState<number | null | undefined>(
     undefined,
@@ -461,37 +470,6 @@ export default function SubmitReviewPage() {
     persistDraft();
   }, [selectedLeaseYears, rentByYear, persistDraft]);
 
-  function handleAddAnotherLeaseYear() {
-    if (!formRef.current || !anotherYearPrefill) return;
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(
-        SUBMIT_STEP1_PREFILL_KEY,
-        JSON.stringify(anotherYearPrefill),
-      );
-    }
-    resetYearSpecificFields(
-      formRef.current,
-      setOverallScore,
-      setLandlordScore,
-      clearLeaseYearsState,
-    );
-    setShowAnotherYearCta(false);
-    setAnotherYearPrefill(null);
-    setStep(1);
-    setStatusMessage(
-      "We kept your place details - pick lease-start year(s) and rent for each.",
-    );
-    setTimeout(() => persistDraft({ overall: null, landlord: null }), 0);
-    requestAnimationFrame(() => {
-      document.getElementById("lease-years-region")?.focus();
-    });
-  }
-
-  function dismissAnotherYearCta() {
-    setShowAnotherYearCta(false);
-    setAnotherYearPrefill(null);
-  }
-
   function advanceToStep(nextStep: 2 | 3) {
     setStep(nextStep);
     if (nextStep === 2) {
@@ -654,23 +632,12 @@ export default function SubmitReviewPage() {
   }, [statusMessage]);
 
   function handleLeaveAnotherReview() {
-    if (anotherYearPrefill && formRef.current) {
-      handleAddAnotherLeaseYear();
-    } else if (formRef.current) {
-      formRef.current.reset();
-      setOverallScore(null);
-      setLandlordScore(null);
-      clearLeaseYearsState();
-      setStep(1);
-      setStatusMessage("Ready for your next review.");
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem(DRAFT_KEY);
-      }
-      requestAnimationFrame(() => {
-        document.getElementById("address")?.focus();
-      });
-    }
+    resetFormForFreshSubmit();
+    setStatusMessage("Ready for your next review.");
     setShowSubmitSuccessModal(false);
+    requestAnimationFrame(() => {
+      document.getElementById("address")?.focus();
+    });
   }
 
   async function handleDuplicateDelete() {
@@ -903,28 +870,7 @@ export default function SubmitReviewPage() {
       trackEvent("review_submitted", {
         review_count: Math.max(1, result.count ?? yearEntries.length),
       });
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem(DRAFT_KEY);
-        const prefill = buildPrefillFromSubmitPayload({
-          address: batchPayload.address,
-          unit: batchPayload.unit,
-          postalCode: batchPayload.postalCode,
-          bedroomCount: batchPayload.bedroomCount,
-          bathrooms: batchPayload.bathrooms,
-          hasParking: batchPayload.hasParking,
-          hasCentralHeatCooling: batchPayload.hasCentralHeatCooling,
-          hasInUnitLaundry: batchPayload.hasInUnitLaundry,
-          hasStorageSpace: batchPayload.hasStorageSpace,
-          hasOutdoorSpace: batchPayload.hasOutdoorSpace,
-          petFriendly: batchPayload.petFriendly,
-        });
-        window.localStorage.setItem(
-          SUBMIT_STEP1_PREFILL_KEY,
-          JSON.stringify(prefill),
-        );
-        setAnotherYearPrefill(prefill);
-        setShowAnotherYearCta(true);
-      }
+      resetFormForFreshSubmit();
       setShowSubmitSuccessModal(true);
     } finally {
       setFinalSubmitting(false);
@@ -1573,48 +1519,6 @@ export default function SubmitReviewPage() {
           </div>
         </div>
 
-        {showAnotherYearCta && anotherYearPrefill ? (
-          <div
-            className={`${surfaceElevatedClass} relative space-y-4 overflow-hidden border-l-4 border-l-accent-teal p-5 sm:p-6`}
-            role="region"
-            aria-label="Add another lease year"
-          >
-            <div className="pointer-events-none absolute -right-16 top-4 h-24 w-24 rounded-full bg-accent-teal-tint/50 blur-2xl" />
-            <div className="relative">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-blue">
-                Same building, different year
-              </p>
-              <p className="mt-2 text-base font-semibold text-muted-blue-hover">
-                Add another review for a different lease start year?
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-                We&apos;ll keep your address, unit, ZIP, bedrooms, bathrooms, and
-                amenity taps - pick lease-start year(s) and rent for each.
-              </p>
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => handleAddAnotherLeaseYear()}
-                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-muted-blue px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-muted-blue-hover"
-                >
-                  Add another lease year
-                </button>
-                <button
-                  type="button"
-                  onClick={dismissAnotherYearCta}
-                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-200 bg-white px-6 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
-                >
-                  Not now
-                </button>
-              </div>
-              <p className="mt-4 text-xs leading-relaxed text-zinc-500">
-                Tip: bookmark{" "}
-                <span className="font-mono text-zinc-600">/submit?another=1</span> on
-                this device to jump back with the same building pre-filled later.
-              </p>
-            </div>
-          </div>
-        ) : null}
       </form>
 
       {!formSurfaceBlocked ? (
