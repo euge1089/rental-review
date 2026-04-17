@@ -12,11 +12,7 @@ import { modalBackdropClass } from "@/lib/ui-classes";
 const SESSION_FIRST_HOME_VISIT_KEY = "rr_home_giveaway_promo_first_home_done";
 
 export function HomeGiveawayPromoModal() {
-  const [open, setOpen] = useState(() => {
-    if (typeof window === "undefined") return false;
-    if (!isGiveawayPromoActive()) return false;
-    return window.sessionStorage.getItem(SESSION_FIRST_HOME_VISIT_KEY) !== "1";
-  });
+  const [open, setOpen] = useState(false);
 
   const dismiss = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -25,13 +21,30 @@ export function HomeGiveawayPromoModal() {
     setOpen(false);
   }, []);
 
-  /** After paint so React Strict Mode’s remount doesn’t see storage set before the real mount. */
   useEffect(() => {
-    if (!open || typeof window === "undefined") return;
-    const id = window.requestAnimationFrame(() => {
+    if (typeof window === "undefined") return;
+    if (!isGiveawayPromoActive()) return;
+    if (window.sessionStorage.getItem(SESSION_FIRST_HOME_VISIT_KEY) === "1") return;
+
+    // Count this first home visit immediately so it never repeats within the session.
+    window.sessionStorage.setItem(SESSION_FIRST_HOME_VISIT_KEY, "1");
+
+    const id = window.setTimeout(() => {
+      if (isGiveawayPromoActive()) {
+        setOpen(true);
+      }
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(id);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    if (typeof window !== "undefined") {
       window.sessionStorage.setItem(SESSION_FIRST_HOME_VISIT_KEY, "1");
-    });
-    return () => window.cancelAnimationFrame(id);
+    }
   }, [open]);
 
   useEffect(() => {

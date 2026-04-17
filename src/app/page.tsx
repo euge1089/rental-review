@@ -1,4 +1,5 @@
 import { HomeHashScroll } from "@/app/_components/home-hash-scroll";
+import { HomeGiveawayPromoModal } from "@/app/_components/home-giveaway-promo-modal";
 import { HomePageSections } from "@/app/_components/home-page-sections";
 import { authOptions } from "@/lib/auth";
 import { getHomePageData } from "@/lib/home-page-data";
@@ -17,6 +18,7 @@ export default async function Home() {
   return (
     <>
       <HomeHashScroll />
+      {!session?.user?.email ? <HomeGiveawayPromoModal /> : null}
       <HomePageSections
         layout="fullwidth"
         showHeroSignUp={showHeroSignUp}
