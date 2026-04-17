@@ -57,23 +57,36 @@ export function ProfileSectionNav({
 
   return (
     <nav className={className} aria-label="Profile sections">
-      {sections.map((section) => {
-        const active = activeId === section.id;
-        return (
-          <a
-            key={section.id}
-            href={`#${section.id}`}
-            aria-current={active ? "true" : undefined}
-            className={`flex min-h-10 w-full min-w-0 items-center justify-center rounded-full border px-2 py-1.5 text-center text-xs font-semibold transition sm:inline-flex sm:w-auto sm:shrink-0 sm:px-3 ${
-              active
-                ? "border-muted-blue/45 bg-muted-blue-tint text-muted-blue-hover"
-                : "border-zinc-200 bg-white text-muted-blue-hover hover:border-muted-blue/35 hover:bg-muted-blue-tint/30"
-            }`}
-          >
-            {section.label}
-          </a>
-        );
-      })}
+      <div className="flex w-full min-w-0 items-stretch">
+        {sections.flatMap((section, index) => {
+          const active = activeId === section.id;
+          const link = (
+            <a
+              key={section.id}
+              href={`#${section.id}`}
+              aria-current={active ? "true" : undefined}
+              className={`flex min-h-10 min-w-0 flex-1 basis-0 items-center justify-center px-2 py-2 text-center text-xs font-semibold transition sm:px-3 sm:text-sm ${
+                active
+                  ? "text-muted-blue-hover underline decoration-2 underline-offset-[0.2em]"
+                  : "text-zinc-600 hover:text-muted-blue-hover"
+              }`}
+            >
+              {section.label}
+            </a>
+          );
+          if (index === 0) return [link];
+          return [
+            <span
+              key={`sep-${section.id}`}
+              className="flex shrink-0 select-none items-center px-1.5 text-zinc-300 sm:px-2"
+              aria-hidden
+            >
+              |
+            </span>,
+            link,
+          ];
+        })}
+      </div>
     </nav>
   );
 }

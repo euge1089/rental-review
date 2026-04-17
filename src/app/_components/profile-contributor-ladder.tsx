@@ -1,7 +1,51 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { surfaceElevatedClass } from "@/lib/ui-classes";
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M6 9l6 6 6-6"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ChevronUpIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M18 15l-6-6-6 6"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 type Rung = {
   need: number;
@@ -49,6 +93,7 @@ export function ProfileContributorLadder({
   maxReviews,
   className = "",
 }: Props) {
+  const [mobileLadderOpen, setMobileLadderOpen] = useState(false);
   const remaining = Math.max(0, maxReviews - reviewCount);
 
   const topUnlockedIndex = useMemo(() => {
@@ -120,48 +165,77 @@ export function ProfileContributorLadder({
         </div>
       </div>
 
-      <ol className="mt-5 flex flex-col gap-3 sm:gap-3.5">
-        {displayRungs.map(({ rung, index }) => {
-          const unlocked = reviewCount >= rung.need;
-          const isNextGoal = nextRungNeed === rung.need;
-          const isCurrentRung = index === topUnlockedIndex;
-          const styleIdx = tierStyleIndexFromRungIndex(index);
-          const badge =
-            TIER_BADGE_STYLE[styleIdx] ?? TIER_BADGE_STYLE[0]!;
+      <button
+        type="button"
+        className={`mx-auto mt-4 flex min-h-10 w-full max-w-[10rem] items-center justify-center rounded-xl border border-zinc-200/90 bg-zinc-50/80 text-zinc-500 transition hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-700 active:scale-[0.99] sm:hidden ${
+          mobileLadderOpen ? "hidden" : "flex"
+        }`}
+        aria-expanded={false}
+        aria-controls="profile-contributor-ladder-tiers"
+        onClick={() => setMobileLadderOpen(true)}
+      >
+        <span className="sr-only">Show all profile ranks</span>
+        <ChevronDownIcon className="shrink-0" />
+      </button>
 
-          return (
-            <li
-              key={rung.need}
-              className="flex items-start gap-3 sm:gap-4"
-              aria-current={isCurrentRung ? "step" : undefined}
-            >
-              <div
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-base font-bold tabular-nums sm:h-12 sm:w-12 sm:text-lg ${badge.box} ${badge.text} ${
-                  isNextGoal && !unlocked ? "motion-safe:animate-ladder-next" : ""
-                }`}
+      <div
+        id="profile-contributor-ladder-tiers"
+        className={`mt-5 ${mobileLadderOpen ? "block" : "max-sm:hidden"} sm:block`}
+      >
+        <ol className="flex flex-col gap-3 sm:gap-3.5">
+          {displayRungs.map(({ rung, index }) => {
+            const unlocked = reviewCount >= rung.need;
+            const isNextGoal = nextRungNeed === rung.need;
+            const isCurrentRung = index === topUnlockedIndex;
+            const styleIdx = tierStyleIndexFromRungIndex(index);
+            const badge =
+              TIER_BADGE_STYLE[styleIdx] ?? TIER_BADGE_STYLE[0]!;
+
+            return (
+              <li
+                key={rung.need}
+                className="flex items-start gap-3 sm:gap-4"
+                aria-current={isCurrentRung ? "step" : undefined}
               >
-                {rung.bubbleLabel}
-              </div>
-              <div className="min-w-0 pt-0.5">
-                <p className={tierNameClass(unlocked)}>{rung.title}</p>
-                <p
-                  className={`mt-0.5 text-xs tabular-nums ${
-                    unlocked ? "text-zinc-500" : "text-zinc-400"
+                <div
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-base font-bold tabular-nums sm:h-12 sm:w-12 sm:text-lg ${badge.box} ${badge.text} ${
+                    isNextGoal && !unlocked ? "motion-safe:animate-ladder-next" : ""
                   }`}
                 >
-                  {rung.subtitle}
-                </p>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
+                  {rung.bubbleLabel}
+                </div>
+                <div className="min-w-0 pt-0.5">
+                  <p className={tierNameClass(unlocked)}>{rung.title}</p>
+                  <p
+                    className={`mt-0.5 text-xs tabular-nums ${
+                      unlocked ? "text-zinc-500" : "text-zinc-400"
+                    }`}
+                  >
+                    {rung.subtitle}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
 
-      {remaining === 0 ? (
-        <p className="mt-4 text-center text-[11px] text-zinc-500">
-          Max slots in use - edit or remove a review on your profile to free one.
-        </p>
-      ) : null}
+        {remaining === 0 ? (
+          <p className="mt-4 text-center text-[11px] text-zinc-500">
+            Max slots in use - edit or remove a review on your profile to free one.
+          </p>
+        ) : null}
+
+        <button
+          type="button"
+          className="mx-auto mt-4 flex min-h-10 w-full max-w-[10rem] items-center justify-center rounded-xl border border-zinc-200/90 bg-zinc-50/80 text-zinc-500 transition hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-700 active:scale-[0.99] sm:hidden"
+          aria-expanded={true}
+          aria-controls="profile-contributor-ladder-tiers"
+          onClick={() => setMobileLadderOpen(false)}
+        >
+          <span className="sr-only">Hide profile ranks</span>
+          <ChevronUpIcon className="shrink-0" />
+        </button>
+      </div>
     </aside>
   );
 }

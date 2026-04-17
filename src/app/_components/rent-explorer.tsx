@@ -1091,7 +1091,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                   : "text-zinc-600"
               }`}
             >
-              Analytics
+              Insights
             </button>
           </div>
         </section>
@@ -1161,7 +1161,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Range
                 </p>
-                <p className="mt-1.5 text-lg font-semibold tabular-nums text-muted-blue-hover">
+                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover">
                   {typeof snapshot.min === "number" &&
                   typeof snapshot.max === "number"
                     ? `$${snapshot.min.toLocaleString()}–$${snapshot.max.toLocaleString()}`
@@ -1174,9 +1174,9 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
               </div>
               <div className="rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
-                  Recent reviews
+                  Matching reviews
                 </p>
-                <p className="mt-1.5 text-lg font-semibold text-muted-blue-hover">
+                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover">
                   {snapshot.recentCount.toLocaleString()}
                 </p>
                 <p className="mt-1 text-[13px] text-zinc-500">
@@ -1189,7 +1189,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 </p>
                 {snapshot.n > 0 ? (
                   <>
-                    <p className="mt-1.5 text-[1.04rem] font-semibold text-muted-blue-hover">
+                    <p className="mt-1.5 text-2xl font-semibold leading-snug text-muted-blue-hover">
                       Laundry {snapshot.amenityPercentages.hasInUnitLaundry}% · Parking{" "}
                       {snapshot.amenityPercentages.hasParking}%
                     </p>
@@ -1210,7 +1210,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 firm answer.
               </p>
             ) : null}
-            <p className={`mt-3 ${explorerBodyLeadClass}`}>
+            <p className="mt-3 text-[0.875rem] leading-relaxed text-zinc-600">
               Based on reviews that match what you picked. One apartment can be higher
               or lower than these - they&apos;re averages and ranges, not guarantees.
             </p>
@@ -1242,7 +1242,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             <p className={`${explorerEyebrowClass} hidden sm:block`}>
               Your filtered reviews
             </p>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight text-muted-blue-hover">
+            <h2 className="mt-1 pb-1 text-xl font-semibold tracking-tight text-muted-blue-hover">
               Reviews that match your search
             </h2>
             <p className={`mt-1 max-w-2xl ${explorerBodyLeadClass}`}>
