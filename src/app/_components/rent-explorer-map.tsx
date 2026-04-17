@@ -4,7 +4,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Map, { Marker, NavigationControl, Popup, type MapRef } from "react-map-gl/mapbox";
-import type { LngLatBounds } from "mapbox-gl";
+import type { LngLatBounds, Map as MapboxMap } from "mapbox-gl";
 
 export type ExplorerMapBounds = {
   minLat: number;
@@ -54,6 +54,20 @@ function markerSize(reviewCount: number): number {
   if (reviewCount >= 10) return 34;
   if (reviewCount >= 5) return 30;
   return 26;
+}
+
+function applyWaterContrastTweaks(map: MapboxMap) {
+  const layers = map.getStyle().layers ?? [];
+  for (const layer of layers) {
+    if (!layer.id.toLowerCase().includes("water")) continue;
+    if (layer.type === "fill") {
+      map.setPaintProperty(layer.id, "fill-color", "#c7d7e6");
+      map.setPaintProperty(layer.id, "fill-opacity", 0.94);
+    } else if (layer.type === "line") {
+      map.setPaintProperty(layer.id, "line-color", "#b9cada");
+      map.setPaintProperty(layer.id, "line-opacity", 0.95);
+    }
+  }
 }
 
 export function RentExplorerMap({
@@ -164,8 +178,13 @@ export function RentExplorerMap({
         mapStyle="mapbox://styles/mapbox/light-v11"
         mapboxAccessToken={token}
         onLoad={(event) => {
+          applyWaterContrastTweaks(event.target);
           const bounds = event.target.getBounds();
           if (bounds) onBoundsChange(toBounds(bounds));
+        }}
+        onStyleData={() => {
+          if (!mapRef.current) return;
+          applyWaterContrastTweaks(mapRef.current.getMap());
         }}
         onMoveEnd={(event) => {
           const bounds = event.target.getBounds();

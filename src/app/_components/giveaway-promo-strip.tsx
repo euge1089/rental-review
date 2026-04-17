@@ -443,13 +443,29 @@ export function GiveawayPromoStrip({
                   : "flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-zinc-50/80 px-3.5 py-2.5"
               }
             >
+              {isPropertiesBrowse ? (
+                <div className="hidden items-center gap-2 text-zinc-500 sm:flex">
+                  <ClockIcon className="shrink-0 text-muted-blue/80" />
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-pop">
+                    Ends Apr 30 · ET
+                  </span>
+                </div>
+              ) : null}
+              {isPropertiesBrowse ? (
+                <span className="hidden sm:block">
+                  <CountdownDisplay endMs={GIVEAWAY_PROMO_END_MS} large={false} />
+                </span>
+              ) : (
               <div className="flex items-center gap-2 text-zinc-500">
                 <ClockIcon className="shrink-0 text-muted-blue/80" />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-pop">
                   Ends Apr 30 · ET
                 </span>
               </div>
-              <CountdownDisplay endMs={GIVEAWAY_PROMO_END_MS} large={false} />
+              )}
+              {!isPropertiesBrowse ? (
+                <CountdownDisplay endMs={GIVEAWAY_PROMO_END_MS} large={false} />
+              ) : null}
             </div>
           </div>
 
@@ -461,6 +477,17 @@ export function GiveawayPromoStrip({
             excited={false}
             compactRulesFooter={isPropertiesBrowse}
           />
+          {isPropertiesBrowse ? (
+            <div className="mt-3 flex items-center justify-between rounded-xl border border-zinc-100 bg-zinc-50/80 px-3.5 py-2.5 sm:hidden">
+              <div className="flex items-center gap-2 text-zinc-500">
+                <ClockIcon className="shrink-0 text-muted-blue/80" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-pop">
+                  Ends Apr 30 · ET
+                </span>
+              </div>
+              <CountdownDisplay endMs={GIVEAWAY_PROMO_END_MS} large={false} />
+            </div>
+          ) : null}
         </div>
       </div>
     </aside>

@@ -18,6 +18,7 @@ type PropertySummary = {
   postalCode: string | null;
   reviewCount: number;
   averageRent: number | null;
+  topAmenities?: string[];
   /** ISO timestamp; used for “Most recent” sort */
   createdAt?: string;
 };
@@ -331,24 +332,41 @@ export default function PropertiesPage() {
             {visibleProperties.map((property) => (
               <li
                 key={property.id}
-                className={`-mx-4 border-zinc-200/80 bg-white px-4 py-5 transition hover:border-muted-blue/25 sm:mx-0 ${surfaceSubtleClass} sm:p-5 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.08)]`}
+                className={`-mx-4 sm:mx-0`}
               >
                 <Link
                   href={`/properties/${property.id}`}
-                  className="block break-words text-pretty text-lg font-semibold text-muted-blue-hover underline-offset-2 hover:underline"
+                  className={`group block ${surfaceSubtleClass} border-zinc-200/80 bg-white px-4 py-5 transition hover:border-muted-blue/25 sm:p-5 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.08)]`}
                 >
-                  {property.addressLine1}
+                  <p className="break-words text-pretty text-lg font-semibold text-muted-blue-hover underline-offset-2 group-hover:underline">
+                    {property.addressLine1}
+                  </p>
+                  <p className="mt-1 text-sm text-zinc-600">
+                    {property.city}, {property.state} {property.postalCode ?? ""}
+                  </p>
+                  <p className="mt-2 text-sm text-zinc-600">
+                    {property.reviewCount} review
+                    {property.reviewCount === 1 ? "" : "s"}
+                    {typeof property.averageRent === "number"
+                      ? ` · approx. $${property.averageRent.toLocaleString()} / month`
+                      : null}
+                  </p>
+                  <div
+                    className={`hidden overflow-hidden transition-all duration-200 md:block ${
+                      property.topAmenities && property.topAmenities.length > 0
+                        ? "max-h-0 opacity-0 group-hover:mt-3 group-hover:max-h-20 group-hover:opacity-100"
+                        : "max-h-0 opacity-0"
+                    }`}
+                    aria-hidden
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      Amenities from reviews
+                    </p>
+                    <p className="mt-1 text-sm text-zinc-600">
+                      {property.topAmenities?.join(" · ")}
+                    </p>
+                  </div>
                 </Link>
-                <p className="mt-1 text-sm text-zinc-600">
-                  {property.city}, {property.state} {property.postalCode ?? ""}
-                </p>
-                <p className="mt-2 text-sm text-zinc-600">
-                  {property.reviewCount} review
-                  {property.reviewCount === 1 ? "" : "s"}
-                  {typeof property.averageRent === "number"
-                    ? ` · approx. $${property.averageRent.toLocaleString()} / month`
-                    : null}
-                </p>
               </li>
             ))}
           </ul>

@@ -1456,7 +1456,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                             {item.city}, {item.state} {item.postalCode ?? ""}
                           </p>
                         </div>
-                        <div className="mt-auto flex flex-col gap-0.5 border-t border-zinc-100/90 pt-2 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2 sm:gap-y-1 sm:pt-2.5">
+                        <div className="mt-auto flex flex-row flex-wrap items-baseline gap-x-2 gap-y-1 border-t border-zinc-100/90 pt-2 sm:pt-2.5">
                           {typeof item.monthlyRent === "number" ? (
                             <span className="text-[13px] font-semibold tabular-nums text-muted-blue-hover sm:text-[1.04rem]">
                               ~${item.monthlyRent.toLocaleString()}

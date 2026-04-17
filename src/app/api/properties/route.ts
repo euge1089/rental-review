@@ -8,7 +8,15 @@ export async function GET() {
       _count: { select: { reviews: true } },
       reviews: {
         where: { moderationStatus: "APPROVED" },
-        select: { monthlyRent: true },
+        select: {
+          monthlyRent: true,
+          hasParking: true,
+          hasCentralHeatCooling: true,
+          hasInUnitLaundry: true,
+          hasStorageSpace: true,
+          hasOutdoorSpace: true,
+          petFriendly: true,
+        },
       },
     },
     take: 200,
@@ -23,6 +31,31 @@ export async function GET() {
         ? Math.round(rents.reduce((sum, v) => sum + v, 0) / rents.length)
         : null;
 
+    const amenityCounts = [
+      {
+        label: "In-unit laundry",
+        count: property.reviews.filter((r) => r.hasInUnitLaundry).length,
+      },
+      { label: "Parking", count: property.reviews.filter((r) => r.hasParking).length },
+      {
+        label: "Central HVAC",
+        count: property.reviews.filter((r) => r.hasCentralHeatCooling).length,
+      },
+      { label: "Storage", count: property.reviews.filter((r) => r.hasStorageSpace).length },
+      {
+        label: "Outdoor space",
+        count: property.reviews.filter((r) => r.hasOutdoorSpace).length,
+      },
+      {
+        label: "Pet-friendly",
+        count: property.reviews.filter((r) => r.petFriendly).length,
+      },
+    ]
+      .filter((x) => x.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3)
+      .map((x) => x.label);
+
     return {
       id: property.id,
       addressLine1: property.addressLine1,
@@ -31,6 +64,7 @@ export async function GET() {
       postalCode: property.postalCode,
       reviewCount: property._count.reviews,
       averageRent,
+      topAmenities: amenityCounts,
       createdAt: property.createdAt.toISOString(),
     };
   });
