@@ -298,7 +298,7 @@ function RentRangeBand({
         </div>
 
         <div
-          className="mt-4 flex flex-col gap-3 sm:relative sm:mt-4 sm:min-h-[5.75rem] sm:flex-row sm:items-start sm:justify-between sm:gap-0"
+          className="mt-3 flex flex-col gap-3 sm:relative sm:mt-3 sm:min-h-[4.5rem] sm:flex-row sm:items-start sm:justify-between sm:gap-0"
           style={
             { "--rent-range-mid-pct": `${medianPct}%` } as CSSProperties
           }
@@ -372,6 +372,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   const [mapError, setMapError] = useState<string | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [hoveredReviewCardId, setHoveredReviewCardId] = useState<string | null>(null);
   const [reviewSort, setReviewSort] = useState<ReviewSortMode>("recent");
   const [desktopReviewCardCap, setDesktopReviewCardCap] = useState<number>(10);
   const [mobileResultsView, setMobileResultsView] = useState<"analytics" | "map">(
@@ -666,14 +667,77 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   const chipOff = "border-zinc-200/90 bg-white text-zinc-600 hover:border-muted-blue/25 hover:bg-muted-blue-tint/30";
   /** Edge bleed on phones only; from `sm` up sections use their own `sm:p-*` without `px-0` fighting it. */
   const mobileEdgeToEdgeClass = "max-sm:-mx-4 max-sm:px-4 sm:mx-0";
-  const activeFilterChips = [
-    zip !== "any" ? `ZIP ${zip}` : null,
-    bedroomQualifier(minBedroomBand, maxBedroomBand),
-    rentFilterClause(minRent, maxRent),
-    bathFilterClause(minBathrooms),
-    activeAmenityFilters ? "Amenities selected" : null,
-    timeWindow !== "all" ? formatTimeWindowLabel(timeWindow) : null,
-  ].filter(Boolean) as string[];
+  const activeFilterChips: { id: string; label: string; onRemove: () => void }[] = [];
+  if (zip !== "any") {
+    activeFilterChips.push({
+      id: `zip:${zip}`,
+      label: `ZIP ${zip}`,
+      onRemove: () => setZip("any"),
+    });
+  }
+
+  const bedroomChip = bedroomQualifier(minBedroomBand, maxBedroomBand);
+  if (bedroomChip) {
+    activeFilterChips.push({
+      id: "bedrooms",
+      label: bedroomChip,
+      onRemove: () => {
+        setMinBedroomBand("Any");
+        setMaxBedroomBand("Any");
+      },
+    });
+  }
+
+  const rentChip = rentFilterClause(minRent, maxRent);
+  if (rentChip) {
+    activeFilterChips.push({
+      id: "rent",
+      label: rentChip,
+      onRemove: () => {
+        setMinRent("");
+        setMaxRent("");
+      },
+    });
+  }
+
+  const bathChip = bathFilterClause(minBathrooms);
+  if (bathChip) {
+    activeFilterChips.push({
+      id: "bathrooms",
+      label: bathChip,
+      onRemove: () => setMinBathrooms("Any"),
+    });
+  }
+
+  const amenityChipConfig: { key: keyof ExplorerAmenitiesState; label: string }[] = [
+    { key: "hasParking", label: "Parking" },
+    { key: "hasCentralHeatCooling", label: "Central heat/cooling" },
+    { key: "hasInUnitLaundry", label: "In-unit laundry" },
+    { key: "hasStorageSpace", label: "Storage" },
+    { key: "hasOutdoorSpace", label: "Outdoor space" },
+    { key: "petFriendly", label: "Pet-friendly" },
+  ];
+
+  for (const chip of amenityChipConfig) {
+    if (!amenities[chip.key]) continue;
+    activeFilterChips.push({
+      id: `amenity:${chip.key}`,
+      label: chip.label,
+      onRemove: () =>
+        setAmenities((prev) => ({
+          ...prev,
+          [chip.key]: false,
+        })),
+    });
+  }
+
+  if (timeWindow !== "all") {
+    activeFilterChips.push({
+      id: `time:${timeWindow}`,
+      label: formatTimeWindowLabel(timeWindow),
+      onRemove: () => setTimeWindow("all"),
+    });
+  }
 
   return (
     <div className="flex flex-col gap-10">
@@ -1007,10 +1071,18 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           <div className="flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-2">
             {activeFilterChips.map((chip) => (
               <span
-                key={chip}
-                className="inline-flex min-h-8 items-center rounded-full border border-muted-blue/20 bg-muted-blue-tint px-3 py-1 text-xs font-semibold text-muted-blue-hover"
+                key={chip.id}
+                className="inline-flex min-h-8 items-center gap-1 rounded-full border border-muted-blue/20 bg-muted-blue-tint px-3 py-1 text-xs font-semibold text-muted-blue-hover"
               >
-                {chip}
+                <span>{chip.label}</span>
+                <button
+                  type="button"
+                  onClick={chip.onRemove}
+                  className="inline-flex size-5 items-center justify-center rounded-full text-muted-blue transition hover:bg-muted-blue/10 hover:text-muted-blue-hover"
+                  aria-label={`Remove ${chip.label} filter`}
+                >
+                  ×
+                </button>
               </span>
             ))}
           </div>
@@ -1431,9 +1503,13 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                     <li key={item.id} className="min-w-0">
                       <Link
                         href={`/properties/${item.propertyId}`}
-                        onMouseEnter={() => setSelectedPropertyId(item.propertyId)}
+                        onMouseEnter={() => {
+                          setHoveredReviewCardId(item.id);
+                          setSelectedPropertyId(item.propertyId);
+                        }}
+                        onMouseLeave={() => setHoveredReviewCardId(null)}
                         className={`group flex h-full min-h-[7.25rem] flex-col gap-1.5 rounded-xl border bg-white px-3 py-3 text-zinc-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition hover:border-muted-blue/30 hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.1)] sm:min-h-[7.5rem] sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-3.5 ${
-                          selectedPropertyId === item.propertyId
+                          hoveredReviewCardId === item.id
                             ? "border-muted-blue/40 ring-2 ring-muted-blue/20"
                             : "border-zinc-200/90"
                         }`}
