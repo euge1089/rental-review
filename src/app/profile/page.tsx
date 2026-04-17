@@ -38,6 +38,10 @@ type Props = {
 export default async function ProfilePage({ searchParams }: Props) {
   const { welcome } = await searchParams;
   const fromSignupWelcome = welcome === "1";
+  const supportEmail =
+    process.env.SUPPORT_EMAIL?.trim() ||
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() ||
+    null;
   const session = await getServerSession(authOptions);
   const email = session?.user?.email ?? null;
   const adminEmail = process.env.ADMIN_EMAIL ?? null;
@@ -173,6 +177,7 @@ export default async function ProfilePage({ searchParams }: Props) {
             { id: "profile-saved", label: "Saved" },
             { id: "profile-privacy", label: "Privacy" },
           ]}
+          supportEmail={supportEmail}
           className="order-1 sticky top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 w-full min-w-0 border-y border-zinc-200/80 bg-white/95 px-3 max-sm:py-1.5 backdrop-blur max-sm:-mx-[calc(0.5rem+1rem)] max-sm:w-[calc(100%+3rem)] max-sm:max-w-none sm:static sm:order-2 sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none"
         />
       </div>

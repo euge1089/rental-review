@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PrivacyPolicyContent } from "@/app/_components/privacy-policy-content";
 
 type SectionItem = {
   id: string;
@@ -10,11 +11,13 @@ type SectionItem = {
 type Props = {
   sections: SectionItem[];
   className?: string;
+  supportEmail?: string | null;
 };
 
 export function ProfileSectionNav({
   sections,
   className,
+  supportEmail,
 }: Props) {
   const [activeId, setActiveId] = useState<string>(sections[0]?.id ?? "");
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -141,11 +144,9 @@ export function ProfileSectionNav({
                 ×
               </button>
             </div>
-            <iframe
-              src="/legal/privacy"
-              title="Privacy policy"
-              className="h-full w-full flex-1 border-0"
-            />
+            <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
+              <PrivacyPolicyContent support={supportEmail} />
+            </div>
           </div>
         </div>
       ) : null}

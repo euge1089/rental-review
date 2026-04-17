@@ -428,7 +428,7 @@ export function GiveawayPromoStrip({
                   rental review.{" "}
                   <Link
                     href="/submit"
-                    className={`${linkInlineClass} font-semibold text-muted-blue`}
+                    className={`${linkInlineClass} font-semibold text-muted-blue underline underline-offset-2`}
                   >
                     Submit a review
                   </Link>

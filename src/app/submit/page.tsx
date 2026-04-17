@@ -1079,7 +1079,7 @@ export default function SubmitReviewPage() {
                 ? "Nice - keep going. The full Boston review database is almost yours."
                 : "Last step - finish here and you're in."}
           </p>
-          <p className="text-sm font-medium text-emerald-800/90">
+          <p className="hidden text-sm font-medium text-emerald-800/90 sm:block">
             Step {step} of 3
           </p>
         </div>
@@ -1141,7 +1141,7 @@ export default function SubmitReviewPage() {
                   on the public review - only a broad timeframe.
                 </p>
                 {typeof bostonFloor === "number" ? (
-                  <p className="text-sm leading-relaxed text-zinc-600">
+                  <p className="hidden text-sm leading-relaxed text-zinc-600 sm:block">
                     Your profile says you started renting in Boston in {bostonFloor},
                     so only {bostonFloor} and later years appear here.
                   </p>
@@ -1166,7 +1166,7 @@ export default function SubmitReviewPage() {
                   className={formInputCompactClass}
                 />
               </div>
-              <div className="grid min-w-0 grid-cols-1 gap-3 sm:flex sm:gap-3 lg:contents">
+              <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_6.5rem] gap-3 sm:flex sm:gap-3 lg:contents">
                 <div className="grid min-w-0 gap-2 sm:max-w-[10rem] sm:flex-1 lg:w-[min(7.5rem,100%)] lg:max-w-[7.5rem] lg:flex-none">
                   <label
                     htmlFor="unit"
@@ -1182,7 +1182,7 @@ export default function SubmitReviewPage() {
                     className={formInputCompactClass}
                   />
                 </div>
-                <div className="grid w-[min(100%,6.5rem)] shrink-0 gap-2 sm:w-28 lg:w-24 lg:flex-none">
+                <div className="grid w-full shrink-0 gap-2 sm:w-28 lg:w-24 lg:flex-none">
                   <label
                     htmlFor="postalCode"
                     className="text-sm font-semibold leading-5 text-zinc-800"
@@ -1238,14 +1238,14 @@ export default function SubmitReviewPage() {
                 Bathrooms
               </span>
               <div
-                className="flex w-full min-w-0 flex-wrap gap-1.5 sm:gap-2"
+                className="grid w-full min-w-0 grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:gap-2"
                 role="group"
                 aria-labelledby="bathroom-count-label"
               >
                 {BATHROOM_SUBMIT_OPTIONS.map(({ value, label }, i) => (
                   <label
                     key={value}
-                    className="flex h-10 min-h-10 min-w-[3rem] cursor-pointer items-center justify-center rounded-xl border border-zinc-200/90 bg-white px-3 text-xs font-semibold tabular-nums text-zinc-700 shadow-[0_1px_0_rgb(15_23_42/0.03)] transition has-[:checked]:border-muted-blue-hover has-[:checked]:bg-muted-blue-hover has-[:checked]:text-white has-[:checked]:shadow-none sm:min-w-[3.25rem] sm:px-3.5"
+                    className="flex h-10 min-h-10 w-full min-w-0 cursor-pointer items-center justify-center rounded-xl border border-zinc-200/90 bg-white px-2 text-xs font-semibold tabular-nums text-zinc-700 shadow-[0_1px_0_rgb(15_23_42/0.03)] transition has-[:checked]:border-muted-blue-hover has-[:checked]:bg-muted-blue-hover has-[:checked]:text-white has-[:checked]:shadow-none sm:min-w-[3.25rem] sm:w-auto sm:px-3.5"
                   >
                     <input
                       type="radio"
@@ -1270,8 +1270,8 @@ export default function SubmitReviewPage() {
                     Lease start year(s)
                   </p>
                   <p className="mt-1 text-sm leading-relaxed text-zinc-500">
-                    {PRODUCT_POLICY.reviews.leaseStartYearRule} Choose every year you
-                    want a review for - rent can differ each year.
+                    {PRODUCT_POLICY.reviews.leaseStartYearRule} Choose every year that
+                    you lived at this property.
                   </p>
                   <p className="mt-1.5 text-sm font-medium text-zinc-600">
                     Please enter <strong>total unit monthly rent</strong> (not per room).
