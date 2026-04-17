@@ -61,11 +61,15 @@ export function NavUser({ adminEmail, variant = "default" }: Props) {
           <span className="min-w-0 flex-1 truncate text-base font-semibold text-zinc-900">
             {displayName}
           </span>
-          {isAdmin ? (
-            <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-900 ring-1 ring-amber-200/80">
-              Admin
-            </span>
-          ) : null}
+          <span
+            className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ring-1 ${
+              isAdmin
+                ? "bg-amber-100 text-amber-900 ring-amber-200/80"
+                : "bg-muted-blue-tint text-muted-blue-hover ring-muted-blue/25"
+            }`}
+          >
+            {isAdmin ? "Admin" : "Member"}
+          </span>
         </Link>
         <SignOutOverlay triggerClassName="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-3 text-base font-semibold text-zinc-700 shadow-sm transition active:bg-zinc-50" />
       </div>
@@ -87,11 +91,15 @@ export function NavUser({ adminEmail, variant = "default" }: Props) {
         className="flex min-h-11 min-w-0 max-w-[min(100%,14rem)] items-center gap-2 rounded-full px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80 hover:bg-muted-blue-tint sm:min-h-0 sm:max-w-[18rem] sm:gap-4 sm:py-1 md:max-w-none"
       >
         <span className="min-w-0 flex-1 truncate">{displayName}</span>
-        {isAdmin && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-700">
-            Admin
-          </span>
-        )}
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
+            isAdmin
+              ? "bg-amber-100 text-amber-700"
+              : "bg-muted-blue-tint text-muted-blue-hover"
+          }`}
+        >
+          {isAdmin ? "Admin" : "Member"}
+        </span>
       </Link>
       <SignOutOverlay triggerClassName="inline-flex min-h-11 items-center rounded-full px-3 py-2 font-medium text-muted-blue active:bg-muted-blue-tint/80 hover:bg-muted-blue-tint sm:min-h-0 sm:py-1" />
     </div>
