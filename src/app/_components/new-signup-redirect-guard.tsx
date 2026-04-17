@@ -16,22 +16,6 @@ export function NewSignupRedirectGuard() {
     const justSignedUp = session?.user?.justSignedUp;
     if (!email) return;
 
-    const storageKey = `rr_new_signup_redirect_done:${email.toLowerCase()}`;
-    try {
-      if (window.sessionStorage.getItem(storageKey) === "1") return;
-    } catch {
-      // Ignore storage failures and continue with redirect check.
-    }
-
-    if (pathname === "/submit" && searchParams?.get("new") === "1") {
-      try {
-        window.sessionStorage.setItem(storageKey, "1");
-      } catch {
-        // Ignore storage failures.
-      }
-      return;
-    }
-
     let cancelled = false;
     (async () => {
       try {
@@ -42,11 +26,8 @@ export function NewSignupRedirectGuard() {
         };
         if (cancelled) return;
         if (!data.ok || data.bostonRentingSinceYear != null) return;
-        try {
-          window.sessionStorage.setItem(storageKey, "1");
-        } catch {
-          // Ignore storage failures.
-        }
+        if (pathname === "/submit" && searchParams?.get("new") === "1") return;
+        if (pathname === "/submit" && !justSignedUp) return;
         if (justSignedUp) {
           router.replace("/submit?new=1");
         } else {

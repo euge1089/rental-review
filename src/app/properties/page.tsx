@@ -395,16 +395,16 @@ export default function PropertiesPage() {
         )
       ) : (
         <div className="space-y-0">
-          <div className="max-sm:max-h-[62vh] max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:pr-1">
-            <ul className="grid gap-4 md:grid-cols-2">
+          <div className="max-sm:max-h-[62vh] max-sm:overflow-y-auto max-sm:overflow-x-hidden max-sm:overscroll-contain">
+            <ul className="grid min-w-0 gap-4 md:grid-cols-2">
               {visibleProperties.map((property) => (
                 <li
                   key={property.id}
-                  className="mx-0"
+                  className="min-w-0"
                 >
                   <Link
                     href={`/properties/${property.id}`}
-                    className={`group block ${surfaceSubtleClass} border-zinc-200/80 bg-white px-4 py-5 transition hover:border-muted-blue/25 sm:p-5 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.08)]`}
+                    className={`group block w-full min-w-0 ${surfaceSubtleClass} border-zinc-200/80 bg-white px-4 py-5 transition hover:border-muted-blue/25 sm:p-5 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.08)]`}
                   >
                     <p className="break-words text-pretty text-lg font-semibold text-muted-blue-hover underline-offset-2 group-hover:underline">
                       {property.addressLine1}
