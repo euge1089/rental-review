@@ -80,7 +80,7 @@ export function ProfileSectionNav({
         <div className="flex w-full min-w-0 items-stretch">
           {sections.flatMap((section, index) => {
             const active = activeId === section.id;
-            const baseClass = `flex min-h-10 min-w-0 flex-1 basis-0 items-center justify-center px-2 py-2 text-center text-xs font-semibold transition sm:px-3 sm:text-sm ${
+            const baseClass = `flex min-w-0 flex-1 basis-0 items-center justify-center px-2 py-2 text-center text-xs font-semibold transition max-sm:min-h-11 max-sm:py-2.5 max-sm:text-[13px] sm:px-3 sm:text-sm ${
               active
                 ? "text-muted-blue-hover underline decoration-2 underline-offset-[0.2em]"
                 : "text-zinc-600 hover:text-muted-blue-hover"
@@ -126,25 +126,27 @@ export function ProfileSectionNav({
       </nav>
 
       {privacyOpen ? (
-        <div className="fixed inset-0 z-[70] flex flex-col bg-white">
-          <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 sm:px-6">
-            <p className="text-sm font-semibold tracking-tight text-muted-blue-hover sm:text-base">
-              Privacy
-            </p>
-            <button
-              type="button"
-              onClick={() => setPrivacyOpen(false)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-800"
-              aria-label="Close privacy"
-            >
-              ×
-            </button>
+        <div className="fixed inset-0 z-[80] bg-zinc-900/45 p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] backdrop-blur-[2px] sm:p-6">
+          <div className="mx-auto flex h-full w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_24px_60px_-18px_rgb(15_23_42/0.45)] sm:rounded-3xl">
+            <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 sm:px-6">
+              <p className="text-sm font-semibold tracking-tight text-muted-blue-hover sm:text-base">
+                Privacy
+              </p>
+              <button
+                type="button"
+                onClick={() => setPrivacyOpen(false)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-800"
+                aria-label="Close privacy"
+              >
+                ×
+              </button>
+            </div>
+            <iframe
+              src="/legal/privacy"
+              title="Privacy policy"
+              className="h-full w-full flex-1 border-0"
+            />
           </div>
-          <iframe
-            src="/legal/privacy"
-            title="Privacy policy"
-            className="h-full w-full flex-1 border-0"
-          />
         </div>
       ) : null}
     </>

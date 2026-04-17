@@ -69,6 +69,8 @@ type MapApiResponse = {
   markers?: ExplorerMapMarker[];
 };
 
+type ReviewSortMode = "recent" | "rent-asc" | "rent-desc";
+
 const BOSTON_ZIPS = ["02127", "02210"];
 const MAP_ENABLED = process.env.NEXT_PUBLIC_ENABLE_RENT_EXPLORER_MAP === "1";
 
@@ -371,11 +373,13 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   const [mapError, setMapError] = useState<string | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [reviewSort, setReviewSort] = useState<ReviewSortMode>("recent");
   const [mobileResultsView, setMobileResultsView] = useState<"analytics" | "map">(
     "map",
   );
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const mapAbortRef = useRef<AbortController | null>(null);
+  const reviewsSectionRef = useRef<HTMLElement | null>(null);
 
   const activeAmenityFilters = useMemo(
     () => Object.values(amenities).some(Boolean),
@@ -396,7 +400,11 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
     };
   }
 
-  async function fetchPage(nextPage: number, append: boolean) {
+  async function fetchPage(
+    nextPage: number,
+    append: boolean,
+    scrollToReviewsTop = false,
+  ) {
     setIsLoading(true);
     setError(null);
     try {
@@ -419,6 +427,18 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
       }
       setPage(nextPage);
       setHasSearched(true);
+      if (
+        scrollToReviewsTop &&
+        typeof window !== "undefined" &&
+        window.matchMedia("(max-width: 639px)").matches
+      ) {
+        window.requestAnimationFrame(() => {
+          reviewsSectionRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        });
+      }
     } catch {
       setError("Couldn't load this page. Try again.");
     } finally {
@@ -602,6 +622,31 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   );
 
   const noMatches = hasSearched && items.length === 0;
+  const sortedItems = useMemo(() => {
+    const copy = [...items];
+    if (reviewSort === "recent") {
+      copy.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+      return copy;
+    }
+    if (reviewSort === "rent-asc") {
+      copy.sort((a, b) => {
+        if (a.monthlyRent == null && b.monthlyRent == null) return 0;
+        if (a.monthlyRent == null) return 1;
+        if (b.monthlyRent == null) return -1;
+        return a.monthlyRent - b.monthlyRent;
+      });
+      return copy;
+    }
+    copy.sort((a, b) => {
+      if (a.monthlyRent == null && b.monthlyRent == null) return 0;
+      if (a.monthlyRent == null) return 1;
+      if (b.monthlyRent == null) return -1;
+      return b.monthlyRent - a.monthlyRent;
+    });
+    return copy;
+  }, [items, reviewSort]);
 
   const selectClass = `${formSelectCompactClass} min-w-0`;
   const chipBase =
@@ -1242,6 +1287,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
       {/* Results list */}
       <section
+        ref={reviewsSectionRef}
         className={`${mobileEdgeToEdgeClass} space-y-5 bg-white max-sm:px-4 max-sm:py-5 sm:rounded-3xl sm:border sm:border-zinc-100 sm:px-8 sm:py-8 sm:shadow-elevated`}
       >
         <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
@@ -1252,7 +1298,27 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             <h2 className="mt-1 pb-1 text-xl font-semibold tracking-tight text-muted-blue-hover">
               Reviews that match your search
             </h2>
-            <p className={`mt-1 max-w-2xl ${explorerBodyLeadClass}`}>
+            <div className="mt-2 sm:hidden">
+              <label
+                htmlFor="rent-explorer-review-sort"
+                className="mb-1.5 block text-xs font-medium text-zinc-600"
+              >
+                Sort
+              </label>
+              <select
+                id="rent-explorer-review-sort"
+                value={reviewSort}
+                onChange={(event) =>
+                  setReviewSort(event.target.value as ReviewSortMode)
+                }
+                className={`${formSelectCompactClass} w-full`}
+              >
+                <option value="recent">Most recent</option>
+                <option value="rent-asc">Price: low to high</option>
+                <option value="rent-desc">Price: high to low</option>
+              </select>
+            </div>
+            <p className={`mt-1 hidden max-w-2xl sm:block ${explorerBodyLeadClass}`}>
               Newest first, up to 10 per page.{" "}
               <span className="hidden sm:inline">
                 Cards widen with your screen—up to three columns on large displays.{" "}
@@ -1305,7 +1371,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           <>
             <div className="w-full rounded-2xl border border-zinc-100 bg-muted-blue-tint/25 p-2.5 sm:p-4">
               <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 md:gap-x-4 md:gap-y-3">
-                {items.map((item) => {
+                {sortedItems.map((item) => {
                   const bbLabel = bedroomsBathroomsLabel(item);
                   const amenityLabels: string[] = [];
                   if (item.hasInUnitLaundry) amenityLabels.push("In-unit laundry");
@@ -1377,7 +1443,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             ) : null}
             <div className="flex flex-col gap-3 border-t border-zinc-100 pt-4 text-[1.04rem] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
               <span>
-                Showing {items.length} of {snapshot ? snapshot.n.toLocaleString() : "?"}{" "}
+                Showing {sortedItems.length} of {snapshot ? snapshot.n.toLocaleString() : "?"}{" "}
                 reviews
               </span>
               <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
@@ -1391,7 +1457,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => fetchPage(page + 1, false)}
+                  onClick={() => fetchPage(page + 1, false, true)}
                   disabled={!hasMore || isLoading}
                   className="inline-flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-[1.04rem] font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 disabled:opacity-50 sm:min-w-[6.5rem] sm:w-auto sm:rounded-full"
                 >

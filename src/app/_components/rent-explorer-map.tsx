@@ -2,8 +2,8 @@
 
 import "mapbox-gl/dist/mapbox-gl.css";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import Map, { Marker, NavigationControl, Popup } from "react-map-gl/mapbox";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Map, { Marker, NavigationControl, Popup, type MapRef } from "react-map-gl/mapbox";
 import type { LngLatBounds } from "mapbox-gl";
 
 export type ExplorerMapBounds = {
@@ -66,6 +66,8 @@ export function RentExplorerMap({
   const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
   const hasToken = token.trim().length > 0;
   const [hoveredPropertyId, setHoveredPropertyId] = useState<string | null>(null);
+  const [popupAnchor, setPopupAnchor] = useState<"top" | "bottom">("bottom");
+  const mapRef = useRef<MapRef | null>(null);
 
   const initialViewState = useMemo(() => {
     const phone =
@@ -86,6 +88,60 @@ export function RentExplorerMap({
     if (!activePropertyId) return null;
     return sortedMarkers.find((marker) => marker.propertyId === activePropertyId) ?? null;
   }, [hoveredPropertyId, selectedPropertyId, sortedMarkers]);
+  const activeMarkerSize = activeMarker ? markerSize(activeMarker.reviewCount) : 0;
+  const popupOffsetY =
+    popupAnchor === "bottom" ? -(activeMarkerSize / 2) : activeMarkerSize / 2;
+
+  useEffect(() => {
+    if (!activeMarker || !mapRef.current) return;
+    const raw = mapRef.current.getMap();
+    const canvas = raw.getCanvas();
+    const projected = raw.project([activeMarker.longitude, activeMarker.latitude]);
+    const opensDownward = projected.y < canvas.height / 2;
+    setPopupAnchor(opensDownward ? "top" : "bottom");
+  }, [activeMarker]);
+
+  useEffect(() => {
+    if (!activeMarker || !mapRef.current) return;
+    const raw = mapRef.current.getMap();
+    const canvas = raw.getCanvas();
+    const projected = raw.project([activeMarker.longitude, activeMarker.latitude]);
+    const mapHeight = canvas.height;
+    const mapWidth = canvas.width;
+
+    // Approximate popup bounds so we can keep the full card in view.
+    const estimatedPopupHeight = 188;
+    const estimatedPopupWidth = 236;
+    const edgePadding = 16;
+    const anchorGap = 16;
+
+    const popupTop =
+      popupAnchor === "bottom"
+        ? projected.y - (estimatedPopupHeight + anchorGap)
+        : projected.y + anchorGap;
+    const popupBottom = popupTop + estimatedPopupHeight;
+    const popupLeft = projected.x - estimatedPopupWidth / 2;
+    const popupRight = projected.x + estimatedPopupWidth / 2;
+
+    let panX = 0;
+    let panY = 0;
+
+    if (popupTop < edgePadding) panY = popupTop - edgePadding;
+    else if (popupBottom > mapHeight - edgePadding)
+      panY = popupBottom - (mapHeight - edgePadding);
+
+    if (popupLeft < edgePadding) panX = popupLeft - edgePadding;
+    else if (popupRight > mapWidth - edgePadding)
+      panX = popupRight - (mapWidth - edgePadding);
+
+    if (panX !== 0 || panY !== 0) {
+      raw.easeTo({
+        center: raw.unproject([projected.x + panX, projected.y + panY]),
+        duration: 260,
+        essential: true,
+      });
+    }
+  }, [activeMarker, popupAnchor]);
 
   if (!hasToken) {
     return (
@@ -102,6 +158,7 @@ export function RentExplorerMap({
         className="[&_.mapboxgl-canvas-container]:overflow-hidden [&_.mapboxgl-canvas-container]:rounded-3xl [&_.mapboxgl-map]:rounded-3xl [&_.mapboxgl-canvas]:saturate-[1.22] [&_.mapboxgl-canvas]:contrast-[1.09] [&_.mapboxgl-canvas]:brightness-[1.02]"
       >
         <Map
+        ref={mapRef}
         initialViewState={initialViewState}
         style={{ width: "100%", height: 420 }}
         mapStyle="mapbox://styles/mapbox/light-v11"
@@ -158,8 +215,8 @@ export function RentExplorerMap({
             latitude={activeMarker.latitude}
             closeButton={false}
             closeOnClick={false}
-            anchor="bottom"
-            offset={[0, 12]}
+            anchor={popupAnchor}
+            offset={[0, popupOffsetY]}
             className="z-30 [&_.mapboxgl-popup]:!max-w-none [&_.mapboxgl-popup-content]:rounded-xl [&_.mapboxgl-popup-content]:border [&_.mapboxgl-popup-content]:border-muted-blue/20 [&_.mapboxgl-popup-content]:p-3 [&_.mapboxgl-popup-content]:shadow-lg [&_.mapboxgl-popup-tip]:border-muted-blue/20"
           >
             <div className="min-w-[14rem] space-y-1.5 text-sm text-zinc-800">

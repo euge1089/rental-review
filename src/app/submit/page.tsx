@@ -495,7 +495,13 @@ export default function SubmitReviewPage() {
       trackEvent("submit_step_2_reached");
     }
     requestAnimationFrame(() => {
-      document.getElementById(`submit-step-${nextStep}`)?.scrollIntoView({
+      const mobile =
+        typeof window !== "undefined" &&
+        window.matchMedia("(max-width: 639px)").matches;
+      const target = mobile
+        ? formRef.current
+        : document.getElementById(`submit-step-${nextStep}`);
+      target?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
@@ -1057,9 +1063,6 @@ export default function SubmitReviewPage() {
                 We don&apos;t publish your exact lease-start years, so no one can guess
                 who wrote it.
               </p>
-              <p className="mt-2.5 sm:mt-3">
-                Most people finish in about a minute.
-              </p>
             </>
           }
         />
@@ -1120,7 +1123,7 @@ export default function SubmitReviewPage() {
         onChange={() => {
           persistDraft();
         }}
-        className={`${surfaceElevatedClass} space-y-7 p-6 pb-28 text-base sm:space-y-8 sm:p-10 ${formSurfaceBlocked ? "pointer-events-none opacity-40" : ""}`}
+        className={`${surfaceElevatedClass} scroll-mt-24 space-y-7 p-6 pb-28 text-base sm:space-y-8 sm:p-10 ${formSurfaceBlocked ? "pointer-events-none opacity-40" : ""}`}
       >
         <div
           data-step-panel="1"
@@ -1271,7 +1274,7 @@ export default function SubmitReviewPage() {
                     want a review for - rent can differ each year.
                   </p>
                   <p className="mt-1.5 text-sm font-medium text-zinc-600">
-                    Please enter total unit monthly rent (not per room).
+                    Please enter <strong>total unit monthly rent</strong> (not per room).
                   </p>
                 </div>
                 {leaseYearOptions.length === 0 ? (

@@ -173,7 +173,7 @@ export default async function ProfilePage({ searchParams }: Props) {
             { id: "profile-saved", label: "Saved" },
             { id: "profile-privacy", label: "Privacy" },
           ]}
-          className="order-1 sticky top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 w-full min-w-0 border-y border-zinc-200/80 bg-white/95 px-3 py-1 backdrop-blur max-sm:-mx-[calc(0.5rem+1rem)] max-sm:w-[calc(100%+3rem)] max-sm:max-w-none sm:static sm:order-2 sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none"
+          className="order-1 sticky top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 w-full min-w-0 border-y border-zinc-200/80 bg-white/95 px-3 max-sm:py-1.5 backdrop-blur max-sm:-mx-[calc(0.5rem+1rem)] max-sm:w-[calc(100%+3rem)] max-sm:max-w-none sm:static sm:order-2 sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none"
         />
       </div>
       {bostonRentingSinceYear != null &&
