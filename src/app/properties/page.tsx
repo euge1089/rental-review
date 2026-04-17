@@ -111,7 +111,7 @@ export default function PropertiesPage() {
     return parseSortParam(params.get("sort"));
   });
   const [reviewCount, setReviewCount] = useState<number | null>(null);
-  const [dismissedMobileGiveaway, setDismissedMobileGiveaway] = useState(false);
+  const [dismissedGiveaway, setDismissedGiveaway] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
 
   useEffect(() => {
@@ -230,12 +230,12 @@ export default function PropertiesPage() {
 
   return (
     <AppPageShell gapClass="gap-6">
-      {!isMobileNoReviewGate || !dismissedMobileGiveaway ? (
+      {!dismissedGiveaway ? (
         <GiveawayPromoStrip
           variant="home"
           placement="properties"
-          showMobileDismiss={isMobileNoReviewGate}
-          onMobileDismiss={() => setDismissedMobileGiveaway(true)}
+          showDismiss
+          onDismiss={() => setDismissedGiveaway(true)}
         />
       ) : null}
       <div
