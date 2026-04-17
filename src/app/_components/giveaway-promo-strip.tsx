@@ -366,9 +366,9 @@ export function GiveawayPromoStrip({
               </p>
               <Link
                 href="/submit"
-                className="mt-3 flex w-full min-h-[2.875rem] items-center justify-center rounded-lg bg-muted-blue px-4 py-3 text-center text-sm font-semibold text-white shadow-sm ring-1 ring-muted-blue/20 transition hover:bg-muted-blue-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-muted-blue"
+                className="mt-3 flex w-full min-h-[2.875rem] items-center justify-center rounded-lg bg-muted-blue px-3 py-3 text-center text-xs font-semibold uppercase leading-snug tracking-wide text-white shadow-sm ring-1 ring-muted-blue/20 transition hover:bg-muted-blue-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-muted-blue sm:px-4 sm:text-sm"
               >
-                Submit a review
+                Submit a review to enter
               </Link>
               <p className="mt-2 text-center text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
                 <span className="text-muted-blue/90">100% anonymous</span>
