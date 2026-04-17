@@ -164,22 +164,22 @@ export function PropertyEngagement(props: Props) {
         </Link>
       </div>
 
-      <div className="hidden lg:flex lg:items-start lg:gap-4">
-        <div className="lg:w-[16.5rem]">
+      <div className="hidden lg:flex lg:h-full lg:items-stretch lg:gap-4">
+        <div className="lg:w-[16.75rem] lg:self-stretch">
           {showMapSnapshot ? (
-            <div className="overflow-hidden rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.06)]">
+            <div className="relative h-full min-h-[13.25rem] overflow-hidden rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.06)]">
               <Image
                 src={props.mapSnapshotSrc!}
                 alt={`Map snapshot for ${props.addressLine1}`}
-                width={320}
-                height={320}
-                className="block h-[13.25rem] w-full object-cover"
+                fill
+                sizes="268px"
+                className="object-cover"
                 unoptimized
                 referrerPolicy="no-referrer"
               />
             </div>
           ) : (
-            <div className="flex h-[13.25rem] items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white/80 px-4 text-center">
+            <div className="flex h-full min-h-[13.25rem] items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white/80 px-4 text-center">
               <p className="text-xs leading-relaxed text-zinc-500">
                 Map snapshot unavailable for this address.
               </p>

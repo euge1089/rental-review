@@ -37,7 +37,7 @@ export function PropertyDetailHero({
       />
 
       <div className="relative px-4 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-between lg:gap-8">
           <div className="min-w-0 flex-1 space-y-4">
             <p className="inline-flex items-center gap-2 rounded-full border border-zinc-200/90 bg-white/95 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-blue shadow-sm">
               <span
@@ -80,7 +80,7 @@ export function PropertyDetailHero({
           </div>
 
           {engagementSlot ? (
-            <div className="flex w-full shrink-0 flex-col gap-3 lg:mt-0 lg:w-auto lg:min-w-[12rem] lg:items-end">
+            <div className="flex w-full shrink-0 flex-col gap-3 lg:mt-0 lg:w-auto lg:min-w-[12rem] lg:self-stretch lg:items-stretch">
               {engagementSlot}
             </div>
           ) : null}
