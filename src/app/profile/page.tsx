@@ -145,9 +145,19 @@ export default async function ProfilePage({ searchParams }: Props) {
         reviewCount={reviews.length}
         bostonRentingSinceYear={bostonRentingSinceYear}
       />
+      <ProfileSectionNav
+        sections={[
+          { id: "profile-account", label: "Account" },
+          { id: "profile-reviews", label: "Reviews" },
+          { id: "profile-saved", label: "Saved" },
+          { id: "profile-privacy", label: "Privacy" },
+        ]}
+        supportEmail={supportEmail}
+        className="sticky top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 w-full min-w-0 border-y border-zinc-200/80 bg-white/95 px-3 max-sm:py-1.5 backdrop-blur max-sm:-mx-[calc(0.5rem+1rem)] max-sm:w-[calc(100%+3rem)] max-sm:max-w-none sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none"
+      />
       <div className="flex flex-col gap-5 sm:gap-8">
         <PageHeader
-          className="pt-3 sm:order-1 sm:pt-0"
+          className="pt-5 sm:pt-0"
           eyebrow="Profile"
           title="Your reviews and saved apartments"
           description={
@@ -171,16 +181,6 @@ export default async function ProfilePage({ searchParams }: Props) {
           }
         />
       </div>
-      <ProfileSectionNav
-        sections={[
-          { id: "profile-account", label: "Account" },
-          { id: "profile-reviews", label: "Reviews" },
-          { id: "profile-saved", label: "Saved" },
-          { id: "profile-privacy", label: "Privacy" },
-        ]}
-        supportEmail={supportEmail}
-        className="sticky top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 w-full min-w-0 border-y border-zinc-200/80 bg-white/95 px-3 max-sm:py-1.5 backdrop-blur max-sm:-mx-[calc(0.5rem+1rem)] max-sm:w-[calc(100%+3rem)] max-sm:max-w-none sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none"
-      />
       {bostonRentingSinceYear != null &&
       eligibleYearsWithoutAnyReview.length > 0 ? (
         <section

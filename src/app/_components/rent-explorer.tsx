@@ -1121,7 +1121,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
       ) : null}
 
       {MAP_ENABLED ? (
-        <section className={`${mobileEdgeToEdgeClass} -my-1 sm:hidden`}>
+        <section className={`${mobileEdgeToEdgeClass} -my-2 sm:hidden`}>
           <div className="grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200/80 bg-white p-1.5">
             <button
               type="button"
@@ -1151,7 +1151,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
       {MAP_ENABLED ? (
         <section
-          className={`${mobileResultsView === "map" ? "block" : "hidden"} ${mobileEdgeToEdgeClass} space-y-3 bg-white py-4 max-sm:bg-muted-blue-tint max-sm:pb-0 sm:block sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-6 sm:shadow-elevated`}
+          className={`${mobileResultsView === "map" ? "block" : "hidden"} ${mobileEdgeToEdgeClass} space-y-3 bg-white py-4 max-sm:bg-[#f5f5f6] max-sm:pb-0 sm:block sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-6 sm:shadow-elevated`}
         >
           <div className="space-y-1 pt-1">
             <p className={explorerEyebrowClass}>
@@ -1182,7 +1182,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
       {snapshot ? (
         <>
           <section
-            className={`${mobileEdgeToEdgeClass} bg-muted-blue-tint px-4 py-5 sm:rounded-3xl sm:border sm:border-zinc-200/90 sm:px-6 sm:py-6 ${
+            className={`${mobileEdgeToEdgeClass} bg-muted-blue-tint px-4 py-5 max-sm:bg-[#f5f5f6] sm:rounded-3xl sm:border sm:border-zinc-200/90 sm:px-6 sm:py-6 ${
               MAP_ENABLED && mobileResultsView === "map" ? "max-sm:hidden" : ""
             }`}
           >
@@ -1196,7 +1196,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             </div>
 
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <div className="rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+              <div className="max-sm:justify-self-center max-sm:w-[90%] rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Typical rent
                 </p>
@@ -1209,11 +1209,11 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                   {rangeLine ?? `n = ${snapshot.n.toLocaleString()}`}
                 </p>
               </div>
-              <div className="max-sm:col-span-2 rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+              <div className="max-sm:order-3 max-sm:col-span-2 rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Range
                 </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover lg:text-lg">
+                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover max-sm:text-[1.375rem] lg:text-lg">
                   {typeof snapshot.min === "number" &&
                   typeof snapshot.max === "number"
                     ? `$${snapshot.min.toLocaleString()}–$${snapshot.max.toLocaleString()}`
@@ -1224,7 +1224,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                   {snapshot.n === 1 ? "" : "s"} that matched.
                 </p>
               </div>
-              <div className="rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+              <div className="max-sm:order-2 max-sm:justify-self-center max-sm:w-[90%] rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Matching reviews
                 </p>
@@ -1235,13 +1235,13 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                   Posted in the {formatTimeWindowLabel(timeWindow)} you selected.
                 </p>
               </div>
-              <div className="max-sm:col-span-2 rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+              <div className="max-sm:order-4 max-sm:col-span-2 rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Amenities
                 </p>
                 {snapshot.n > 0 ? (
                   <>
-                    <p className="mt-1.5 text-2xl font-semibold leading-snug text-muted-blue-hover lg:text-[1.04rem]">
+                    <p className="mt-1.5 text-2xl font-semibold leading-snug text-muted-blue-hover max-sm:text-[1.375rem] lg:text-[1.04rem]">
                       Laundry {snapshot.amenityPercentages.hasInUnitLaundry}% · Parking{" "}
                       {snapshot.amenityPercentages.hasParking}%
                     </p>
