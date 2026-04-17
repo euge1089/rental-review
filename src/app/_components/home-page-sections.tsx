@@ -513,6 +513,114 @@ export function HomePageSections({
 
         <HomeDivider fw={fw} className="max-sm:hidden" />
 
+        {/* Signed-in unlock preview */}
+        <section
+          className={
+            fw
+              ? "w-full border-b border-zinc-100 bg-white py-14 lg:py-16"
+              : "mt-16 rounded-3xl bg-white p-8 shadow-elevated sm:p-10"
+          }
+        >
+          <SectionMaxW fw={fw}>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p
+                  className={
+                    fw
+                      ? "max-w-xl text-2xl font-semibold leading-snug tracking-tight text-muted-blue-hover sm:text-3xl"
+                      : "text-lg font-semibold text-muted-blue-hover"
+                  }
+                >
+                  Unlock full reviews, real rent numbers, and the Boston Rent Explorer.
+                </p>
+              </div>
+              <Link
+                href="/analytics"
+                className={
+                  fw
+                    ? "rounded-full border border-pop/30 bg-pop-tint/50 px-5 py-2.5 text-sm font-semibold text-pop shadow-sm transition hover:border-pop/50 hover:bg-pop-tint"
+                    : "text-sm font-semibold text-muted-blue hover:underline"
+                }
+              >
+                See Rent Explorer →
+              </Link>
+            </div>
+            <div
+              className={
+                fw
+                  ? "mt-10 grid gap-6 md:grid-cols-2 lg:gap-8"
+                  : "mt-7 grid gap-5 md:grid-cols-2"
+              }
+            >
+              <div
+                className={
+                  fw
+                    ? "rounded-3xl border border-zinc-100 bg-white p-8 shadow-elevated"
+                    : "rounded-2xl bg-zinc-50/90 p-6 shadow-[inset_0_0_0_1px_rgb(15_23_42/0.06)]"
+                }
+              >
+                <p className="text-xs font-semibold text-zinc-500">Preview</p>
+                <p
+                  className={
+                    fw
+                      ? "mt-3 text-lg font-semibold text-muted-blue-hover"
+                      : "mt-2 text-sm font-semibold text-muted-blue-hover"
+                  }
+                >
+                  160 K Street, South Boston
+                </p>
+                <p className="text-xs text-zinc-500">3 reviews · details hidden</p>
+                <div className="mt-4 h-2 w-24 rounded-full bg-zinc-200" />
+                <p className="mt-4 text-sm text-zinc-500">
+                  Sign in to see real numbers and full stories.
+                </p>
+              </div>
+              <div
+                className={
+                  fw
+                    ? "rounded-3xl border border-r border-t border-b border-zinc-100 border-l-[3px] border-l-pop bg-gradient-to-br from-muted-blue-tint/60 to-white p-8 shadow-elevated"
+                    : "rounded-2xl bg-muted-blue-tint/90 p-6 shadow-[inset_0_0_0_1px_rgb(92_107_127/0.15)]"
+                }
+              >
+                <p className="text-xs font-semibold text-muted-blue">Signed in</p>
+                <p
+                  className={
+                    fw
+                      ? "mt-3 text-lg font-semibold text-muted-blue-hover"
+                      : "mt-2 text-sm font-semibold text-muted-blue-hover"
+                  }
+                >
+                  ~$3,900/mo · 2 beds
+                </p>
+                <p
+                  className={
+                    fw
+                      ? "mt-2 text-sm text-zinc-600"
+                      : "mt-2 text-xs text-zinc-600"
+                  }
+                >
+                  Amenities from reviews: in-unit laundry, parking, pets, heat and AC,
+                  outdoor space, and more - whatever past renters checked off.
+                </p>
+                <p
+                  className={
+                    fw
+                      ? "mt-3 text-sm leading-relaxed text-zinc-700"
+                      : "mt-2 text-xs text-zinc-700"
+                  }
+                >
+                  “Quiet unit, solid heat, landlord actually fixes things…”
+                </p>
+                <p className="mt-3 text-xs leading-relaxed text-zinc-600">
+                  Published privacy: every review shows as{" "}
+                  <span className="font-semibold text-zinc-700">Anonymous renter</span>,
+                  and exact lease years are displayed as broad time buckets.
+                </p>
+              </div>
+            </div>
+          </SectionMaxW>
+        </section>
+
         {/* How it works - solid neutral blue-gray (no gradient) */}
         <section
           id="how-it-works"
@@ -649,114 +757,6 @@ export function HomePageSections({
                   </div>
                 );
               })}
-            </div>
-          </SectionMaxW>
-        </section>
-
-        {/* Signed-in unlock preview */}
-        <section
-          className={
-            fw
-              ? "w-full border-b border-zinc-100 bg-white py-14 lg:py-16"
-              : "mt-16 rounded-3xl bg-white p-8 shadow-elevated sm:p-10"
-          }
-        >
-          <SectionMaxW fw={fw}>
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p
-                  className={
-                    fw
-                      ? "max-w-xl text-2xl font-semibold leading-snug tracking-tight text-muted-blue-hover sm:text-3xl"
-                      : "text-lg font-semibold text-muted-blue-hover"
-                  }
-                >
-                  Unlock full reviews, real rent numbers, and the Boston Rent Explorer.
-                </p>
-              </div>
-              <Link
-                href="/analytics"
-                className={
-                  fw
-                    ? "rounded-full border border-pop/30 bg-pop-tint/50 px-5 py-2.5 text-sm font-semibold text-pop shadow-sm transition hover:border-pop/50 hover:bg-pop-tint"
-                    : "text-sm font-semibold text-muted-blue hover:underline"
-                }
-              >
-                See Rent Explorer →
-              </Link>
-            </div>
-            <div
-              className={
-                fw
-                  ? "mt-10 grid gap-6 md:grid-cols-2 lg:gap-8"
-                  : "mt-7 grid gap-5 md:grid-cols-2"
-              }
-            >
-              <div
-                className={
-                  fw
-                    ? "rounded-3xl border border-zinc-100 bg-white p-8 shadow-elevated"
-                    : "rounded-2xl bg-zinc-50/90 p-6 shadow-[inset_0_0_0_1px_rgb(15_23_42/0.06)]"
-                }
-              >
-                <p className="text-xs font-semibold text-zinc-500">Preview</p>
-                <p
-                  className={
-                    fw
-                      ? "mt-3 text-lg font-semibold text-muted-blue-hover"
-                      : "mt-2 text-sm font-semibold text-muted-blue-hover"
-                  }
-                >
-                  160 K Street, South Boston
-                </p>
-                <p className="text-xs text-zinc-500">3 reviews · details hidden</p>
-                <div className="mt-4 h-2 w-24 rounded-full bg-zinc-200" />
-                <p className="mt-4 text-sm text-zinc-500">
-                  Sign in to see real numbers and full stories.
-                </p>
-              </div>
-              <div
-                className={
-                  fw
-                    ? "rounded-3xl border border-r border-t border-b border-zinc-100 border-l-[3px] border-l-pop bg-gradient-to-br from-muted-blue-tint/60 to-white p-8 shadow-elevated"
-                    : "rounded-2xl bg-muted-blue-tint/90 p-6 shadow-[inset_0_0_0_1px_rgb(92_107_127/0.15)]"
-                }
-              >
-                <p className="text-xs font-semibold text-muted-blue">Signed in</p>
-                <p
-                  className={
-                    fw
-                      ? "mt-3 text-lg font-semibold text-muted-blue-hover"
-                      : "mt-2 text-sm font-semibold text-muted-blue-hover"
-                  }
-                >
-                  ~$3,900/mo · 2 beds
-                </p>
-                <p
-                  className={
-                    fw
-                      ? "mt-2 text-sm text-zinc-600"
-                      : "mt-2 text-xs text-zinc-600"
-                  }
-                >
-                  Amenities from reviews: in-unit laundry, parking, pets, heat and AC,
-                  outdoor space, and more - whatever past renters checked off.
-                </p>
-                <p
-                  className={
-                    fw
-                      ? "mt-3 text-sm leading-relaxed text-zinc-700"
-                      : "mt-2 text-xs text-zinc-700"
-                  }
-                >
-                  “Quiet unit, solid heat, landlord actually fixes things…”
-                </p>
-                <p className="mt-3 text-xs leading-relaxed text-zinc-600">
-                  Published privacy: every review shows as{" "}
-                  <span className="font-semibold text-zinc-700">Anonymous renter</span>,
-                  and exact lease years are displayed as broad time buckets.
-                </p>
-              </div>
             </div>
           </SectionMaxW>
         </section>
