@@ -34,7 +34,7 @@ export function ProfileAddAnotherLeaseYearButton({
           : "Open the form with this address pre-filled; choose a different lease-start year."
       }
       onClick={handleClick}
-      className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border border-accent-teal/35 bg-accent-teal-tint/50 px-4 py-2 text-xs font-semibold text-teal-950 transition hover:border-accent-teal/50 hover:bg-accent-teal-tint disabled:cursor-not-allowed disabled:opacity-45"
+      className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-muted-blue px-4 py-2 text-xs font-semibold text-white transition hover:bg-muted-blue-hover disabled:cursor-not-allowed disabled:opacity-45"
     >
       Add another lease year
     </button>

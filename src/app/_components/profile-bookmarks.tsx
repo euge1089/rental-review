@@ -54,10 +54,37 @@ export function ProfileBookmarks() {
 
   if (bookmarks.length === 0) {
     return (
-      <p className="text-sm text-zinc-600">
-        You haven&apos;t saved any apartments yet. Visit an apartment page and click
-        &quot;Save apartment&quot; to keep track of places you&apos;re considering.
-      </p>
+      <div className="rounded-2xl border border-zinc-200/90 bg-gradient-to-b from-zinc-50 to-white px-4 py-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:px-5 sm:py-5">
+        <div className="mx-auto flex w-full max-w-md flex-col items-center text-center sm:items-start sm:text-left">
+          <div
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-muted-blue-tint text-lg text-muted-blue-hover ring-1 ring-muted-blue/15"
+            aria-hidden
+          >
+            ☆
+          </div>
+          <p className="mt-3 text-base font-semibold tracking-tight text-muted-blue-hover">
+            No saved listings yet
+          </p>
+          <p className="mt-1 text-sm leading-relaxed text-zinc-600">
+            Tap <span className="font-semibold text-zinc-700">Save apartment</span> on
+            any listing to keep your favorites here.
+          </p>
+          <div className="mt-4 flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+            <Link
+              href="/properties"
+              className="inline-flex min-h-10 items-center justify-center rounded-full bg-muted-blue px-4 py-2 text-sm font-semibold text-white transition hover:bg-muted-blue-hover"
+            >
+              Browse listings
+            </Link>
+            <Link
+              href="/analytics"
+              className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+            >
+              Explore analytics
+            </Link>
+          </div>
+        </div>
+      </div>
     );
   }
 

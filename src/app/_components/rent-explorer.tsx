@@ -1157,6 +1157,9 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             <p className={explorerEyebrowClass}>
               Interactive map
             </p>
+            <p className={`sm:hidden ${explorerBodyLeadClass}`}>
+              Explore across the map and click on properties to see more details.
+            </p>
             <p className={`hidden sm:block ${explorerBodyLeadClass}`}>
               Move the map to load points in view. Filters above apply to the map, insights,
               and reviews below.
@@ -1195,8 +1198,8 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
               </h2>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <div className="max-sm:justify-self-center max-sm:w-[90%] rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+              <div className="rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Typical rent
                 </p>
@@ -1213,7 +1216,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Range
                 </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover max-sm:text-[1.375rem] lg:text-lg">
+                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover max-sm:text-[1.3rem] lg:text-lg">
                   {typeof snapshot.min === "number" &&
                   typeof snapshot.max === "number"
                     ? `$${snapshot.min.toLocaleString()}–$${snapshot.max.toLocaleString()}`
@@ -1224,11 +1227,11 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                   {snapshot.n === 1 ? "" : "s"} that matched.
                 </p>
               </div>
-              <div className="max-sm:order-2 max-sm:justify-self-center max-sm:w-[90%] rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+              <div className="max-sm:order-2 rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Matching reviews
                 </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover lg:text-lg">
+                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover max-sm:text-[1.3rem] lg:text-lg">
                   {snapshot.recentCount.toLocaleString()}
                 </p>
                 <p className="mt-1 hidden text-[13px] text-zinc-500 sm:block">
@@ -1241,7 +1244,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 </p>
                 {snapshot.n > 0 ? (
                   <>
-                    <p className="mt-1.5 text-2xl font-semibold leading-snug text-muted-blue-hover max-sm:text-[1.375rem] lg:text-[1.04rem]">
+                    <p className="mt-1.5 text-2xl font-semibold leading-snug text-muted-blue-hover max-sm:text-[1.3rem] lg:text-[1.04rem]">
                       Laundry {snapshot.amenityPercentages.hasInUnitLaundry}% · Parking{" "}
                       {snapshot.amenityPercentages.hasParking}%
                     </p>
@@ -1298,7 +1301,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             <h2 className="mt-1 pb-1 text-xl font-semibold tracking-tight text-muted-blue-hover">
               Reviews that match your search
             </h2>
-            <div className="mt-2 sm:hidden">
+            <div className="mt-3 sm:hidden">
               <label
                 htmlFor="rent-explorer-review-sort"
                 className="mb-1.5 block text-xs font-medium text-zinc-600"
@@ -1369,7 +1372,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           </div>
         ) : (
           <>
-            <div className="w-full rounded-2xl border border-zinc-100 bg-muted-blue-tint/25 p-2.5 sm:p-4">
+            <div className="w-full rounded-2xl border border-zinc-100 bg-muted-blue-tint/25 p-2.5 max-sm:max-h-[56vh] max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:[-webkit-overflow-scrolling:touch] sm:p-4">
               <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 md:gap-x-4 md:gap-y-3">
                 {sortedItems.map((item) => {
                   const bbLabel = bedroomsBathroomsLabel(item);
