@@ -77,6 +77,11 @@ const explorerEyebrowClass =
 /** ~2pt up from `text-sm` (14px): supporting paragraphs */
 const explorerBodyLeadClass = "text-[1.04rem] leading-relaxed text-zinc-600";
 const explorerLabelClass = "text-[13px] font-medium text-zinc-600";
+/** Phone-only Your search fields: clearer, warmer labels */
+const explorerMobileSearchFieldLabelClass =
+  "text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-blue";
+const explorerMobileSearchControlClass =
+  "border-muted-blue/30 bg-white shadow-sm ring-1 ring-muted-blue/15 focus:border-muted-blue/55 focus:ring-2 focus:ring-muted-blue/25";
 
 type ExplorerBedroomBand =
   | "Any"
@@ -630,84 +635,98 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
         </div>
         <div className="space-y-5">
           {/* Phones: ZIP + bedrooms on row 1; monthly rent on row 2 */}
-          <div className="space-y-3 sm:hidden">
-            <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
-              <div className="grid shrink-0 gap-1.5">
-                <label className={explorerLabelClass}>ZIP</label>
-                <select
-                  value={zip}
-                  onChange={(e) => setZip(e.target.value)}
-                  className={`${selectClass} w-[7.25rem]`}
-                >
-                  <option value="any">Any</option>
-                  {BOSTON_ZIPS.map((z) => (
-                    <option key={z} value={z}>
-                      {z}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid min-w-0 flex-1 gap-1.5">
-                <label className={explorerLabelClass}>
-                  Bedrooms (min and max)
-                </label>
-                <div className="flex min-w-0 flex-wrap items-center gap-2">
-                  <select
-                    value={minBedroomBand}
-                    onChange={(e) =>
-                      setMinBedroomBand(e.target.value as ExplorerBedroomBand)
-                    }
-                    className={`${selectClass} min-w-[5.25rem] max-w-full flex-1`}
-                  >
-                    <option value="Any">Any</option>
-                    <option value="Studio">Studio</option>
-                    <option value="1BR">1+</option>
-                    <option value="2BR">2+</option>
-                    <option value="3BR">3+</option>
-                    <option value="4BR">4+</option>
-                    <option value="5BR+">5+</option>
-                  </select>
-                  <span className="shrink-0 text-[13px] text-zinc-400">to</span>
-                  <select
-                    value={maxBedroomBand}
-                    onChange={(e) =>
-                      setMaxBedroomBand(e.target.value as ExplorerBedroomBand)
-                    }
-                    className={`${selectClass} min-w-[5.25rem] max-w-full flex-1`}
-                  >
-                    <option value="Any">Any</option>
-                    <option value="Studio">Studio</option>
-                    <option value="1BR">1</option>
-                    <option value="2BR">2</option>
-                    <option value="3BR">3</option>
-                    <option value="4BR">4</option>
-                    <option value="5BR+">5+</option>
-                  </select>
+          <div className="space-y-4 sm:hidden">
+            <div className="rounded-2xl border border-muted-blue/25 bg-gradient-to-b from-muted-blue-tint/55 via-white to-muted-blue-tint/30 p-4 shadow-[0_8px_28px_-12px_rgb(92_107_127/0.18)] ring-1 ring-muted-blue/10">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
+                  <div className="grid shrink-0 gap-2">
+                    <label className={explorerMobileSearchFieldLabelClass}>
+                      ZIP code
+                    </label>
+                    <select
+                      value={zip}
+                      onChange={(e) => setZip(e.target.value)}
+                      className={`${selectClass} ${explorerMobileSearchControlClass} w-[7.25rem]`}
+                    >
+                      <option value="any">Any</option>
+                      {BOSTON_ZIPS.map((z) => (
+                        <option key={z} value={z}>
+                          {z}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid min-w-0 flex-1 gap-2">
+                    <label className={explorerMobileSearchFieldLabelClass}>
+                      Bedrooms · min / max
+                    </label>
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <select
+                        value={minBedroomBand}
+                        onChange={(e) =>
+                          setMinBedroomBand(
+                            e.target.value as ExplorerBedroomBand,
+                          )
+                        }
+                        className={`${selectClass} ${explorerMobileSearchControlClass} min-w-[5.25rem] max-w-full flex-1`}
+                      >
+                        <option value="Any">Any</option>
+                        <option value="Studio">Studio</option>
+                        <option value="1BR">1+</option>
+                        <option value="2BR">2+</option>
+                        <option value="3BR">3+</option>
+                        <option value="4BR">4+</option>
+                        <option value="5BR+">5+</option>
+                      </select>
+                      <span className="shrink-0 text-xs font-medium text-muted-blue/50">
+                        to
+                      </span>
+                      <select
+                        value={maxBedroomBand}
+                        onChange={(e) =>
+                          setMaxBedroomBand(
+                            e.target.value as ExplorerBedroomBand,
+                          )
+                        }
+                        className={`${selectClass} ${explorerMobileSearchControlClass} min-w-[5.25rem] max-w-full flex-1`}
+                      >
+                        <option value="Any">Any</option>
+                        <option value="Studio">Studio</option>
+                        <option value="1BR">1</option>
+                        <option value="2BR">2</option>
+                        <option value="3BR">3</option>
+                        <option value="4BR">4</option>
+                        <option value="5BR+">5+</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="grid min-w-0 gap-1.5">
-              <label className={explorerLabelClass}>
-                Monthly rent range
-              </label>
-              <div className="flex flex-wrap items-center gap-2">
-                <input
-                  type="number"
-                  min={0}
-                  value={minRent}
-                  onChange={(e) => setMinRent(e.target.value)}
-                  placeholder="Min"
-                  className={`${formInputCompactClass} w-28 flex-1 sm:max-w-[8.5rem]`}
-                />
-                <span className="text-[13px] text-zinc-400">to</span>
-                <input
-                  type="number"
-                  min={0}
-                  value={maxRent}
-                  onChange={(e) => setMaxRent(e.target.value)}
-                  placeholder="Max"
-                  className={`${formInputCompactClass} w-28 flex-1 sm:max-w-[8.5rem]`}
-                />
+                <div className="grid min-w-0 gap-2">
+                  <label className={explorerMobileSearchFieldLabelClass}>
+                    Monthly rent ($)
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="number"
+                      min={0}
+                      value={minRent}
+                      onChange={(e) => setMinRent(e.target.value)}
+                      placeholder="Min"
+                      className={`${formInputCompactClass} ${explorerMobileSearchControlClass} w-28 flex-1 sm:max-w-[8.5rem]`}
+                    />
+                    <span className="text-xs font-medium text-muted-blue/50">
+                      to
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={maxRent}
+                      onChange={(e) => setMaxRent(e.target.value)}
+                      placeholder="Max"
+                      className={`${formInputCompactClass} ${explorerMobileSearchControlClass} w-28 flex-1 sm:max-w-[8.5rem]`}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             <div className="flex w-full flex-nowrap items-stretch gap-3">
