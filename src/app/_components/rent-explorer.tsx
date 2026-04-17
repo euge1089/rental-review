@@ -1239,7 +1239,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
       >
         <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className={explorerEyebrowClass}>
+            <p className={`${explorerEyebrowClass} hidden sm:block`}>
               Your filtered reviews
             </p>
             <h2 className="mt-1 text-xl font-semibold tracking-tight text-muted-blue-hover">
@@ -1254,7 +1254,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             </p>
           </div>
           {!noMatches && (
-            <p className="text-[1.04rem] text-zinc-500">Page {page + 1}</p>
+            <p className="hidden text-[1.04rem] text-zinc-500 sm:block">Page {page + 1}</p>
           )}
         </div>
 
@@ -1363,17 +1363,22 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 })}
               </ul>
             </div>
+            {!noMatches ? (
+              <p className="mt-3 text-center text-[1.04rem] text-zinc-500 sm:hidden">
+                Page {page + 1}
+              </p>
+            ) : null}
             <div className="flex flex-col gap-3 border-t border-zinc-100 pt-4 text-[1.04rem] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
               <span>
                 Showing {items.length} of {snapshot ? snapshot.n.toLocaleString() : "?"}{" "}
                 reviews
               </span>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
                 <button
                   type="button"
                   onClick={() => fetchPage(Math.max(0, page - 1), false)}
                   disabled={page === 0 || isLoading}
-                  className="inline-flex min-h-11 min-w-[6.5rem] items-center justify-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-[1.04rem] font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 disabled:opacity-50"
+                  className="inline-flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-[1.04rem] font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 disabled:opacity-50 sm:min-w-[6.5rem] sm:w-auto sm:rounded-full"
                 >
                   Previous
                 </button>
@@ -1381,7 +1386,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                   type="button"
                   onClick={() => fetchPage(page + 1, false)}
                   disabled={!hasMore || isLoading}
-                  className="inline-flex min-h-11 min-w-[6.5rem] items-center justify-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-[1.04rem] font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 disabled:opacity-50"
+                  className="inline-flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-[1.04rem] font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40 disabled:opacity-50 sm:min-w-[6.5rem] sm:w-auto sm:rounded-full"
                 >
                   Next
                 </button>
