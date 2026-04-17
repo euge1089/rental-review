@@ -531,7 +531,7 @@ export function HomePageSections({
                       : "text-lg font-semibold text-muted-blue-hover"
                   }
                 >
-                  Unlock full reviews, real rent numbers, and the Boston Rent Explorer.
+                  Unlock full reviews, real rent numbers, and our Boston Rent Analytics.
                 </p>
               </div>
               <Link
