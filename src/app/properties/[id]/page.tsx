@@ -256,6 +256,12 @@ export default async function PropertyDetailPage({ params }: Props) {
               city={property.city}
               state={property.state}
               postalCode={property.postalCode}
+              latitude={
+                property.latitude != null ? Number(property.latitude) : null
+              }
+              longitude={
+                property.longitude != null ? Number(property.longitude) : null
+              }
             />
           ) : null
         }
