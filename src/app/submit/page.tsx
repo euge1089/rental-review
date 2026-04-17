@@ -1799,7 +1799,12 @@ export default function SubmitReviewPage() {
             <p className="mt-3 rounded-xl border border-emerald-200/70 bg-emerald-50/80 px-3 py-2 text-sm leading-relaxed text-emerald-950">
               You earned 1 giveaway entry.{" "}
               <span className="font-semibold">$200</span> in Boston restaurant gift
-              cards will be awarded - each approved review adds another chance to win.
+              cards will be awarded - each approved review adds another chance to
+              win.{" "}
+              <Link href="/legal/giveaway-rules" className="font-semibold underline">
+                Official rules
+              </Link>
+              .
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <button
@@ -1827,7 +1832,11 @@ export default function SubmitReviewPage() {
             </div>
             <p className="mt-3 text-xs leading-relaxed text-zinc-500">
               More approved reviews = more chances to win (max 5 submissions per person
-              per month).
+              per month).{" "}
+              <Link href="/legal/giveaway-rules" className="font-medium underline">
+                See official giveaway rules
+              </Link>
+              .
             </p>
           </div>
         </div>

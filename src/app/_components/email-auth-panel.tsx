@@ -14,7 +14,7 @@ import { formInputClass } from "@/lib/ui-classes";
 function AuthLegalNote() {
   return (
     <p className="text-center text-xs leading-relaxed text-zinc-500 sm:text-left">
-      Draft policies:{" "}
+      Policies:{" "}
       <Link
         href="/legal/terms"
         className="font-medium text-muted-blue underline-offset-2 hover:underline"

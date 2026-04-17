@@ -108,6 +108,21 @@ export function ProfileVerification({ initialVerified }: Props) {
           Send code
         </button>
       </div>
+      <p className="text-xs leading-relaxed text-zinc-500">
+        By requesting a code, you agree to receive verification SMS messages for
+        account security. Message and data rates may apply. Message frequency is
+        limited to verification attempts. Text STOP to opt out and HELP for
+        support where supported by your carrier. Carriers are not liable for
+        delayed or undelivered messages. See{" "}
+        <a className="underline" href="/legal/terms">
+          Terms
+        </a>{" "}
+        and{" "}
+        <a className="underline" href="/legal/privacy">
+          Privacy
+        </a>
+        .
+      </p>
       <div className="flex flex-col gap-2 sm:flex-row">
         <input
           value={smsCode}

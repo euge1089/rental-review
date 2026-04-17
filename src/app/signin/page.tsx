@@ -105,7 +105,7 @@ export default async function SignInPage({ searchParams }: Props) {
         </p>
       </SurfacePanel>
       <p className="text-center text-xs text-zinc-500">
-        Continued use of the site is subject to the draft{" "}
+        Continued use of the site is subject to the{" "}
         <Link href="/legal/terms" className="font-medium text-muted-blue hover:underline">
           Terms
         </Link>{" "}

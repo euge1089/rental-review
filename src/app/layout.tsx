@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppSessionProvider } from "@/app/_components/app-session-provider";
 import { NewSignupRedirectGuard } from "@/app/_components/new-signup-redirect-guard";
 import { SiteNav } from "@/app/_components/site-nav";
 import { SiteFooter } from "@/app/_components/site-footer";
+import { CookieConsentManager } from "@/app/_components/cookie-consent-manager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,33 +58,23 @@ export default function RootLayout({
   const gaDebugMode =
     process.env.NEXT_PUBLIC_GA_DEBUG === "1" ||
     process.env.NEXT_PUBLIC_GA_DEBUG === "true";
+  const cookieConsentEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_COOKIE_CONSENT === "1" ||
+    process.env.NEXT_PUBLIC_ENABLE_COOKIE_CONSENT === "true";
 
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      {gaMeasurementId ? (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
-            strategy="afterInteractive"
-          />
-          <Script id="google-analytics" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${gaMeasurementId}', {
-                send_page_view: true
-                ${gaDebugMode ? ", debug_mode: true" : ""}
-              });
-            `}
-          </Script>
-        </>
-      ) : null}
       <body className="flex min-h-[100dvh] min-h-screen flex-col bg-[#f5f5f6] text-zinc-900">
         <AppSessionProvider>
+          {cookieConsentEnabled ? (
+            <CookieConsentManager
+              gaMeasurementId={gaMeasurementId}
+              gaDebugMode={gaDebugMode}
+            />
+          ) : null}
           <NewSignupRedirectGuard />
           <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/95 pt-[env(safe-area-inset-top,0px)] shadow-[0_1px_0_rgb(15_23_42/0.03)] backdrop-blur-md supports-[backdrop-filter]:bg-white/90">
             <SiteNav adminEmail={process.env.ADMIN_EMAIL} />

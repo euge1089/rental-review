@@ -47,6 +47,10 @@ function profilePrefsUrl(): string {
   return `${getSiteOrigin()}/profile#email-preferences`;
 }
 
+function giveawayRulesUrl(): string {
+  return `${getSiteOrigin()}/legal/giveaway-rules`;
+}
+
 /** Sign-off line. Override with RETENTION_EMAIL_SIGNER_NAME; defaults to Eugene. */
 function emailSignOff(): string {
   const name = process.env.RETENTION_EMAIL_SIGNER_NAME?.trim() || "Eugene";
@@ -61,14 +65,6 @@ function founderHook(): string {
   const custom = process.env.RETENTION_EMAIL_LAUNCH_LINE?.trim();
   if (custom) return custom;
   return `My name is Eugene and I just launched Rent Review Boston ${RETENTION_LAUNCH_TIMING} to let people share real rent and honest apartment reviews (all the stuff you don't find out until moving in).`;
-}
-
-function privacyOneLiner(): string {
-  return "Your name isn’t on the public review, and lease timing is broad (not your exact year), so it’s not obvious who wrote what.";
-}
-
-function giveawayPs(): string {
-  return "P.S. We give away a couple hundred dollars worth of Boston gift cards on the last day of every month. We don’t have too many users yet, so odds are pretty good. Official rules are on the submit page.";
 }
 
 function escapeHtml(s: string): string {
@@ -213,6 +209,7 @@ export async function sendNoReviewReminderEmail(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const submit = retentionCtaUrl(userId, RETENTION_CAMPAIGN_NO_REVIEW);
   const prefs = profilePrefsUrl();
+  const rules = giveawayRulesUrl();
   const subject = "Quick one-minute favor? (Rent Review Boston)";
   const text = [
     "Hey -",
@@ -225,7 +222,7 @@ export async function sendNoReviewReminderEmail(
     "",
     submit,
     "",
-    "ALSO - I started a monthly giveaway with a couple hundred dollars worth of Boston gift cards on the last day of every month. We don’t have too many users yet, so odds are pretty good. Official rules are on the website.",
+    `ALSO - I started a monthly giveaway with a couple hundred dollars worth of Boston gift cards on the last day of every month. We don’t have too many users yet, so odds are pretty good. Official rules: ${rules}`,
     "",
     `Reminders off anytime: ${prefs}`,
     "",
@@ -237,7 +234,7 @@ export async function sendNoReviewReminderEmail(
       "Thanks for signing up!",
       founderHook(),
       "If you can spare a minute, would you mind leaving a review? Your name is always anonymous and we never show the year you lived there.",
-      "ALSO - I started a monthly giveaway with a couple hundred dollars worth of Boston gift cards on the last day of every month. We don’t have too many users yet, so odds are pretty good. Official rules are on the website.",
+      `ALSO - I started a monthly giveaway with a couple hundred dollars worth of Boston gift cards on the last day of every month. We don’t have too many users yet, so odds are pretty good. Official rules: ${rules}`,
     ],
     ctaUrl: submit,
     ctaLabel: "Submit your review",
@@ -255,6 +252,7 @@ export async function sendNoReviewFollowupReminderEmail(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const submit = retentionCtaUrl(userId, RETENTION_CAMPAIGN_NO_REVIEW_FOLLOWUP);
   const prefs = profilePrefsUrl();
+  const rules = giveawayRulesUrl();
   const subject = "Bump: one-minute review?";
   const text = [
     "Hey -",
@@ -265,7 +263,7 @@ export async function sendNoReviewFollowupReminderEmail(
     "",
     submit,
     "",
-    "ALSO - I started a monthly giveaway with a couple hundred dollars worth of Boston gift cards on the last day of every month. We don’t have too many users yet, so odds are pretty good. Official rules are on the website.",
+    `ALSO - I started a monthly giveaway with a couple hundred dollars worth of Boston gift cards on the last day of every month. We don’t have too many users yet, so odds are pretty good. Official rules: ${rules}`,
     "",
     `Reminders off: ${prefs}`,
     "",
@@ -276,7 +274,7 @@ export async function sendNoReviewFollowupReminderEmail(
     paragraphs: [
       `I sent you a quick email ${noReviewFollowupHumanTimePhrase()} - sending a quick follow up in case it got buried.`,
       "Hoping you could spare a minute to leave a quick rental review! Your name is always anonymous and we never show the year you lived there.",
-      "ALSO - I started a monthly giveaway with a couple hundred dollars worth of Boston gift cards on the last day of every month. We don’t have too many users yet, so odds are pretty good. Official rules are on the website.",
+      `ALSO - I started a monthly giveaway with a couple hundred dollars worth of Boston gift cards on the last day of every month. We don’t have too many users yet, so odds are pretty good. Official rules: ${rules}`,
     ],
     ctaUrl: submit,
     ctaLabel: "Submit your review",

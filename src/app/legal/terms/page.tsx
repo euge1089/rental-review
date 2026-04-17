@@ -131,11 +131,39 @@ export default function TermsPage() {
               and disclose relevant information where required by law or to protect
               rights, users, and the Service.
             </p>
+            <p>
+              We may apply escalating enforcement for repeat violations, including
+              warning, reduced visibility, temporary restrictions, content removal,
+              suspension, or termination.
+            </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              7) Public content, ratings, and anonymity
+              7) Promotions and giveaway terms
+            </h2>
+            <p>
+              From time to time, we may offer promotions, sweepstakes, giveaways,
+              or similar programs (“Promotions”). Promotions are governed by these
+              Terms and by the official rules for each promotion.
+            </p>
+            <p>
+              Current promotion rules are available at{" "}
+              <Link href="/legal/giveaway-rules" className={linkInlineClass}>
+                Official Giveaway Rules
+              </Link>
+              . If these Terms conflict with promotion-specific rules, the
+              promotion rules control for that promotion.
+            </p>
+            <p>
+              Promotions may be void where prohibited or restricted by law, and
+              eligibility may vary by jurisdiction.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-semibold text-muted-blue-hover">
+              8) Public content, ratings, and anonymity
             </h2>
             <p>
               Review content, scores, and related property information may be displayed
@@ -148,7 +176,7 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              8) Messaging, voting, and community features
+              9) Messaging, voting, and community features
             </h2>
             <p>
               If enabled, messaging, voting, reporting, and blocking tools are provided
@@ -159,7 +187,27 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              9) Third-party services and links
+              10) Content complaints and takedowns
+            </h2>
+            <p>
+              If you believe content on the Service is unlawful, defamatory,
+              rights-infringing, privacy-violating, or otherwise prohibited, you
+              may submit a complaint under our{" "}
+              <Link href="/legal/content-complaints" className={linkInlineClass}>
+                Content Complaints and Takedowns
+              </Link>{" "}
+              policy.
+            </p>
+            <p>
+              We may remove, limit, or preserve content while investigating and
+              may request additional details. Repeated abusive or bad-faith
+              complaints may result in restrictions.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-semibold text-muted-blue-hover">
+              11) Third-party services and links
             </h2>
             <p>
               The Service may rely on or link to third-party services (for example,
@@ -171,7 +219,7 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              10) Intellectual property
+              12) Intellectual property
             </h2>
             <p>
               Except for User Content, the Service and its software, branding, design,
@@ -180,11 +228,18 @@ export default function TermsPage() {
               engineer, or create derivative works from the Service except as permitted
               by law or our written permission.
             </p>
+            <p>
+              Copyright-specific notices and counter-notices are handled under our{" "}
+              <Link href="/legal/copyright" className={linkInlineClass}>
+                Copyright and DMCA Policy
+              </Link>
+              .
+            </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              11) Privacy
+              13) Privacy
             </h2>
             <p>
               Our collection and use of personal information is described in the{" "}
@@ -197,7 +252,7 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              12) Disclaimers
+              14) Disclaimers
             </h2>
             <p>
               THE SERVICE IS PROVIDED “AS IS” AND “AS AVAILABLE,” WITHOUT WARRANTIES OF
@@ -211,7 +266,7 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              13) Limitation of liability
+              15) Limitation of liability
             </h2>
             <p>
               TO THE FULLEST EXTENT PERMITTED BY LAW, RENT REVIEW BOSTON AND ITS
@@ -230,7 +285,7 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              14) Indemnification
+              16) Indemnification
             </h2>
             <p>
               To the fullest extent permitted by law, you agree to defend, indemnify,
@@ -243,22 +298,66 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              15) Termination, governing law, and updates
+              17) Disputes, governing law, and venue
             </h2>
             <p>
               We may suspend or terminate access to the Service at our discretion for
-              violations of these Terms, legal requirements, or safety concerns. These
-              Terms are governed by the laws of the Commonwealth of Massachusetts,
-              excluding conflict-of-law principles. We may revise these Terms from time
-              to time by posting updated versions on this page. Continued use after an
-              effective date constitutes acceptance of revised Terms, to the extent
-              permitted by law.
+              violations of these Terms, legal requirements, or safety concerns.
+              These Terms are governed by the laws of the Commonwealth of
+              Massachusetts, excluding conflict-of-law principles.
+            </p>
+            <p>
+              Unless otherwise required by law, you agree that claims arising from
+              these Terms or the Service will be brought in state or federal courts
+              located in Massachusetts, and you consent to personal jurisdiction in
+              those courts.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-muted-blue-hover">
-              16) Contact and effective date
+              18) Additional contract terms
+            </h2>
+            <p>
+              If any part of these Terms is found unenforceable, the remaining
+              provisions remain in effect (severability). Our failure to enforce
+              any provision is not a waiver. We may assign these Terms in
+              connection with a merger, acquisition, or sale of assets.
+            </p>
+            <p>
+              These Terms, together with the Privacy Policy and referenced legal
+              policies, form the entire agreement between you and us regarding the
+              Service. Provisions that should survive termination will survive,
+              including ownership, disclaimers, liability limitations,
+              indemnification, and dispute terms.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-semibold text-muted-blue-hover">
+              19) Legal requests, updates, and contact
+            </h2>
+            <p>
+              Guidance for legal process requests is available at{" "}
+              <Link
+                href="/legal/law-enforcement-requests"
+                className={linkInlineClass}
+              >
+                Law Enforcement and Legal Requests
+              </Link>
+              .
+            </p>
+            <p>
+              We may revise these Terms from time to time by posting updated
+              versions on this page. Continued use after an effective date
+              constitutes acceptance of revised Terms, to the extent permitted by
+              law.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-semibold text-muted-blue-hover">
+              Contact and effective date
             </h2>
             {support ? (
               <p>

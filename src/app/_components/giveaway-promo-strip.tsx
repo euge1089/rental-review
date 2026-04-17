@@ -235,14 +235,28 @@ function EntryProgressBar({
           {compactRulesFooter ? (
             <>
               <span className="sm:hidden">
-                Bar uses your reviews on file; giveaway eligibility follows official rules.
+                Bar uses your reviews on file; eligibility follows{" "}
+                <Link href="/legal/giveaway-rules" className={linkInlineClass}>
+                  official rules
+                </Link>
+                .
               </span>
               <span className="hidden sm:inline">
-                Bar uses your reviews on file; final giveaway eligibility follows official rules.
+                Bar uses your reviews on file; final giveaway eligibility follows{" "}
+                <Link href="/legal/giveaway-rules" className={linkInlineClass}>
+                  official rules
+                </Link>
+                .
               </span>
             </>
           ) : (
-            "Bar uses your reviews on file; final giveaway eligibility follows official rules."
+            <>
+              Bar uses your reviews on file; final giveaway eligibility follows{" "}
+              <Link href="/legal/giveaway-rules" className={linkInlineClass}>
+                official rules
+              </Link>
+              .
+            </>
           )}
         </p>
       ) : null}
@@ -360,6 +374,11 @@ export function GiveawayPromoStrip({
                 <span className="text-muted-blue/90">100% anonymous</span>
                 {", "}
                 takes about a minute
+              </p>
+              <p className="mt-1.5 text-center text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
+                <Link href="/legal/giveaway-rules" className={linkInlineClass}>
+                  Official giveaway rules
+                </Link>
               </p>
             </div>
           </div>

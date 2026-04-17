@@ -138,8 +138,7 @@ export default function PropertiesPage() {
   }, []);
 
   useEffect(() => {
-    if (!loggedIn) {
-      setReviewCount(null);
+    if (loggedIn !== true) {
       return;
     }
     let cancelled = false;
@@ -159,10 +158,13 @@ export default function PropertiesPage() {
     };
   }, [loggedIn]);
 
+  const effectiveReviewCount = loggedIn === true ? reviewCount : null;
+
   const previewLimit = 8;
   const mobileReviewUnlockLimit = 10;
   const isLoggedOutBrowse = loggedIn === false;
-  const isLoggedInWithoutReview = loggedIn === true && (reviewCount ?? 0) < 1;
+  const isLoggedInWithoutReview =
+    loggedIn === true && (effectiveReviewCount ?? 0) < 1;
   const isMobileNoReviewGate = isMobileViewport && isLoggedInWithoutReview;
 
   const poolForFilter = useMemo(() => {

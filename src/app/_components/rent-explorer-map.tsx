@@ -80,7 +80,6 @@ export function RentExplorerMap({
   const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
   const hasToken = token.trim().length > 0;
   const [hoveredPropertyId, setHoveredPropertyId] = useState<string | null>(null);
-  const [popupAnchor, setPopupAnchor] = useState<"top" | "bottom">("bottom");
   const mapRef = useRef<MapRef | null>(null);
 
   const initialViewState = useMemo(() => {
@@ -102,18 +101,10 @@ export function RentExplorerMap({
     if (!activePropertyId) return null;
     return sortedMarkers.find((marker) => marker.propertyId === activePropertyId) ?? null;
   }, [hoveredPropertyId, selectedPropertyId, sortedMarkers]);
+  const popupAnchor: "top" | "bottom" = "bottom";
   const activeMarkerSize = activeMarker ? markerSize(activeMarker.reviewCount) : 0;
   const popupOffsetY =
     popupAnchor === "bottom" ? -(activeMarkerSize / 2) : activeMarkerSize / 2;
-
-  useEffect(() => {
-    if (!activeMarker || !mapRef.current) return;
-    const raw = mapRef.current.getMap();
-    const canvas = raw.getCanvas();
-    const projected = raw.project([activeMarker.longitude, activeMarker.latitude]);
-    const opensDownward = projected.y < canvas.height / 2;
-    setPopupAnchor(opensDownward ? "top" : "bottom");
-  }, [activeMarker]);
 
   useEffect(() => {
     if (!activeMarker || !mapRef.current) return;

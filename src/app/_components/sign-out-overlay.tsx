@@ -14,11 +14,6 @@ export function SignOutOverlay({ triggerClassName }: Props) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const closeModal = useCallback(() => {
     setError(null);
@@ -52,7 +47,7 @@ export function SignOutOverlay({ triggerClassName }: Props) {
         Sign out
       </button>
 
-      {mounted && open
+      {open && typeof document !== "undefined"
         ? createPortal(
             <div className={`${modalBackdropClass} z-[220]`}>
               <button

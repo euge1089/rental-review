@@ -6,6 +6,9 @@ import {
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
+  const cookieConsentEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_COOKIE_CONSENT === "1" ||
+    process.env.NEXT_PUBLIC_ENABLE_COOKIE_CONSENT === "true";
 
   return (
     <footer className="mt-auto border-t border-zinc-200/90 bg-zinc-100/95 py-8 pb-[max(2rem,env(safe-area-inset-bottom,0px))] text-zinc-500">
@@ -42,6 +45,38 @@ export function SiteFooter() {
             className="inline-flex min-h-11 items-center font-medium text-muted-blue transition active:opacity-80 hover:text-muted-blue-hover"
           >
             Privacy
+          </Link>
+          {cookieConsentEnabled ? (
+            <Link
+              href="/legal/privacy#cookie-preferences"
+              className="inline-flex min-h-11 items-center font-medium text-muted-blue transition active:opacity-80 hover:text-muted-blue-hover"
+            >
+              Cookie Preferences
+            </Link>
+          ) : null}
+          <Link
+            href="/legal/giveaway-rules"
+            className="inline-flex min-h-11 items-center font-medium text-muted-blue transition active:opacity-80 hover:text-muted-blue-hover"
+          >
+            Giveaway Rules
+          </Link>
+          <Link
+            href="/legal/content-complaints"
+            className="inline-flex min-h-11 items-center font-medium text-muted-blue transition active:opacity-80 hover:text-muted-blue-hover"
+          >
+            Content Complaints
+          </Link>
+          <Link
+            href="/legal/copyright"
+            className="inline-flex min-h-11 items-center font-medium text-muted-blue transition active:opacity-80 hover:text-muted-blue-hover"
+          >
+            Copyright
+          </Link>
+          <Link
+            href="/legal/law-enforcement-requests"
+            className="inline-flex min-h-11 items-center font-medium text-muted-blue transition active:opacity-80 hover:text-muted-blue-hover"
+          >
+            Legal Requests
           </Link>
         </nav>
       </div>

@@ -570,16 +570,6 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
     return `Reviewed ${diffMonths} months ago`;
   }
 
-  function bedroomsBathroomsLabel(item: Item) {
-    const parts: string[] = [];
-    if (item.bedroomBand && item.bedroomBand !== "Unknown") {
-      parts.push(item.bedroomBand);
-    }
-    const bathAbbrev = bathroomsToBaAbbrev(item.bathrooms);
-    if (bathAbbrev) parts.push(bathAbbrev);
-    return parts.join(", ");
-  }
-
   function reviewYearToPrivacyBucket(reviewYear: number): string {
     const nowYear = new Date().getFullYear();
     const yearsAgo = Math.max(0, nowYear - reviewYear);
