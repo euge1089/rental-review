@@ -938,6 +938,10 @@ export default function SubmitReviewPage() {
 
   const callbackUrl = encodeURIComponent("/submit");
   const isAuthed = sessionUser && sessionUser !== "loading";
+  const isPhoneVerified =
+    sessionUser !== null &&
+    sessionUser !== "loading" &&
+    sessionUser.phoneVerified === true;
   const atReviewCap = reviewQuota?.atCap === true;
   const bostonGateActive =
     Boolean(isAuthed) &&
@@ -1815,13 +1819,15 @@ export default function SubmitReviewPage() {
               >
                 Leave another review
               </button>
-              <Link
-                href="/profile#verification"
-                onClick={closeSubmitSuccessModal}
-                className="inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
-              >
-                Verify phone in profile
-              </Link>
+              {!isPhoneVerified ? (
+                <Link
+                  href="/profile#verification"
+                  onClick={closeSubmitSuccessModal}
+                  className="inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+                >
+                  Verify phone in profile
+                </Link>
+              ) : null}
               <Link
                 href="/profile"
                 onClick={closeSubmitSuccessModal}
