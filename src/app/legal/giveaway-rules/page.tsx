@@ -102,9 +102,15 @@ export default function GiveawayRulesPage() {
               5) Prize and odds
             </h2>
             <p>
-              Standard monthly prize is Boston restaurant gift cards with an
-              approximate retail value of up to $200 USD, unless the promotion
-              surface states otherwise.
+              Unless otherwise posted for a specific month, the standard monthly
+              prize is eight (8) Boston-area restaurant or dining gift cards,
+              each with a face value of twenty-five dollars ($25 USD), for a
+              total approximate retail value of two hundred dollars ($200 USD).
+            </p>
+            <p>
+              Each $25 gift card is intended to be awarded to a separate
+              potential winner (up to eight (8) winners per month), as described
+              in section 6.
             </p>
             <p>
               Odds of winning depend on the number of eligible entries received
@@ -117,9 +123,12 @@ export default function GiveawayRulesPage() {
               6) Winner selection and notification
             </h2>
             <p>
-              Potential winners are selected after the promotion period by random
-              draw from eligible entries. Sponsor may contact potential winners
-              by account email and may require response within a stated timeframe.
+              After the promotion period, up to eight (8) potential winners are
+              selected by random draw from eligible entries. Each potential
+              winner, if verified and eligible, will be awarded one (1) of the
+              $25 gift cards described in section 5. Sponsor may contact potential
+              winners by account email and may require response within a stated
+              timeframe.
             </p>
             <p>
               If a potential winner cannot be contacted, is ineligible, or fails

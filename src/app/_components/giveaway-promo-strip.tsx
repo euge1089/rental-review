@@ -362,7 +362,11 @@ export function GiveawayPromoStrip({
                 $200
               </p>
               <p className="mt-2 text-pretty text-sm leading-snug text-zinc-700 sm:text-[0.9375rem]">
-                Boston dining gift cards - one quick anonymous review enters you.
+                Eight $25 Boston dining gift cards ($200 total), up to eight
+                winners, one card each.
+              </p>
+              <p className="mt-1.5 text-pretty text-sm leading-snug text-zinc-700 sm:text-[0.9375rem]">
+                One quick anonymous review enters you.
               </p>
               <Link
                 href="/submit"
@@ -449,8 +453,10 @@ export function GiveawayPromoStrip({
                       : "text-pretty"
                   }`}
                 >
+                  <strong className="font-semibold text-muted-blue-hover">Eight $25</strong>{" "}
+                  Boston dining gift cards (
                   <strong className="font-semibold text-muted-blue-hover">$200</strong>{" "}
-                  in Boston restaurant gift cards
+                  total), up to eight winners, one card each
                   {isPropertiesBrowse ? (
                     <>
                       <span className="hidden sm:inline"> will be awarded</span> - enter by
