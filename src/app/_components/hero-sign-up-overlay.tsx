@@ -11,7 +11,7 @@ type Props = {
 };
 
 export function HeroSignUpOverlay({
-  callbackUrl = "/",
+  callbackUrl = "/submit?new=1",
   variant,
 }: Props) {
   const [open, setOpen] = useState(false);
