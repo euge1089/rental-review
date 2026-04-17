@@ -629,7 +629,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
           </p>
         </div>
         <div className="space-y-5">
-          {/* Phones: ZIP + monthly rent on one row; bedrooms live in More filters sheet */}
+          {/* Phones: ZIP + bedrooms on row 1; monthly rent on row 2 */}
           <div className="space-y-3 sm:hidden">
             <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
               <div className="grid shrink-0 gap-1.5">
@@ -649,27 +649,65 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
               </div>
               <div className="grid min-w-0 flex-1 gap-1.5">
                 <label className={explorerLabelClass}>
-                  Monthly rent range
+                  Bedrooms (min and max)
                 </label>
-                <div className="flex min-w-0 items-center gap-1.5">
-                  <input
-                    type="number"
-                    min={0}
-                    value={minRent}
-                    onChange={(e) => setMinRent(e.target.value)}
-                    placeholder="Min"
-                    className={`${formInputCompactClass} min-w-0 max-w-[5.25rem] shrink flex-1`}
-                  />
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <select
+                    value={minBedroomBand}
+                    onChange={(e) =>
+                      setMinBedroomBand(e.target.value as ExplorerBedroomBand)
+                    }
+                    className={`${selectClass} min-w-[5.25rem] max-w-full flex-1`}
+                  >
+                    <option value="Any">Any</option>
+                    <option value="Studio">Studio</option>
+                    <option value="1BR">1+</option>
+                    <option value="2BR">2+</option>
+                    <option value="3BR">3+</option>
+                    <option value="4BR">4+</option>
+                    <option value="5BR+">5+</option>
+                  </select>
                   <span className="shrink-0 text-[13px] text-zinc-400">to</span>
-                  <input
-                    type="number"
-                    min={0}
-                    value={maxRent}
-                    onChange={(e) => setMaxRent(e.target.value)}
-                    placeholder="Max"
-                    className={`${formInputCompactClass} min-w-0 max-w-[5.25rem] shrink flex-1`}
-                  />
+                  <select
+                    value={maxBedroomBand}
+                    onChange={(e) =>
+                      setMaxBedroomBand(e.target.value as ExplorerBedroomBand)
+                    }
+                    className={`${selectClass} min-w-[5.25rem] max-w-full flex-1`}
+                  >
+                    <option value="Any">Any</option>
+                    <option value="Studio">Studio</option>
+                    <option value="1BR">1</option>
+                    <option value="2BR">2</option>
+                    <option value="3BR">3</option>
+                    <option value="4BR">4</option>
+                    <option value="5BR+">5+</option>
+                  </select>
                 </div>
+              </div>
+            </div>
+            <div className="grid min-w-0 gap-1.5">
+              <label className={explorerLabelClass}>
+                Monthly rent range
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  value={minRent}
+                  onChange={(e) => setMinRent(e.target.value)}
+                  placeholder="Min"
+                  className={`${formInputCompactClass} w-28 flex-1 sm:max-w-[8.5rem]`}
+                />
+                <span className="text-[13px] text-zinc-400">to</span>
+                <input
+                  type="number"
+                  min={0}
+                  value={maxRent}
+                  onChange={(e) => setMaxRent(e.target.value)}
+                  placeholder="Max"
+                  className={`${formInputCompactClass} w-28 flex-1 sm:max-w-[8.5rem]`}
+                />
               </div>
             </div>
             <div className="flex w-full flex-nowrap items-stretch gap-3">
@@ -923,44 +961,6 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             </div>
             <div className="space-y-4">
               <div className="grid gap-1.5">
-                <label className={explorerLabelClass}>
-                  Bedrooms (min and max)
-                </label>
-                <div className="flex min-w-0 flex-wrap items-center gap-2">
-                  <select
-                    value={minBedroomBand}
-                    onChange={(e) =>
-                      setMinBedroomBand(e.target.value as ExplorerBedroomBand)
-                    }
-                    className={`${selectClass} min-w-0 max-w-full flex-1`}
-                  >
-                    <option value="Any">Any</option>
-                    <option value="Studio">Studio</option>
-                    <option value="1BR">1+</option>
-                    <option value="2BR">2+</option>
-                    <option value="3BR">3+</option>
-                    <option value="4BR">4+</option>
-                    <option value="5BR+">5+</option>
-                  </select>
-                  <span className="shrink-0 text-[13px] text-zinc-400">to</span>
-                  <select
-                    value={maxBedroomBand}
-                    onChange={(e) =>
-                      setMaxBedroomBand(e.target.value as ExplorerBedroomBand)
-                    }
-                    className={`${selectClass} min-w-0 max-w-full flex-1`}
-                  >
-                    <option value="Any">Any</option>
-                    <option value="Studio">Studio</option>
-                    <option value="1BR">1</option>
-                    <option value="2BR">2</option>
-                    <option value="3BR">3</option>
-                    <option value="4BR">4</option>
-                    <option value="5BR+">5+</option>
-                  </select>
-                </div>
-              </div>
-              <div className="grid gap-1.5">
                 <label className={explorerLabelClass}>Bathrooms</label>
                 <select
                   value={minBathrooms}
@@ -1078,7 +1078,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
       {MAP_ENABLED ? (
         <section
-          className={`${mobileResultsView === "map" ? "block" : "hidden"} ${mobileEdgeToEdgeClass} space-y-3 bg-white py-4 sm:block sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-6 sm:shadow-elevated`}
+          className={`${mobileResultsView === "map" ? "block" : "hidden"} ${mobileEdgeToEdgeClass} space-y-3 bg-white py-4 max-sm:pb-0 sm:block sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-6 sm:shadow-elevated`}
         >
           <div className="space-y-1">
             <p className={explorerEyebrowClass}>
@@ -1107,7 +1107,13 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
       {snapshot ? (
         <>
-          <section className={`${mobileEdgeToEdgeClass} bg-muted-blue-tint px-4 py-5 sm:rounded-3xl sm:border sm:border-zinc-200/90 sm:px-6 sm:py-6`}>
+          <section
+            className={`${mobileEdgeToEdgeClass} bg-muted-blue-tint px-4 py-5 sm:rounded-3xl sm:border sm:border-zinc-200/90 sm:px-6 sm:py-6 ${
+              MAP_ENABLED && mobileResultsView === "map"
+                ? "max-sm:-mt-10"
+                : ""
+            }`}
+          >
             <div className="mb-4 border-b border-zinc-200/80 pb-4">
               <p className={explorerEyebrowClass}>
                 Summary
@@ -1195,7 +1201,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             snapshot.min != null &&
             snapshot.max != null && (
               <section
-                className={`${mobileEdgeToEdgeClass} border-zinc-200/80 bg-white p-4 sm:rounded-2xl sm:border sm:p-8 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}
+                className={`${mobileEdgeToEdgeClass} hidden border-zinc-200/80 bg-white p-4 sm:block sm:rounded-2xl sm:border sm:p-8 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}
               >
                 <RentRangeBand
                   min={snapshot.min}
