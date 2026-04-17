@@ -131,7 +131,7 @@ export function ProfileContributorLadder({
       className={`${surfaceElevatedClass} border border-zinc-200/90 p-5 sm:p-6 ${className}`}
       aria-label="Profile ranking"
     >
-      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-pop-hover">
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-pop">
         Your progress
       </p>
       <h2 className="mt-1.5 text-lg font-bold tracking-tight text-muted-blue-hover">

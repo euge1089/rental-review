@@ -76,13 +76,13 @@ const MAP_ENABLED = process.env.NEXT_PUBLIC_ENABLE_RENT_EXPLORER_MAP === "1";
 
 /** ~1pt up from `text-xs` (12px): section eyebrows / labels */
 const explorerEyebrowClass =
-  "text-[13px] font-semibold uppercase tracking-[0.2em] text-pop-hover";
+  "text-[13px] font-semibold uppercase tracking-[0.2em] text-pop";
 /** ~2pt up from `text-sm` (14px): supporting paragraphs */
 const explorerBodyLeadClass = "text-[1.04rem] leading-relaxed text-zinc-600";
 const explorerLabelClass = "text-[13px] font-medium text-zinc-600";
 /** Phone-only Your search fields: clearer, warmer labels */
 const explorerMobileSearchFieldLabelClass =
-  "text-[11px] font-semibold uppercase tracking-[0.14em] text-pop-hover";
+  "text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-blue";
 const explorerMobileSearchControlClass =
   "border-muted-blue/30 bg-white shadow-sm ring-1 ring-muted-blue/15 focus:border-muted-blue/55 focus:ring-2 focus:ring-muted-blue/25";
 
@@ -239,7 +239,7 @@ function buildPersonalizedAnalyticsHeading(opts: {
     timeQ != null;
 
   if (!hasAnyFilter) {
-    return `${prefix}all listings`;
+    return "Personalized analytics for your search";
   }
 
   const bedroomPart = bedroomQ ? `${bedroomQ} ` : "";
@@ -1195,7 +1195,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
               </h2>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <div className="rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Typical rent
@@ -1205,11 +1205,11 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                     ? `$${snapshot.median.toLocaleString()}`
                     : "-"}
                 </p>
-                <p className="mt-1 text-[13px] text-zinc-500">
+                <p className="mt-1 hidden text-[13px] text-zinc-500 sm:block">
                   {rangeLine ?? `n = ${snapshot.n.toLocaleString()}`}
                 </p>
               </div>
-              <div className="rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+              <div className="max-sm:col-span-2 rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Range
                 </p>
@@ -1231,11 +1231,11 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover lg:text-lg">
                   {snapshot.recentCount.toLocaleString()}
                 </p>
-                <p className="mt-1 text-[13px] text-zinc-500">
+                <p className="mt-1 hidden text-[13px] text-zinc-500 sm:block">
                   Posted in the {formatTimeWindowLabel(timeWindow)} you selected.
                 </p>
               </div>
-              <div className="rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
+              <div className="max-sm:col-span-2 rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Amenities
                 </p>

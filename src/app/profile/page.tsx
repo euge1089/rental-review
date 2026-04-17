@@ -147,7 +147,7 @@ export default async function ProfilePage({ searchParams }: Props) {
       />
       <div className="flex flex-col gap-5 sm:gap-8">
         <PageHeader
-          className="sm:order-1"
+          className="pt-3 sm:order-1 sm:pt-0"
           eyebrow="Profile"
           title="Your reviews and saved apartments"
           description={
@@ -188,7 +188,7 @@ export default async function ProfilePage({ searchParams }: Props) {
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-pop-hover">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-pop">
                 Grow your impact
               </p>
               <p className="mt-2 text-base font-semibold leading-snug text-muted-blue-hover">
@@ -263,7 +263,7 @@ export default async function ProfilePage({ searchParams }: Props) {
           ) : null}
 
           <section id="profile-account" className="space-y-2 scroll-mt-24">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-pop-hover">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pop">
               Account
             </p>
           </section>
@@ -314,7 +314,7 @@ export default async function ProfilePage({ searchParams }: Props) {
             id="profile-saved"
             className={`${mobileSectionShell} scroll-mt-24 space-y-2 sm:space-y-0`}
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-pop-hover sm:hidden">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pop sm:hidden">
               Saved listings
             </p>
             <details className="group sm:hidden" open>
@@ -339,7 +339,7 @@ export default async function ProfilePage({ searchParams }: Props) {
           </section>
 
           <section id="profile-reviews" className="scroll-mt-24 space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-pop-hover sm:hidden">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pop sm:hidden">
               Your reviews
             </p>
             <ProfileReviewsGrouped

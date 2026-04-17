@@ -107,7 +107,7 @@ function CountdownDisplay({
       className={
         large
           ? "text-base font-medium tabular-nums tracking-tight text-pop sm:text-lg"
-          : "text-sm font-medium tabular-nums tracking-tight text-pop-hover"
+          : "text-sm font-medium tabular-nums tracking-tight text-pop"
       }
     >
       {days}d {hours}h {minutes}m {seconds}s
@@ -187,7 +187,7 @@ function EntryProgressBar({
               href="/signin"
               className={
                 excited
-                  ? "font-bold text-pop underline decoration-pop/40 underline-offset-2 hover:text-pop-hover"
+                  ? "font-bold text-pop underline decoration-pop/40 underline-offset-2 hover:text-pop"
                   : `${linkInlineClass} font-medium`
               }
             >
@@ -337,7 +337,7 @@ export function GiveawayPromoStrip({
               </div>
             </div>
             <div className="min-w-0 flex-1 pt-0.5 sm:pl-0.5">
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-pop-hover sm:text-[0.9375rem]">
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-pop sm:text-[0.9375rem]">
                 April giveaway
               </p>
               <p className="mt-1 text-[1.75rem] font-extrabold leading-none tracking-tight text-muted-blue-hover sm:text-[2.125rem]">
@@ -404,7 +404,7 @@ export function GiveawayPromoStrip({
                 <GiftIcon className="text-muted-blue-hover" />
               </div>
               <div className="min-w-0 flex-1 pt-0.5">
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-pop-hover">
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-pop">
                   April giveaway
                 </p>
                 <p
