@@ -378,7 +378,13 @@ export default async function PropertyDetailPage({ params }: Props) {
                             </span>
                           ) : null}
                           {typeof review.landlordScore === "number" ? (
-                            <span className="rounded-full bg-accent-teal-tint px-3.5 py-1.5 text-sm font-semibold tabular-nums text-teal-900 ring-1 ring-teal-200/60 sm:text-base sm:px-4 sm:py-2">
+                            <span
+                              className={
+                                review.landlordScore <= 5
+                                  ? "rounded-full bg-pop-tint px-3.5 py-1.5 text-sm font-semibold tabular-nums text-pop-hover ring-1 ring-pop/35 sm:text-base sm:px-4 sm:py-2"
+                                  : "rounded-full bg-accent-teal-tint px-3.5 py-1.5 text-sm font-semibold tabular-nums text-teal-900 ring-1 ring-teal-200/60 sm:text-base sm:px-4 sm:py-2"
+                              }
+                            >
                               Landlord {review.landlordScore}/10
                             </span>
                           ) : null}
@@ -480,7 +486,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                         ) : null}
                         <ReportReviewButton
                           reviewId={review.id}
-                          className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-600 shadow-sm active:bg-zinc-50 sm:mt-2 sm:w-auto sm:justify-start sm:border-0 sm:bg-transparent sm:px-1 sm:py-0 sm:text-xs sm:font-normal sm:text-zinc-400 sm:shadow-none sm:underline-offset-2 sm:hover:text-zinc-600 sm:hover:underline"
+                          className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-red-200/80 bg-white px-4 text-sm font-medium text-red-600 shadow-sm active:bg-red-50 sm:mt-2 sm:w-auto sm:justify-start sm:border-0 sm:bg-transparent sm:px-1 sm:py-0 sm:text-xs sm:font-normal sm:text-red-600 sm:shadow-none sm:underline-offset-2 sm:hover:text-red-700 sm:hover:underline"
                         />
                       </div>
                     </div>

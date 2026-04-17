@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -295,8 +296,13 @@ function RentRangeBand({
           />
         </div>
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-          <div>
+        <div
+          className="mt-4 flex flex-col gap-3 sm:relative sm:mt-4 sm:min-h-[5.75rem] sm:flex-row sm:items-start sm:justify-between sm:gap-0"
+          style={
+            { "--rent-range-mid-pct": `${medianPct}%` } as CSSProperties
+          }
+        >
+          <div className="sm:absolute sm:left-0 sm:top-0 sm:max-w-[min(11rem,38%)]">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
               Lowest
             </p>
@@ -304,7 +310,7 @@ function RentRangeBand({
               ${min.toLocaleString()}
             </p>
           </div>
-          <div className="text-left sm:text-center">
+          <div className="text-left sm:absolute sm:left-[var(--rent-range-mid-pct)] sm:top-0 sm:z-10 sm:max-w-[min(13rem,46%)] sm:-translate-x-1/2 sm:text-center">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">
               Middle of the range
             </p>
@@ -315,7 +321,7 @@ function RentRangeBand({
               </span>
             </p>
           </div>
-          <div className="text-left sm:text-right">
+          <div className="text-left sm:absolute sm:right-0 sm:top-0 sm:max-w-[min(11rem,38%)] sm:text-right">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
               Highest
             </p>
@@ -1162,7 +1168,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Range
                 </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover">
+                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover lg:text-lg">
                   {typeof snapshot.min === "number" &&
                   typeof snapshot.max === "number"
                     ? `$${snapshot.min.toLocaleString()}–$${snapshot.max.toLocaleString()}`
@@ -1177,7 +1183,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Matching reviews
                 </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover">
+                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover lg:text-lg">
                   {snapshot.recentCount.toLocaleString()}
                 </p>
                 <p className="mt-1 text-[13px] text-zinc-500">
@@ -1190,7 +1196,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 </p>
                 {snapshot.n > 0 ? (
                   <>
-                    <p className="mt-1.5 text-2xl font-semibold leading-snug text-muted-blue-hover">
+                    <p className="mt-1.5 text-2xl font-semibold leading-snug text-muted-blue-hover lg:text-[1.04rem]">
                       Laundry {snapshot.amenityPercentages.hasInUnitLaundry}% · Parking{" "}
                       {snapshot.amenityPercentages.hasParking}%
                     </p>

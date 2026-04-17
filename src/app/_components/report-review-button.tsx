@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { useState } from "react";
 
@@ -40,7 +40,7 @@ export function ReportReviewButton({ reviewId, className }: Props) {
         onClick={handleClick}
         className={
           className ??
-          "-mx-1 inline-flex min-h-11 items-center rounded-md px-1 py-2 text-zinc-400 underline-offset-2 active:bg-zinc-100 hover:text-zinc-600 hover:underline sm:min-h-0 sm:py-0"
+          "-mx-1 inline-flex min-h-11 items-center rounded-md px-1 py-2 text-red-600 underline-offset-2 active:bg-red-50 hover:text-red-700 hover:underline sm:min-h-0 sm:py-0"
         }
       >
         Report this review
