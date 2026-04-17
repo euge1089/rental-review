@@ -100,7 +100,7 @@ export function HomeGiveawayPromoModal() {
         </button>
         <div className="relative px-3 pb-3 pt-9 sm:px-4 sm:pb-4 sm:pt-10">
           <span id="home-giveaway-promo-title" className="sr-only">
-            April giveaway: eight twenty-five-dollar Boston dining gift cards,
+            April giveaway: eight twenty-five-dollar Boston dining gift cards to
             eight winners
           </span>
           <GiveawayPromoStrip variant="modal" className="border-0 bg-transparent shadow-none ring-0" />

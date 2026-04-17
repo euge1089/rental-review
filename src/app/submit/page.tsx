@@ -1803,8 +1803,8 @@ export default function SubmitReviewPage() {
             <p className="mt-3 rounded-xl border border-emerald-200/70 bg-emerald-50/80 px-3 py-2 text-sm leading-relaxed text-emerald-950">
               You earned 1 giveaway entry.{" "}
               <span className="font-semibold">Eight $25</span> Boston dining gift
-              cards (<span className="font-semibold">$200</span> total), eight
-              winners, one card each. Each approved review adds another
+              cards (<span className="font-semibold">$200</span> total) to eight
+              winners. Each approved review adds another
               chance to win.{" "}
               <Link href="/legal/giveaway-rules" className="font-semibold underline">
                 Official rules
