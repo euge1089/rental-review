@@ -105,6 +105,8 @@ model Property {
   geocodeQueryAddress String?
   geocodedAt        DateTime?
   geocodeError      String?
+  /// Cached static map snapshot (data URL) for property hero preview.
+  mapSnapshotDataUrl String?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   reviews           Review[]

@@ -12,8 +12,7 @@ type Props = {
   city: string;
   state: string;
   postalCode: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
+  mapSnapshotSrc?: string | null;
 };
 
 type StoredProperty = {
@@ -139,23 +138,16 @@ export function PropertyEngagement(props: Props) {
     setIsSaving(false);
   }
 
-  const mapToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
-  const hasMapToken = mapToken.trim().length > 0;
-  const hasCoordinates =
-    typeof props.latitude === "number" && typeof props.longitude === "number";
-  const showMapSnapshot = hasMapToken && hasCoordinates;
-
-  const mapSnapshotUrl = showMapSnapshot
-    ? `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/pin-s+db7837(${props.longitude},${props.latitude})/${props.longitude},${props.latitude},13.2/320x320@2x?access_token=${encodeURIComponent(mapToken)}`
-    : null;
+  const showMapSnapshot =
+    typeof props.mapSnapshotSrc === "string" && props.mapSnapshotSrc.length > 0;
 
   return (
-    <div className="flex w-full flex-col gap-3 lg:w-auto lg:items-end">
-      <div className="flex w-full flex-col gap-3 lg:flex-row lg:justify-end">
+    <div className="flex w-full flex-col gap-3 lg:w-[17rem] lg:items-end">
+      <div className="flex w-full flex-col gap-3 lg:items-end">
         <button
           type="button"
           onClick={toggleBookmark}
-          className={`inline-flex min-h-10 w-full items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition sm:min-h-0 lg:w-auto lg:min-w-[11.5rem] ${
+          className={`inline-flex min-h-10 w-full items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition sm:min-h-0 lg:w-[11.75rem] ${
             isBookmarked
               ? "bg-muted-blue-hover text-white shadow-[0_8px_24px_-10px_rgb(21_42_69/0.45)] hover:bg-[#1a3555]"
               : "border border-zinc-200/90 bg-white text-muted-blue-hover shadow-sm hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
@@ -166,27 +158,27 @@ export function PropertyEngagement(props: Props) {
         </button>
         <Link
           href="/tour-checklist"
-          className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-zinc-200/90 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover shadow-sm transition hover:border-pop/40 hover:bg-pop-tint/50 lg:w-auto lg:min-w-[11.5rem]"
+          className="inline-flex min-h-10 w-full items-center justify-center rounded-full border border-zinc-200/90 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover shadow-sm transition hover:border-pop/40 hover:bg-pop-tint/50 lg:w-[11.75rem]"
         >
           Tour checklist
         </Link>
       </div>
 
-      <div className="hidden lg:block lg:w-[12.75rem]">
-        {showMapSnapshot && mapSnapshotUrl ? (
+      <div className="hidden lg:block lg:w-[17rem]">
+        {showMapSnapshot ? (
           <div className="overflow-hidden rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_2px_rgb(15_23_42/0.06)]">
             <Image
-              src={mapSnapshotUrl}
+              src={props.mapSnapshotSrc!}
               alt={`Map snapshot for ${props.addressLine1}`}
               width={320}
               height={320}
-              className="block h-[12.75rem] w-full object-cover"
+              className="block h-[12rem] w-full object-cover"
               unoptimized
               referrerPolicy="no-referrer"
             />
           </div>
         ) : (
-          <div className="flex h-[12.75rem] items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white/80 px-4 text-center">
+          <div className="flex h-[12rem] items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white/80 px-4 text-center">
             <p className="text-xs leading-relaxed text-zinc-500">
               Map snapshot unavailable for this address.
             </p>

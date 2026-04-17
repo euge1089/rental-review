@@ -12,6 +12,7 @@ import { ReviewVoteButtons } from "@/app/_components/review-vote-buttons";
 import { PropertyEngagement } from "@/app/_components/property-engagement";
 import { messagesUiEnabled } from "@/lib/feature-flags";
 import { linkMutedClass, surfaceElevatedClass } from "@/lib/ui-classes";
+import { getOrCreatePropertyMapSnapshot } from "@/lib/property-map-snapshot";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -239,6 +240,12 @@ export default async function PropertyDetailPage({ params }: Props) {
   }
 
   const mobileSectionShell = "-mx-4 px-4 sm:mx-0 sm:px-0";
+  const mapSnapshotSrc = await getOrCreatePropertyMapSnapshot({
+    propertyId: property.id,
+    latitude: property.latitude != null ? Number(property.latitude) : null,
+    longitude: property.longitude != null ? Number(property.longitude) : null,
+    existingDataUrl: property.mapSnapshotDataUrl,
+  });
 
   return (
     <AppPageShell gapClass="gap-8 sm:gap-10">
@@ -256,12 +263,7 @@ export default async function PropertyDetailPage({ params }: Props) {
               city={property.city}
               state={property.state}
               postalCode={property.postalCode}
-              latitude={
-                property.latitude != null ? Number(property.latitude) : null
-              }
-              longitude={
-                property.longitude != null ? Number(property.longitude) : null
-              }
+              mapSnapshotSrc={mapSnapshotSrc}
             />
           ) : null
         }
