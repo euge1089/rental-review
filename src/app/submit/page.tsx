@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   AppPageShell,
   PageHeader,
@@ -157,6 +158,8 @@ function ScoreScale({
 }
 
 export default function SubmitReviewPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
   const sessionUser = useMemo((): SessionUser | null | "loading" => {
     if (sessionStatus === "loading") return "loading";
@@ -929,6 +932,7 @@ export default function SubmitReviewPage() {
   }
 
   const callbackUrl = encodeURIComponent("/submit");
+  const fromNewSignup = searchParams?.get("new") === "1";
   const isAuthed = sessionUser && sessionUser !== "loading";
   const atReviewCap = reviewQuota?.atCap === true;
   const bostonGateActive =
@@ -1039,7 +1043,12 @@ export default function SubmitReviewPage() {
               <BostonRentingYearPickForm
                 yearChoices={getBostonRentingSinceYearChoices()}
                 submitLabel="Save and continue"
-                onSaved={(y) => setBostonFloor(y)}
+                onSaved={(y) => {
+                  setBostonFloor(y);
+                  if (fromNewSignup) {
+                    router.replace("/properties");
+                  }
+                }}
               />
             </div>
           </div>

@@ -400,7 +400,7 @@ export default function PropertiesPage() {
               {visibleProperties.map((property) => (
                 <li
                   key={property.id}
-                  className={`-mx-4 sm:mx-0`}
+                  className="mx-0"
                 >
                   <Link
                     href={`/properties/${property.id}`}

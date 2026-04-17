@@ -43,27 +43,52 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user, account, profile }) {
+      const newSignupAtRaw = (token as { newSignupAt?: unknown }).newSignupAt;
+      const newSignupAt =
+        typeof newSignupAtRaw === "number" ? newSignupAtRaw : null;
+      if (
+        newSignupAt != null &&
+        Date.now() - newSignupAt > 15 * 60 * 1000
+      ) {
+        delete (token as { justSignedUp?: boolean }).justSignedUp;
+        delete (token as { newSignupAt?: number }).newSignupAt;
+      }
+
       if (account?.provider === "google" && profile && isGoogleProfile(profile)) {
         const email = normalizeEmail(profile.email);
         if (!email) {
           throw new Error("Google sign-in did not return an email address.");
         }
         try {
-          const row = await prisma.user.upsert({
+          const existing = await prisma.user.findUnique({
             where: { email },
-            update: {
-              emailVerifiedAt: new Date(),
-              ...(profile.name ? { displayName: profile.name } : {}),
-            },
-            create: {
-              email,
-              displayName: profile.name ?? null,
-              emailVerifiedAt: new Date(),
-            },
+            select: { id: true },
           });
+          const row = existing
+            ? await prisma.user.update({
+                where: { email },
+                data: {
+                  emailVerifiedAt: new Date(),
+                  ...(profile.name ? { displayName: profile.name } : {}),
+                },
+              })
+            : await prisma.user.create({
+                data: {
+                  email,
+                  displayName: profile.name ?? null,
+                  emailVerifiedAt: new Date(),
+                },
+              });
           token.sub = row.id;
           token.email = row.email;
           token.name = row.displayName ?? profile.name ?? undefined;
+          const justSignedUp = !existing;
+          (token as { justSignedUp?: boolean }).justSignedUp = justSignedUp;
+          if (justSignedUp) {
+            (token as { newSignupAt?: number }).newSignupAt = Date.now();
+          } else {
+            delete (token as { newSignupAt?: number }).newSignupAt;
+          }
         } catch (err) {
           console.error("[auth] Google sign-in: failed to upsert User", {
             email,
@@ -79,6 +104,8 @@ export const authOptions: NextAuthOptions = {
         token.sub = user.id;
         token.email = user.email;
         token.name = user.name;
+        delete (token as { justSignedUp?: boolean }).justSignedUp;
+        delete (token as { newSignupAt?: number }).newSignupAt;
       }
       return token;
     },
@@ -86,6 +113,9 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         if (token.email) session.user.email = token.email as string;
         if (token.name !== undefined) session.user.name = token.name as string | null;
+        session.user.justSignedUp = Boolean(
+          (token as { justSignedUp?: boolean }).justSignedUp,
+        );
       }
       if (session.user?.email) {
         const row = await prisma.user.findUnique({
@@ -111,6 +141,7 @@ declare module "next-auth" {
   interface Session {
     user: DefaultSession["user"] & {
       phoneVerified?: boolean;
+      justSignedUp?: boolean;
     };
   }
 }
