@@ -96,9 +96,11 @@ export function RentExplorerMap({
   }
 
   return (
-    <div className="relative overflow-hidden bg-white ring-1 ring-muted-blue/20 sm:rounded-3xl sm:border sm:border-muted-blue/25 sm:shadow-[0_10px_36px_-14px_rgb(21_42_69/0.28)]">
+    <div className="relative overflow-visible bg-white ring-1 ring-muted-blue/20 sm:rounded-3xl sm:border sm:border-muted-blue/25 sm:shadow-[0_10px_36px_-14px_rgb(21_42_69/0.28)]">
       {/* Slightly richer basemap while keeping the light style: bump saturation/contrast on the canvas only */}
-      <div className="[&_.mapboxgl-canvas]:saturate-[1.22] [&_.mapboxgl-canvas]:contrast-[1.09] [&_.mapboxgl-canvas]:brightness-[1.02]">
+      <div
+        className="[&_.mapboxgl-canvas-container]:overflow-hidden [&_.mapboxgl-canvas-container]:rounded-3xl [&_.mapboxgl-map]:rounded-3xl [&_.mapboxgl-canvas]:saturate-[1.22] [&_.mapboxgl-canvas]:contrast-[1.09] [&_.mapboxgl-canvas]:brightness-[1.02]"
+      >
         <Map
         initialViewState={initialViewState}
         style={{ width: "100%", height: 420 }}
@@ -156,9 +158,9 @@ export function RentExplorerMap({
             latitude={activeMarker.latitude}
             closeButton={false}
             closeOnClick={false}
-            anchor="top"
-            offset={18}
-            className="z-30 [&_.mapboxgl-popup-content]:rounded-xl [&_.mapboxgl-popup-content]:border [&_.mapboxgl-popup-content]:border-muted-blue/20 [&_.mapboxgl-popup-content]:p-3 [&_.mapboxgl-popup-content]:shadow-lg [&_.mapboxgl-popup-tip]:border-muted-blue/20"
+            anchor="bottom"
+            offset={[0, 12]}
+            className="z-30 [&_.mapboxgl-popup]:!max-w-none [&_.mapboxgl-popup-content]:rounded-xl [&_.mapboxgl-popup-content]:border [&_.mapboxgl-popup-content]:border-muted-blue/20 [&_.mapboxgl-popup-content]:p-3 [&_.mapboxgl-popup-content]:shadow-lg [&_.mapboxgl-popup-tip]:border-muted-blue/20"
           >
             <div className="min-w-[14rem] space-y-1.5 text-sm text-zinc-800">
               <div className="flex items-start justify-between gap-2">

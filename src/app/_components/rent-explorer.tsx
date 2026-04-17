@@ -365,7 +365,9 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   const [mapError, setMapError] = useState<string | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
-  const [mobileResultsView, setMobileResultsView] = useState<"list" | "map">("map");
+  const [mobileResultsView, setMobileResultsView] = useState<"analytics" | "map">(
+    "map",
+  );
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const mapAbortRef = useRef<AbortController | null>(null);
 
@@ -620,7 +622,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
       <section
         className={`${mobileEdgeToEdgeClass} space-y-5 bg-white py-4 sm:space-y-6 sm:rounded-3xl sm:border sm:border-zinc-100 sm:bg-white sm:p-6 sm:shadow-elevated md:p-8`}
       >
-        <div className="space-y-2">
+        <div className="space-y-2 pt-1">
           <p className={explorerEyebrowClass}>
             Your search
           </p>
@@ -1082,14 +1084,14 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             </button>
             <button
               type="button"
-              onClick={() => setMobileResultsView("list")}
+              onClick={() => setMobileResultsView("analytics")}
               className={`inline-flex min-h-[2.75rem] items-center justify-center rounded-xl text-sm font-semibold transition ${
-                mobileResultsView === "list"
+                mobileResultsView === "analytics"
                   ? "bg-muted-blue-tint text-muted-blue-hover"
                   : "text-zinc-600"
               }`}
             >
-              List
+              Analytics
             </button>
           </div>
         </section>
@@ -1099,12 +1101,13 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
         <section
           className={`${mobileResultsView === "map" ? "block" : "hidden"} ${mobileEdgeToEdgeClass} space-y-3 bg-white py-4 max-sm:pb-0 sm:block sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-6 sm:shadow-elevated`}
         >
-          <div className="space-y-1">
+          <div className="space-y-1 pt-1">
             <p className={explorerEyebrowClass}>
               Interactive map
             </p>
             <p className={`hidden sm:block ${explorerBodyLeadClass}`}>
-              Move the map to load points in view. Filters above apply to both map and list.
+              Move the map to load points in view. Filters above apply to the map, insights,
+              and reviews below.
             </p>
           </div>
           <RentExplorerMap
@@ -1128,14 +1131,12 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
         <>
           <section
             className={`${mobileEdgeToEdgeClass} bg-muted-blue-tint px-4 py-5 sm:rounded-3xl sm:border sm:border-zinc-200/90 sm:px-6 sm:py-6 ${
-              MAP_ENABLED && mobileResultsView === "map"
-                ? "max-sm:-mt-10"
-                : ""
+              MAP_ENABLED && mobileResultsView === "map" ? "max-sm:hidden" : ""
             }`}
           >
-            <div className="mb-4 border-b border-zinc-200/80 pb-4">
+            <div className="mb-4 border-b border-zinc-200/80 pb-4 pt-1">
               <p className={explorerEyebrowClass}>
-                Summary
+                Insights
               </p>
               <h2 className="mt-1 text-lg font-semibold tracking-tight text-muted-blue-hover sm:text-xl">
                 {personalizedAnalyticsHeading}
@@ -1234,19 +1235,22 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
       {/* Results list */}
       <section
-        className={`${mobileResultsView === "list" ? "block" : "hidden"} ${mobileEdgeToEdgeClass} space-y-5 bg-white px-4 py-5 sm:block sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-8 sm:shadow-elevated`}
+        className={`${mobileEdgeToEdgeClass} space-y-5 bg-white px-4 py-5 sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-8 sm:shadow-elevated`}
       >
         <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className={explorerEyebrowClass}>
-              Reviews
+              Your filtered reviews
             </p>
             <h2 className="mt-1 text-xl font-semibold tracking-tight text-muted-blue-hover">
               Reviews that match your search
             </h2>
             <p className={`mt-1 max-w-2xl ${explorerBodyLeadClass}`}>
-              Newest first, up to 10 per page. Cards widen with your screen—up to three
-              columns on large displays. Open one for the full building page.
+              Newest first, up to 10 per page.{" "}
+              <span className="hidden sm:inline">
+                Cards widen with your screen—up to three columns on large displays.{" "}
+              </span>
+              Click any card below to open the full property review page.
             </p>
           </div>
           {!noMatches && (
