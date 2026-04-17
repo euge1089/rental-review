@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   AppPageShell,
   PageHeader,
@@ -159,8 +159,8 @@ function ScoreScale({
 
 export default function SubmitReviewPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
+  const [fromNewSignup, setFromNewSignup] = useState(false);
   const sessionUser = useMemo((): SessionUser | null | "loading" => {
     if (sessionStatus === "loading") return "loading";
     if (!session?.user) return null;
@@ -931,8 +931,12 @@ export default function SubmitReviewPage() {
     }
   }
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setFromNewSignup(new URLSearchParams(window.location.search).get("new") === "1");
+  }, []);
+
   const callbackUrl = encodeURIComponent("/submit");
-  const fromNewSignup = searchParams?.get("new") === "1";
   const isAuthed = sessionUser && sessionUser !== "loading";
   const atReviewCap = reviewQuota?.atCap === true;
   const bostonGateActive =
