@@ -211,6 +211,16 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
 
         <div className="hidden min-w-0 items-center gap-2 text-sm sm:flex">
           <Link
+            href="/submit"
+            className={`inline-flex min-h-11 items-center rounded-full px-3 py-2 font-medium text-white transition sm:min-h-0 sm:py-1 ${
+              isActiveHref(pathname, "/submit")
+                ? "bg-muted-blue-hover ring-2 ring-muted-blue-hover/40"
+                : "bg-muted-blue active:bg-muted-blue-hover hover:bg-muted-blue-hover"
+            }`}
+          >
+            Submit
+          </Link>
+          <Link
             href="/properties"
             className={desktopNavLinkClass(isActiveHref(pathname, "/properties"))}
           >
@@ -221,16 +231,6 @@ export function SiteNav({ adminEmail }: SiteNavProps) {
             className={desktopNavLinkClass(isActiveHref(pathname, "/analytics"))}
           >
             Rental Analytics
-          </Link>
-          <Link
-            href="/submit"
-            className={`inline-flex min-h-11 items-center rounded-full px-3 py-2 font-medium text-white transition sm:min-h-0 sm:py-1 ${
-              isActiveHref(pathname, "/submit")
-                ? "bg-muted-blue-hover ring-2 ring-muted-blue-hover/40"
-                : "bg-muted-blue active:bg-muted-blue-hover hover:bg-muted-blue-hover"
-            }`}
-          >
-            Submit
           </Link>
           <NavUser adminEmail={adminEmail} />
         </div>

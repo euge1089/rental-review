@@ -601,7 +601,8 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   const chipBase =
     "inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] font-medium transition has-[:checked]:border-muted-blue-hover has-[:checked]:bg-muted-blue-hover has-[:checked]:text-white";
   const chipOff = "border-zinc-200/90 bg-white text-zinc-600 hover:border-muted-blue/25 hover:bg-muted-blue-tint/30";
-  const mobileEdgeToEdgeClass = "-mx-4 px-4 sm:mx-0 sm:px-0";
+  /** Edge bleed on phones only; from `sm` up sections use their own `sm:p-*` without `px-0` fighting it. */
+  const mobileEdgeToEdgeClass = "max-sm:-mx-4 max-sm:px-4 sm:mx-0";
   const activeFilterChips = [
     zip !== "any" ? `ZIP ${zip}` : null,
     bedroomQualifier(minBedroomBand, maxBedroomBand),
@@ -1221,7 +1222,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
             snapshot.min != null &&
             snapshot.max != null && (
               <section
-                className={`${mobileEdgeToEdgeClass} hidden border-zinc-200/80 bg-white p-4 sm:block sm:rounded-2xl sm:border sm:p-8 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}
+                className={`${mobileEdgeToEdgeClass} hidden border-zinc-200/80 bg-white sm:block sm:rounded-2xl sm:border sm:px-8 sm:py-8 sm:shadow-[0_1px_2px_rgb(15_23_42/0.04)]`}
               >
                 <RentRangeBand
                   min={snapshot.min}
@@ -1235,7 +1236,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
 
       {/* Results list */}
       <section
-        className={`${mobileEdgeToEdgeClass} space-y-5 bg-white px-4 py-5 sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-8 sm:shadow-elevated`}
+        className={`${mobileEdgeToEdgeClass} space-y-5 bg-white max-sm:px-4 max-sm:py-5 sm:rounded-3xl sm:border sm:border-zinc-100 sm:px-8 sm:py-8 sm:shadow-elevated`}
       >
         <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
