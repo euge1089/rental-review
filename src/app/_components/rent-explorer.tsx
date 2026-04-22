@@ -1476,12 +1476,12 @@ export function RentExplorer({
               </p>
               <p className={`sm:hidden ${explorerBodyLeadClass}`}>
                 {guestPreview
-                  ? "Live preview — sign in to use the full map and dive into all of our rent analytics."
+                  ? "This is a live preview — Once you’re logged in, you can use the full map and dive into all of our rent analytics, listings, and tools."
                   : "Explore across the map and click on properties to see more details."}
               </p>
               <p className={`hidden sm:block ${explorerBodyLeadClass}`}>
                 {guestPreview
-                  ? "This is a live preview — try moving the map and we’ll prompt you to sign in. Once you’re in, you can use the full map and dive into all of our rent analytics, listings, and tools."
+                  ? "This is a live preview — Once you’re logged in, you can use the full map and dive into all of our rent analytics, listings, and tools."
                   : "Move the map to load points in view. Filters above apply to the map, insights, and reviews below."}
               </p>
             </div>
