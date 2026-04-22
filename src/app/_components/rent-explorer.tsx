@@ -419,6 +419,8 @@ export function RentExplorer({
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [hoveredReviewCardId, setHoveredReviewCardId] = useState<string | null>(null);
   const [reviewSort, setReviewSort] = useState<ReviewSortMode>("recent");
+  /** Client-side filter on the current page of review cards (same idea as Browse search). */
+  const [reviewsAddressQuery, setReviewsAddressQuery] = useState("");
   const [desktopReviewCardCap, setDesktopReviewCardCap] = useState<number>(10);
   const [mobileResultsView, setMobileResultsView] = useState<"analytics" | "map">(
     "map",
@@ -662,6 +664,7 @@ export function RentExplorer({
     setError(null);
     setMapError(null);
     setHasSearched(false);
+    setReviewsAddressQuery("");
   }
 
   useEffect(() => {
@@ -807,12 +810,29 @@ export function RentExplorer({
     });
     return copy;
   }, [items, reviewSort]);
+
+  const reviewSearchFiltered = useMemo(() => {
+    const q = reviewsAddressQuery.trim().toLowerCase();
+    if (!q) return sortedItems;
+    return sortedItems.filter((item) => {
+      const haystack = [
+        item.addressLine1,
+        item.city,
+        item.state,
+        item.postalCode ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [reviewsAddressQuery, sortedItems]);
+
   const visibleReviewItems = useMemo(() => {
     if (typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches) {
-      return sortedItems;
+      return reviewSearchFiltered;
     }
-    return sortedItems.slice(0, desktopReviewCardCap);
-  }, [desktopReviewCardCap, sortedItems]);
+    return reviewSearchFiltered.slice(0, desktopReviewCardCap);
+  }, [desktopReviewCardCap, reviewSearchFiltered]);
 
   useEffect(() => {
     function updateDesktopCardCap() {
@@ -1700,23 +1720,52 @@ export function RentExplorer({
         ref={reviewsSectionRef}
         className={`${mobileEdgeToEdgeClass} space-y-5 bg-white max-sm:px-4 max-sm:py-5 sm:rounded-3xl sm:border sm:border-zinc-100 sm:px-8 sm:py-8 sm:shadow-elevated`}
       >
-        <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className={`${explorerEyebrowClass} hidden sm:block`}>
-              Your filtered reviews
-            </p>
-            <h2 className="mt-1 pb-1 text-xl font-semibold tracking-tight text-muted-blue-hover">
-              Reviews that match your search
-            </h2>
-            <p className="mt-1 text-[13px] leading-relaxed text-zinc-600 sm:hidden">
-              {guestPreview
-                ? "Tap a card to preview the layout — sign in to open listings."
-                : "Click on any property to see details."}
-            </p>
-            <div className="mt-3 sm:hidden">
+        <div className="flex flex-col gap-4 border-b border-zinc-100 pb-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className={`${explorerEyebrowClass} hidden sm:block`}>
+                Your filtered reviews
+              </p>
+              <h2 className="mt-1 pb-1 text-xl font-semibold tracking-tight text-muted-blue-hover">
+                Reviews that match your search
+              </h2>
+              <p className="mt-1 text-[13px] leading-relaxed text-zinc-600 sm:hidden">
+                {guestPreview
+                  ? "Scroll the list to preview the layout. Tap a card to sign in and open listings."
+                  : "Click on any property to see details."}
+              </p>
+            </div>
+            {!noMatches && (
+              <p className="hidden text-[1.04rem] text-zinc-500 sm:block sm:shrink-0 sm:pt-7 sm:text-right">
+                Page {page + 1}
+              </p>
+            )}
+          </div>
+
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+            <div className="w-full min-w-0 sm:max-w-xl sm:flex-1">
+              <label
+                htmlFor="rent-explorer-reviews-address-search"
+                className="mb-1.5 block text-xs font-medium text-zinc-600"
+              >
+                Search this page
+              </label>
+              <input
+                id="rent-explorer-reviews-address-search"
+                type="search"
+                value={reviewsAddressQuery}
+                onChange={(e) => setReviewsAddressQuery(e.target.value)}
+                placeholder="Street, neighborhood, or ZIP…"
+                className={`${formInputCompactClass} w-full`}
+              />
+              <p className="mt-1.5 text-[11px] leading-snug text-zinc-500">
+                Street, city, or ZIP — filters the cards on this page (like Browse).
+              </p>
+            </div>
+            <div className="w-full shrink-0 sm:ml-auto sm:w-auto sm:min-w-[13.5rem] sm:self-end">
               <label
                 htmlFor="rent-explorer-review-sort"
-                className="mb-1.5 block text-xs font-medium text-zinc-600"
+                className="mb-1.5 block text-xs font-medium text-zinc-600 sm:text-right"
               >
                 Sort
               </label>
@@ -1726,27 +1775,7 @@ export function RentExplorer({
                 onChange={(event) =>
                   setReviewSort(event.target.value as ReviewSortMode)
                 }
-                className={`${formSelectCompactClass} w-full`}
-              >
-                <option value="recent">Most recent</option>
-                <option value="rent-asc">Price: low to high</option>
-                <option value="rent-desc">Price: high to low</option>
-              </select>
-            </div>
-            <div className="mt-3 hidden sm:block sm:max-w-xs">
-              <label
-                htmlFor="rent-explorer-review-sort-desktop"
-                className="mb-1.5 block text-xs font-medium text-zinc-600"
-              >
-                Sort
-              </label>
-              <select
-                id="rent-explorer-review-sort-desktop"
-                value={reviewSort}
-                onChange={(event) =>
-                  setReviewSort(event.target.value as ReviewSortMode)
-                }
-                className={`${formSelectCompactClass} w-full`}
+                className={`${formSelectCompactClass} w-full sm:min-w-[13.5rem]`}
               >
                 <option value="recent">Most recent</option>
                 <option value="rent-asc">Price: low to high</option>
@@ -1754,9 +1783,6 @@ export function RentExplorer({
               </select>
             </div>
           </div>
-          {!noMatches && (
-            <p className="hidden text-[1.04rem] text-zinc-500 sm:block">Page {page + 1}</p>
-          )}
         </div>
 
         {noMatches ? (
@@ -1799,13 +1825,26 @@ export function RentExplorer({
           <>
             <div className="w-full rounded-2xl border border-zinc-100 bg-muted-blue-tint/25 p-2.5 max-sm:max-h-[56vh] max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:[-webkit-overflow-scrolling:touch] sm:p-4">
               <div className="relative">
-                <div
-                  className={
-                    guestPreview
-                      ? `${guestReviewsAuthOpen ? "blur-xl" : "blur-md"} transition-[filter]`
-                      : ""
-                  }
-                >
+                {reviewsAddressQuery.trim() &&
+                visibleReviewItems.length === 0 &&
+                sortedItems.length > 0 ? (
+                  <div className="rounded-xl border border-dashed border-zinc-200/90 bg-white/80 px-4 py-10 text-center sm:py-12">
+                    <p className={`${explorerBodyLeadClass} text-zinc-600`}>
+                      No addresses on this page match{" "}
+                      <span className="font-semibold text-muted-blue-hover">
+                        &quot;{reviewsAddressQuery.trim()}&quot;
+                      </span>
+                      . Try another street or ZIP, or clear the search.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setReviewsAddressQuery("")}
+                      className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-200 bg-white px-5 py-2 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+                    >
+                      Clear search
+                    </button>
+                  </div>
+                ) : (
                   <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 md:gap-x-4 md:gap-y-3">
                 {visibleReviewItems.map((item) => {
                   const bedroomLabel =
@@ -1837,6 +1876,9 @@ export function RentExplorer({
                       ? "border-muted-blue/40 ring-2 ring-muted-blue/20"
                       : "border-zinc-200/90"
                   }`;
+                  const guestCardBlurClass = guestReviewsAuthOpen
+                    ? "blur-[3px] select-none"
+                    : "blur-[1.5px] sm:blur-[2px] select-none";
 
                   return (
                     <li key={item.id} className="min-w-0">
@@ -1856,7 +1898,7 @@ export function RentExplorer({
                             setSelectedPropertyId(item.propertyId);
                           }}
                           onMouseLeave={() => setHoveredReviewCardId(null)}
-                          className={`${cardClassName} cursor-pointer`}
+                          className={`${cardClassName} cursor-pointer touch-pan-y overflow-hidden ${guestCardBlurClass}`}
                         >
                         <div className="min-w-0">
                           <p className="line-clamp-2 text-[1.04rem] font-semibold leading-snug text-muted-blue-hover group-hover:underline sm:text-[1.0625rem]">
@@ -1963,7 +2005,7 @@ export function RentExplorer({
                   );
                 })}
                   </ul>
-                </div>
+                )}
 
                 {guestPreview && guestReviewsAuthOpen ? (
                   <div className="pointer-events-auto absolute inset-0 z-20 flex items-start justify-center bg-zinc-900/25 p-4 pt-6 sm:items-center sm:p-8">
@@ -2010,8 +2052,14 @@ export function RentExplorer({
             ) : null}
             <div className="flex flex-col gap-3 border-t border-zinc-100 pt-4 text-[1.04rem] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
               <span>
-                Showing {visibleReviewItems.length} of {snapshot ? snapshot.n.toLocaleString() : "?"}{" "}
-                reviews
+                Showing {visibleReviewItems.length} of {reviewSearchFiltered.length} on this
+                page
+                {snapshot ? (
+                  <span className="text-zinc-400">
+                    {" "}
+                    · {snapshot.n.toLocaleString()} match your explorer filters
+                  </span>
+                ) : null}
               </span>
               <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
                 <button
