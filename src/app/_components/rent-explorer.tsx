@@ -975,13 +975,7 @@ export function RentExplorer({
                     <p className="text-xs text-red-600" role="alert">
                       {zipInputError}
                     </p>
-                  ) : (
-                    <p className="text-xs leading-relaxed text-zinc-500">
-                      {validZipSet.size > 0
-                        ? "5-digit Boston ZIPs we have reviews for. Press Enter or tap Add; use commas or spaces for several at once."
-                        : "5-digit ZIPs. Press Enter or tap Add; use commas or spaces for several at once."}
-                    </p>
-                  )}
+                  ) : null}
                 </div>
                 <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
                   <div className="grid min-w-0 flex-1 gap-2">
@@ -1114,13 +1108,7 @@ export function RentExplorer({
                 <p className="text-xs text-red-600" role="alert">
                   {zipInputError}
                 </p>
-              ) : (
-                <p className="text-xs leading-relaxed text-zinc-500">
-                  {validZipSet.size > 0
-                    ? "Known Boston ZIPs from our data. Enter or Add; commas or spaces for multiple."
-                    : "Enter or Add; commas or spaces for multiple."}
-                </p>
-              )}
+              ) : null}
             </div>
 
             <div className="grid min-w-0 gap-1.5">
