@@ -29,6 +29,8 @@ type RentExplorerMapProps = {
   markers: ExplorerMapMarker[];
   selectedPropertyId: string | null;
   isLoading: boolean;
+  /** When true, the map renders but does not accept user interactions (pan/zoom/markers). */
+  interactionLocked?: boolean;
   onMarkerClick: (propertyId: string) => void;
   onBoundsChange: (bounds: ExplorerMapBounds) => void;
 };
@@ -74,6 +76,7 @@ export function RentExplorerMap({
   markers,
   selectedPropertyId,
   isLoading,
+  interactionLocked = false,
   onMarkerClick,
   onBoundsChange,
 }: RentExplorerMapProps) {
@@ -97,16 +100,18 @@ export function RentExplorerMap({
     [markers],
   );
   const activeMarker = useMemo(() => {
+    if (interactionLocked) return null;
     const activePropertyId = selectedPropertyId ?? hoveredPropertyId;
     if (!activePropertyId) return null;
     return sortedMarkers.find((marker) => marker.propertyId === activePropertyId) ?? null;
-  }, [hoveredPropertyId, selectedPropertyId, sortedMarkers]);
+  }, [hoveredPropertyId, interactionLocked, selectedPropertyId, sortedMarkers]);
   const popupAnchor: "top" | "bottom" = "bottom";
   const activeMarkerSize = activeMarker ? markerSize(activeMarker.reviewCount) : 0;
   const popupOffsetY =
     popupAnchor === "bottom" ? -(activeMarkerSize / 2) : activeMarkerSize / 2;
 
   useEffect(() => {
+    if (interactionLocked) return;
     if (!activeMarker || !mapRef.current) return;
     const raw = mapRef.current.getMap();
     const canvas = raw.getCanvas();
@@ -146,7 +151,7 @@ export function RentExplorerMap({
         essential: true,
       });
     }
-  }, [activeMarker, popupAnchor]);
+  }, [activeMarker, interactionLocked, popupAnchor]);
 
   if (!hasToken) {
     return (
@@ -165,6 +170,7 @@ export function RentExplorerMap({
         <Map
         ref={mapRef}
         initialViewState={initialViewState}
+        interactive={!interactionLocked}
         style={{ width: "100%", height: 420 }}
         mapStyle="mapbox://styles/mapbox/light-v11"
         mapboxAccessToken={token}
@@ -178,16 +184,20 @@ export function RentExplorerMap({
           applyWaterContrastTweaks(mapRef.current.getMap());
         }}
         onMoveEnd={(event) => {
+          if (interactionLocked) return;
           const bounds = event.target.getBounds();
           if (bounds) onBoundsChange(toBounds(bounds));
         }}
-        onClick={() => onMarkerClick("")}
+        onClick={() => {
+          if (interactionLocked) return;
+          onMarkerClick("");
+        }}
         maxBounds={[
           [-71.25, 42.22],
           [-70.92, 42.43],
         ]}
       >
-        <NavigationControl position="top-right" />
+        {interactionLocked ? null : <NavigationControl position="top-right" />}
         {sortedMarkers.map((marker) => {
           const selected = marker.propertyId === selectedPropertyId;
           const size = markerSize(marker.reviewCount);
@@ -198,19 +208,27 @@ export function RentExplorerMap({
               latitude={marker.latitude}
               anchor="center"
               onClick={(event) => {
+                if (interactionLocked) return;
                 event.originalEvent.stopPropagation();
                 onMarkerClick(marker.propertyId);
               }}
             >
               <button
                 type="button"
-                onMouseEnter={() => setHoveredPropertyId(marker.propertyId)}
-                onMouseLeave={() => setHoveredPropertyId(null)}
+                tabIndex={interactionLocked ? -1 : 0}
+                onMouseEnter={() => {
+                  if (interactionLocked) return;
+                  setHoveredPropertyId(marker.propertyId);
+                }}
+                onMouseLeave={() => {
+                  if (interactionLocked) return;
+                  setHoveredPropertyId(null);
+                }}
                 className={`grid place-items-center rounded-full border text-xs font-semibold transition ${
                   selected
                     ? "border-white bg-muted-blue-hover text-white shadow-[0_4px_14px_-2px_rgb(21_42_69/0.55)] ring-2 ring-white/90"
                     : "border-white/95 bg-muted-blue text-white shadow-[0_3px_12px_-3px_rgb(21_42_69/0.45)] ring-1 ring-muted-blue/40 hover:bg-muted-blue-hover hover:ring-muted-blue-hover/55"
-                }`}
+                } ${interactionLocked ? "pointer-events-none" : ""}`}
                 style={{ width: size, height: size }}
                 aria-label={`${marker.addressLine1}, ${marker.reviewCount} review${marker.reviewCount === 1 ? "" : "s"}`}
               >

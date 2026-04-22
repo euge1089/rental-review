@@ -17,7 +17,7 @@ export function HomeSearch({ variant = "default" }: Props) {
     const query = value.trim();
     if (!query) return;
     const params = new URLSearchParams({ query });
-    router.push(`/properties?${params.toString()}`);
+    router.push(`/analytics?${params.toString()}`);
   }
 
   const isHero = variant === "hero" || variant === "heroWide";

@@ -4,6 +4,8 @@ import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { EmailAuthPanel } from "@/app/_components/email-auth-panel";
 import { bathroomsToBaAbbrev } from "@/lib/policy";
 import {
   formInputCompactClass,
@@ -71,7 +73,6 @@ type MapApiResponse = {
 
 type ReviewSortMode = "recent" | "rent-asc" | "rent-desc";
 
-const BOSTON_ZIPS = ["02127", "02210"];
 const MAP_ENABLED = process.env.NEXT_PUBLIC_ENABLE_RENT_EXPLORER_MAP === "1";
 
 /** ~1pt up from `text-xs` (12px): section eyebrows / labels */
@@ -263,10 +264,12 @@ function RentRangeBand({
   min,
   median,
   max,
+  guestPreview = false,
 }: {
   min: number;
   median: number;
   max: number;
+  guestPreview?: boolean;
 }) {
   const span = max - min;
   const medianPct =
@@ -278,15 +281,19 @@ function RentRangeBand({
         <p className={explorerEyebrowClass}>
           Rent range
         </p>
-        <p className={`mt-2 ${explorerBodyLeadClass}`}>
-          Use this range to set your plan: see what renters paid at the low and high
-          ends, then set a realistic target before you tour.
-        </p>
+        {guestPreview ? null : (
+          <p className={`mt-2 ${explorerBodyLeadClass}`}>
+            Use this range to set your plan: see what renters paid at the low and high
+            ends, then set a realistic target before you tour.
+          </p>
+        )}
       </div>
 
       <div className="relative">
         <div
-          className="relative h-11 w-full overflow-hidden rounded-full border border-zinc-200 bg-zinc-100"
+          className={`relative h-11 w-full overflow-hidden rounded-full border border-zinc-200 bg-zinc-100 ${
+            guestPreview ? "blur-md saturate-125" : ""
+          }`}
           role="img"
           aria-label={`Rent from ${min} to ${max} dollars, median ${median}`}
         >
@@ -298,7 +305,9 @@ function RentRangeBand({
         </div>
 
         <div
-          className="mt-3 flex flex-col gap-3 sm:relative sm:mt-3 sm:min-h-[4.5rem] sm:flex-row sm:items-start sm:justify-between sm:gap-0"
+          className={`mt-3 flex flex-col gap-3 sm:relative sm:mt-3 sm:min-h-[4.5rem] sm:flex-row sm:items-start sm:justify-between sm:gap-0 ${
+            guestPreview ? "blur-md" : ""
+          }`}
           style={
             { "--rent-range-mid-pct": `${medianPct}%` } as CSSProperties
           }
@@ -337,12 +346,22 @@ function RentRangeBand({
 }
 
 type RentExplorerProps = {
+  isAuthenticated: boolean;
   /** Server-supplied count; explorer stays locked until the user has ≥1 review. */
   userReviewCount: number;
+  zipOptions: string[];
 };
 
-export function RentExplorer({ userReviewCount }: RentExplorerProps) {
-  const explorerLocked = userReviewCount < 1;
+export function RentExplorer({
+  isAuthenticated,
+  userReviewCount,
+  zipOptions,
+}: RentExplorerProps) {
+  const { status: sessionStatus } = useSession();
+  const explorerLocked = isAuthenticated && userReviewCount < 1;
+  const guestPreview = !isAuthenticated;
+  const canLoadExplorerData = guestPreview || (isAuthenticated && userReviewCount >= 1);
+  const analyticsReturnTo = "/analytics";
   const [zip, setZip] = useState<string>("any");
   const [minBedroomBand, setMinBedroomBand] =
     useState<ExplorerBedroomBand>("Any");
@@ -381,6 +400,45 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const mapAbortRef = useRef<AbortController | null>(null);
   const reviewsSectionRef = useRef<HTMLElement | null>(null);
+  const mapSectionRef = useRef<HTMLDivElement | null>(null);
+  const [guestMapAuthOpen, setGuestMapAuthOpen] = useState(false);
+  const [guestReviewsAuthOpen, setGuestReviewsAuthOpen] = useState(false);
+
+  const zipSelectOptions = useMemo(() => {
+    const cleaned = zipOptions
+      .map((z) => z.trim())
+      .filter((z) => /^\d{5}$/.test(z));
+    return Array.from(new Set(cleaned)).sort();
+  }, [zipOptions]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get("query")?.trim();
+    if (!raw) return;
+    const digits = raw.replace(/\D/g, "").slice(0, 5);
+    if (digits.length !== 5) return;
+    if (!zipSelectOptions.includes(digits)) return;
+    setZip(digits);
+  }, [zipSelectOptions]);
+
+  useEffect(() => {
+    if (!guestPreview || guestMapAuthOpen) return;
+    const el = mapSectionRef.current;
+    if (!el) return;
+
+    const open = () => setGuestMapAuthOpen(true);
+    const onWheel = (event: WheelEvent) => {
+      // Treat scroll-wheel zoom attempts like map interactions.
+      if (event.ctrlKey) {
+        event.preventDefault();
+        open();
+      }
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [guestMapAuthOpen, guestPreview]);
 
   const activeAmenityFilters = useMemo(
     () => Object.values(amenities).some(Boolean),
@@ -409,7 +467,10 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/analytics/rent-explorer", {
+      const endpoint = guestPreview
+        ? "/api/analytics/rent-explorer/preview"
+        : "/api/analytics/rent-explorer";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildPayload(nextPage)),
@@ -448,7 +509,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   }
 
   async function fetchMarkers(boundsOverride?: ExplorerMapBounds | null) {
-    if (!MAP_ENABLED || explorerLocked) return;
+    if (!MAP_ENABLED || !canLoadExplorerData) return;
     const bounds = boundsOverride ?? mapBounds;
     if (!bounds) return;
 
@@ -459,7 +520,10 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
     setMapError(null);
 
     try {
-      const response = await fetch("/api/analytics/rent-explorer/map", {
+      const endpoint = guestPreview
+        ? "/api/analytics/rent-explorer/map/preview"
+        : "/api/analytics/rent-explorer/map";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -514,21 +578,22 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
   }
 
   useEffect(() => {
-    if (explorerLocked) return;
+    if (sessionStatus === "loading") return;
+    if (!canLoadExplorerData) return;
     void fetchPage(0, false);
     void fetchMarkers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [explorerLocked]);
+  }, [canLoadExplorerData, sessionStatus]);
 
   useEffect(() => {
-    if (!MAP_ENABLED || explorerLocked || !mapBounds) return;
+    if (!MAP_ENABLED || !canLoadExplorerData || !mapBounds) return;
     const timer = window.setTimeout(() => {
       void fetchMarkers();
     }, 200);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    explorerLocked,
+    canLoadExplorerData,
     mapBounds,
     zip,
     minBedroomBand,
@@ -779,7 +844,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                       className={`${selectClass} ${explorerMobileSearchControlClass} w-[7.25rem]`}
                     >
                       <option value="any">Any</option>
-                      {BOSTON_ZIPS.map((z) => (
+                      {zipSelectOptions.map((z) => (
                         <option key={z} value={z}>
                           {z}
                         </option>
@@ -889,7 +954,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 className={`${selectClass} w-32`}
               >
                 <option value="any">Any</option>
-                {BOSTON_ZIPS.map((z) => (
+                {zipSelectOptions.map((z) => (
                   <option key={z} value={z}>
                     {z}
                   </option>
@@ -1237,32 +1302,98 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
         <section
           className={`${mobileResultsView === "map" ? "block" : "hidden"} ${mobileEdgeToEdgeClass} space-y-3 bg-white py-4 max-sm:bg-[#f5f5f6] max-sm:pb-0 sm:block sm:rounded-3xl sm:border sm:border-zinc-100 sm:p-6 sm:shadow-elevated`}
         >
-          <div className="space-y-1 pt-1">
-            <p className={explorerEyebrowClass}>
-              Interactive map
-            </p>
-            <p className={`sm:hidden ${explorerBodyLeadClass}`}>
-              Explore across the map and click on properties to see more details.
-            </p>
-            <p className={`hidden sm:block ${explorerBodyLeadClass}`}>
-              Move the map to load points in view. Filters above apply to the map, insights,
-              and reviews below.
-            </p>
+          <div ref={mapSectionRef} className="relative space-y-3">
+            <div className="space-y-1 pt-1">
+              <p className={explorerEyebrowClass}>
+                Interactive map
+              </p>
+              <p className={`sm:hidden ${explorerBodyLeadClass}`}>
+                {guestPreview
+                  ? "Preview the map. Sign in to pan, zoom, and open property details."
+                  : "Explore across the map and click on properties to see more details."}
+              </p>
+              <p className={`hidden sm:block ${explorerBodyLeadClass}`}>
+                {guestPreview
+                  ? "This is a live preview. Try to move the map and we’ll ask you to sign in — then you can explore normally."
+                  : "Move the map to load points in view. Filters above apply to the map, insights, and reviews below."}
+              </p>
+            </div>
+            <div
+              className={`relative overflow-hidden sm:rounded-3xl ${
+                guestPreview && guestMapAuthOpen ? "pointer-events-none" : ""
+              }`}
+            >
+              <div
+                className={
+                  guestPreview && guestMapAuthOpen
+                    ? "blur-md saturate-125 transition-[filter]"
+                    : ""
+                }
+              >
+                <RentExplorerMap
+                  markers={mapMarkers}
+                  selectedPropertyId={selectedPropertyId}
+                  isLoading={isMapLoading}
+                  interactionLocked={guestPreview}
+                  onMarkerClick={(propertyId) => setSelectedPropertyId(propertyId)}
+                  onBoundsChange={(bounds) => {
+                    setMapBounds(bounds);
+                  }}
+                />
+              </div>
+
+              {guestPreview && !guestMapAuthOpen ? (
+                <button
+                  type="button"
+                  className="absolute inset-0 z-20 cursor-pointer bg-transparent"
+                  aria-label="Sign in to use the interactive map"
+                  onClick={() => setGuestMapAuthOpen(true)}
+                />
+              ) : null}
+
+              {guestPreview && guestMapAuthOpen ? (
+                <div className="pointer-events-auto absolute inset-0 z-30 flex items-start justify-center bg-zinc-900/25 p-4 pt-6 sm:items-center sm:p-8">
+                  <div
+                    className={`${surfaceElevatedClass} w-full max-w-md space-y-4 border border-zinc-200/90 p-5 shadow-elevated sm:p-6`}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="rent-explorer-map-guest-title"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p
+                        id="rent-explorer-map-guest-title"
+                        className="text-base font-semibold text-muted-blue-hover"
+                      >
+                        Sign in to explore the map
+                      </p>
+                      <button
+                        type="button"
+                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg leading-none text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800"
+                        onClick={() => setGuestMapAuthOpen(false)}
+                        aria-label="Close"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <p className="text-sm leading-relaxed text-zinc-600">
+                      Create a free account (or sign in) to pan and zoom, click markers, and
+                      jump into listings.
+                    </p>
+                    <EmailAuthPanel
+                      callbackUrl={analyticsReturnTo}
+                      signupFocus
+                      onSignedIn={() => setGuestMapAuthOpen(false)}
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </div>
+            {mapError ? (
+              <p className="text-[1.04rem] text-red-600" role="alert">
+                {mapError}
+              </p>
+            ) : null}
           </div>
-          <RentExplorerMap
-            markers={mapMarkers}
-            selectedPropertyId={selectedPropertyId}
-            isLoading={isMapLoading}
-            onMarkerClick={(propertyId) => setSelectedPropertyId(propertyId)}
-            onBoundsChange={(bounds) => {
-              setMapBounds(bounds);
-            }}
-          />
-          {mapError ? (
-            <p className="text-[1.04rem] text-red-600" role="alert">
-              {mapError}
-            </p>
-          ) : null}
         </section>
       ) : null}
 
@@ -1287,12 +1418,20 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Typical rent
                 </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover">
+                <p
+                  className={`mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover ${
+                    guestPreview ? "blur-sm select-none" : ""
+                  }`}
+                >
                   {typeof snapshot.median === "number"
                     ? `$${snapshot.median.toLocaleString()}`
                     : "-"}
                 </p>
-                <p className="mt-1 hidden text-[13px] text-zinc-500 sm:block">
+                <p
+                  className={`mt-1 hidden text-[13px] text-zinc-500 sm:block ${
+                    guestPreview ? "blur-sm select-none" : ""
+                  }`}
+                >
                   {rangeLine ?? `n = ${snapshot.n.toLocaleString()}`}
                 </p>
               </div>
@@ -1300,13 +1439,21 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Range
                 </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover max-sm:text-[1.3rem] lg:text-lg">
+                <p
+                  className={`mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover max-sm:text-[1.3rem] lg:text-lg ${
+                    guestPreview ? "blur-sm select-none" : ""
+                  }`}
+                >
                   {typeof snapshot.min === "number" &&
                   typeof snapshot.max === "number"
                     ? `$${snapshot.min.toLocaleString()}–$${snapshot.max.toLocaleString()}`
                     : "Not enough to show"}
                 </p>
-                <p className="mt-1 text-[13px] text-zinc-500">
+                <p
+                  className={`mt-1 text-[13px] text-zinc-500 ${
+                    guestPreview ? "blur-sm select-none" : ""
+                  }`}
+                >
                   From {snapshot.n.toLocaleString()} review
                   {snapshot.n === 1 ? "" : "s"} that matched.
                 </p>
@@ -1315,10 +1462,18 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">
                   Matching reviews
                 </p>
-                <p className="mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover max-sm:text-[1.425rem] lg:text-lg">
+                <p
+                  className={`mt-1.5 text-2xl font-semibold tabular-nums text-muted-blue-hover max-sm:text-[1.425rem] lg:text-lg ${
+                    guestPreview ? "blur-sm select-none" : ""
+                  }`}
+                >
                   {snapshot.recentCount.toLocaleString()}
                 </p>
-                <p className="mt-1 hidden text-[13px] text-zinc-500 sm:block">
+                <p
+                  className={`mt-1 hidden text-[13px] text-zinc-500 sm:block ${
+                    guestPreview ? "blur-sm select-none" : ""
+                  }`}
+                >
                   Posted in the {formatTimeWindowLabel(timeWindow)} you selected.
                 </p>
               </div>
@@ -1328,17 +1483,31 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 </p>
                 {snapshot.n > 0 ? (
                   <>
-                    <p className="mt-1.5 text-2xl font-semibold leading-snug text-muted-blue-hover max-sm:text-[1.175rem] lg:text-[1.04rem]">
+                    <p
+                      className={`mt-1.5 text-2xl font-semibold leading-snug text-muted-blue-hover max-sm:text-[1.175rem] lg:text-[1.04rem] ${
+                        guestPreview ? "blur-sm select-none" : ""
+                      }`}
+                    >
                       Laundry {snapshot.amenityPercentages.hasInUnitLaundry}% · Parking{" "}
                       {snapshot.amenityPercentages.hasParking}%
                     </p>
-                    <p className="mt-1 text-[13px] text-zinc-500">
+                    <p
+                      className={`mt-1 text-[13px] text-zinc-500 ${
+                        guestPreview ? "blur-sm select-none" : ""
+                      }`}
+                    >
                       Out of reviews that matched your search, how often people said
                       they had these.
                     </p>
                   </>
                 ) : (
-                  <p className="mt-1.5 text-[13px] text-zinc-500">Not enough data yet.</p>
+                  <p
+                    className={`mt-1.5 text-[13px] text-zinc-500 ${
+                      guestPreview ? "blur-sm select-none" : ""
+                    }`}
+                  >
+                    Not enough data yet.
+                  </p>
                 )}
               </div>
             </div>
@@ -1349,7 +1518,11 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                 firm answer.
               </p>
             ) : null}
-            <p className="mt-3 text-[0.875rem] leading-relaxed text-zinc-600">
+            <p
+              className={`mt-3 text-[0.875rem] leading-relaxed text-zinc-600 ${
+                guestPreview ? "blur-[2px] select-none" : ""
+              }`}
+            >
               Based on reviews that match what you picked. One apartment can be higher
               or lower than these - they&apos;re averages and ranges, not guarantees.
             </p>
@@ -1366,6 +1539,7 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                   min={snapshot.min}
                   median={snapshot.median}
                   max={snapshot.max}
+                  guestPreview={guestPreview}
                 />
               </section>
             )}
@@ -1386,7 +1560,9 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
               Reviews that match your search
             </h2>
             <p className="mt-1 text-[13px] leading-relaxed text-zinc-600 sm:hidden">
-              Click on any property to see details.
+              {guestPreview
+                ? "Tap a card to preview the layout — sign in to open listings."
+                : "Click on any property to see details."}
             </p>
             <div className="mt-3 sm:hidden">
               <label
@@ -1473,7 +1649,15 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
         ) : (
           <>
             <div className="w-full rounded-2xl border border-zinc-100 bg-muted-blue-tint/25 p-2.5 max-sm:max-h-[56vh] max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:[-webkit-overflow-scrolling:touch] sm:p-4">
-              <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 md:gap-x-4 md:gap-y-3">
+              <div className="relative">
+                <div
+                  className={
+                    guestPreview
+                      ? `${guestReviewsAuthOpen ? "blur-md" : "blur-[2px]"} transition-[filter]`
+                      : ""
+                  }
+                >
+                  <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 md:gap-x-4 md:gap-y-3">
                 {visibleReviewItems.map((item) => {
                   const bedroomLabel =
                     item.bedroomBand && item.bedroomBand !== "Unknown"
@@ -1499,21 +1683,32 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                   if (item.hasCentralHeatCooling)
                     amenityLabels.push("Central heat/cooling");
 
+                  const cardClassName = `group flex h-full min-h-[7.25rem] flex-col gap-1.5 rounded-xl border bg-white px-3 py-3 text-left text-zinc-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition hover:border-muted-blue/30 hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.1)] sm:min-h-[7.5rem] sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-3.5 ${
+                    hoveredReviewCardId === item.id
+                      ? "border-muted-blue/40 ring-2 ring-muted-blue/20"
+                      : "border-zinc-200/90"
+                  }`;
+
                   return (
                     <li key={item.id} className="min-w-0">
-                      <Link
-                        href={`/properties/${item.propertyId}`}
-                        onMouseEnter={() => {
-                          setHoveredReviewCardId(item.id);
-                          setSelectedPropertyId(item.propertyId);
-                        }}
-                        onMouseLeave={() => setHoveredReviewCardId(null)}
-                        className={`group flex h-full min-h-[7.25rem] flex-col gap-1.5 rounded-xl border bg-white px-3 py-3 text-zinc-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition hover:border-muted-blue/30 hover:shadow-[0_8px_24px_-12px_rgb(15_23_42/0.1)] sm:min-h-[7.5rem] sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-3.5 ${
-                          hoveredReviewCardId === item.id
-                            ? "border-muted-blue/40 ring-2 ring-muted-blue/20"
-                            : "border-zinc-200/90"
-                        }`}
-                      >
+                      {guestPreview ? (
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setGuestReviewsAuthOpen(true)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              setGuestReviewsAuthOpen(true);
+                            }
+                          }}
+                          onMouseEnter={() => {
+                            setHoveredReviewCardId(item.id);
+                            setSelectedPropertyId(item.propertyId);
+                          }}
+                          onMouseLeave={() => setHoveredReviewCardId(null)}
+                          className={`${cardClassName} cursor-pointer`}
+                        >
                         <div className="min-w-0">
                           <p className="line-clamp-2 text-[1.04rem] font-semibold leading-snug text-muted-blue-hover group-hover:underline sm:text-[1.0625rem]">
                             {item.addressLine1}
@@ -1558,11 +1753,106 @@ export function RentExplorer({ userReviewCount }: RentExplorerProps) {
                           {monthsAgoLabel(item.createdAt)} ·{" "}
                           {reviewYearToPrivacyBucket(item.reviewYear)}
                         </p>
-                      </Link>
+                        </div>
+                      ) : (
+                        <Link
+                          href={`/properties/${item.propertyId}`}
+                          onMouseEnter={() => {
+                            setHoveredReviewCardId(item.id);
+                            setSelectedPropertyId(item.propertyId);
+                          }}
+                          onMouseLeave={() => setHoveredReviewCardId(null)}
+                          className={cardClassName}
+                        >
+                        <div className="min-w-0">
+                          <p className="line-clamp-2 text-[1.04rem] font-semibold leading-snug text-muted-blue-hover group-hover:underline sm:text-[1.0625rem]">
+                            {item.addressLine1}
+                          </p>
+                          <p className="mt-1 line-clamp-1 text-[13px] text-zinc-600 sm:text-[1.04rem]">
+                            {item.city}, {item.state} {item.postalCode ?? ""}
+                          </p>
+                        </div>
+                        <div className="mt-auto flex flex-row flex-wrap items-baseline gap-x-2 gap-y-1 border-t border-zinc-100/90 pt-2 sm:pt-2.5">
+                          {typeof item.monthlyRent === "number" ? (
+                            <span className="text-[13px] font-semibold tabular-nums text-muted-blue-hover sm:text-[1.04rem]">
+                              ~${item.monthlyRent.toLocaleString()}
+                              <span className="text-xs font-normal text-zinc-500 sm:text-[13px]">
+                                {" "}
+                                /mo
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="text-[13px] font-medium text-zinc-400 sm:text-[1.04rem]">
+                              Rent n/a
+                            </span>
+                          )}
+                          {bedroomLabel || bathLabel ? (
+                            <span className="inline-flex items-center gap-1.5 text-[13px] text-zinc-600 sm:text-[1.04rem]">
+                              <span className="px-0.5 text-zinc-300">|</span>
+                              {bedroomLabel ? (
+                                <span>{renderBoldLeadingNumber(bedroomLabel)}</span>
+                              ) : null}
+                              {bedroomLabel && bathLabel ? (
+                                <span className="px-0.5 text-zinc-300">|</span>
+                              ) : null}
+                              {bathLabel ? <span>{renderBoldLeadingNumber(bathLabel)}</span> : null}
+                            </span>
+                          ) : null}
+                        </div>
+                        {amenityLabels.length > 0 ? (
+                          <p className="hidden line-clamp-2 text-[13px] leading-relaxed text-zinc-600 sm:block sm:text-sm">
+                            {amenityLabels.join(" · ")}
+                          </p>
+                        ) : null}
+                        <p className="text-[13px] text-zinc-500 sm:text-sm">
+                          {monthsAgoLabel(item.createdAt)} ·{" "}
+                          {reviewYearToPrivacyBucket(item.reviewYear)}
+                        </p>
+                        </Link>
+                      )}
                     </li>
                   );
                 })}
-              </ul>
+                  </ul>
+                </div>
+
+                {guestPreview && guestReviewsAuthOpen ? (
+                  <div className="pointer-events-auto absolute inset-0 z-20 flex items-start justify-center bg-zinc-900/25 p-4 pt-6 sm:items-center sm:p-8">
+                    <div
+                      className={`${surfaceElevatedClass} w-full max-w-md space-y-4 border border-zinc-200/90 p-5 shadow-elevated sm:p-6`}
+                      role="dialog"
+                      aria-modal="true"
+                      aria-labelledby="rent-explorer-reviews-guest-title"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p
+                          id="rent-explorer-reviews-guest-title"
+                          className="text-base font-semibold text-muted-blue-hover"
+                        >
+                          Sign in to read reviews
+                        </p>
+                        <button
+                          type="button"
+                          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg leading-none text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800"
+                          onClick={() => setGuestReviewsAuthOpen(false)}
+                          aria-label="Close"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <p className="text-sm leading-relaxed text-zinc-600">
+                        Create a free account (or sign in) to open listings, see rent
+                        details, and read full renter notes.
+                      </p>
+                      <EmailAuthPanel
+                        callbackUrl={analyticsReturnTo}
+                        signupFocus
+                        onSignedIn={() => setGuestReviewsAuthOpen(false)}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             </div>
             {!noMatches ? (
               <p className="mt-3 text-center text-[1.04rem] text-zinc-500 sm:hidden">
