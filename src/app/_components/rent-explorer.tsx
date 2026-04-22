@@ -311,9 +311,7 @@ function RentRangeBand({
 
       <div className="relative">
         <div
-          className={`relative h-11 w-full overflow-hidden rounded-full border border-zinc-200 bg-zinc-100 ${
-            guestPreview ? "blur-md saturate-125" : ""
-          }`}
+          className="relative h-11 w-full overflow-hidden rounded-full border border-zinc-200 bg-zinc-100"
           role="img"
           aria-label={`Rent from ${min} to ${max} dollars, median ${median}`}
         >
@@ -326,7 +324,7 @@ function RentRangeBand({
 
         <div
           className={`mt-3 flex flex-col gap-3 sm:relative sm:mt-3 sm:min-h-[4.5rem] sm:flex-row sm:items-start sm:justify-between sm:gap-0 ${
-            guestPreview ? "blur-md" : ""
+            guestPreview ? "select-none blur-md" : ""
           }`}
           style={
             { "--rent-range-mid-pct": `${medianPct}%` } as CSSProperties
@@ -1478,12 +1476,12 @@ export function RentExplorer({
               </p>
               <p className={`sm:hidden ${explorerBodyLeadClass}`}>
                 {guestPreview
-                  ? "Preview the map. Sign in to pan, zoom, and open property details."
+                  ? "Live preview — sign in to use the full map and dive into all of our rent analytics."
                   : "Explore across the map and click on properties to see more details."}
               </p>
               <p className={`hidden sm:block ${explorerBodyLeadClass}`}>
                 {guestPreview
-                  ? "This is a live preview. Try to move the map and we’ll ask you to sign in — then you can explore normally."
+                  ? "This is a live preview — try moving the map and we’ll prompt you to sign in. Once you’re in, you can use the full map and dive into all of our rent analytics, listings, and tools."
                   : "Move the map to load points in view. Filters above apply to the map, insights, and reviews below."}
               </p>
             </div>
@@ -1687,11 +1685,7 @@ export function RentExplorer({
                 firm answer.
               </p>
             ) : null}
-            <p
-              className={`mt-3 text-[0.875rem] leading-relaxed text-zinc-600 ${
-                guestPreview ? "blur-[2px] select-none" : ""
-              }`}
-            >
+            <p className="mt-3 text-[0.875rem] leading-relaxed text-zinc-600">
               Based on reviews that match what you picked. One apartment can be higher
               or lower than these - they&apos;re averages and ranges, not guarantees.
             </p>
@@ -1721,25 +1715,25 @@ export function RentExplorer({
         className={`${mobileEdgeToEdgeClass} space-y-5 bg-white max-sm:px-4 max-sm:py-5 sm:rounded-3xl sm:border sm:border-zinc-100 sm:px-8 sm:py-8 sm:shadow-elevated`}
       >
         <div className="flex flex-col gap-4 border-b border-zinc-100 pb-5">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className={`${explorerEyebrowClass} hidden sm:block`}>
-                Your filtered reviews
-              </p>
-              <h2 className="mt-1 pb-1 text-xl font-semibold tracking-tight text-muted-blue-hover">
+          <div>
+            <p className={`${explorerEyebrowClass} hidden sm:block`}>
+              Your filtered reviews
+            </p>
+            <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+              <h2 className="min-w-0 max-w-[min(100%,32rem)] flex-1 text-xl font-semibold tracking-tight text-muted-blue-hover sm:max-w-none">
                 Reviews that match your search
               </h2>
-              <p className="mt-1 text-[13px] leading-relaxed text-zinc-600 sm:hidden">
-                {guestPreview
-                  ? "Scroll the list to preview the layout. Tap a card to sign in and open listings."
-                  : "Click on any property to see details."}
-              </p>
+              {!noMatches && (
+                <span className="shrink-0 rounded-full border border-zinc-200/90 bg-zinc-50/90 px-2.5 py-1 text-center text-[12px] font-medium tabular-nums leading-none text-zinc-600 shadow-[inset_0_1px_0_rgb(255_255_255/0.65)] sm:px-3 sm:text-[13px]">
+                  Page {page + 1}
+                </span>
+              )}
             </div>
-            {!noMatches && (
-              <p className="hidden text-[1.04rem] text-zinc-500 sm:block sm:shrink-0 sm:pt-7 sm:text-right">
-                Page {page + 1}
-              </p>
-            )}
+            <p className="mt-2 text-[13px] leading-relaxed text-zinc-600 sm:hidden">
+              {guestPreview
+                ? "Scroll the list to preview the layout. Tap a card to sign in and open listings."
+                : "Click on any property to see details."}
+            </p>
           </div>
 
           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
@@ -1758,9 +1752,6 @@ export function RentExplorer({
                 placeholder="Street, neighborhood, or ZIP…"
                 className={`${formInputCompactClass} w-full`}
               />
-              <p className="mt-1.5 text-[11px] leading-snug text-zinc-500">
-                Street, city, or ZIP — filters the cards on this page (like Browse).
-              </p>
             </div>
             <div className="w-full shrink-0 sm:ml-auto sm:w-auto sm:min-w-[13.5rem] sm:self-end">
               <label
@@ -2045,11 +2036,6 @@ export function RentExplorer({
                 ) : null}
               </div>
             </div>
-            {!noMatches ? (
-              <p className="mt-3 text-center text-[1.04rem] text-zinc-500 sm:hidden">
-                Page {page + 1}
-              </p>
-            ) : null}
             <div className="flex flex-col gap-3 border-t border-zinc-100 pt-4 text-[1.04rem] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
               <span>
                 Showing {visibleReviewItems.length} of {reviewSearchFiltered.length} on this
