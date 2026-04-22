@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { EmailAuthPanel } from "@/app/_components/email-auth-panel";
 import { bathroomsToBaAbbrev } from "@/lib/policy";
@@ -200,6 +201,22 @@ function formatNaturalList(items: string[]): string {
   return `${items.slice(0, -1).join(", ")}, and ${items.at(-1)!}`;
 }
 
+const MAX_SELECTED_ZIP_CODES = 30;
+
+/** Split on commas / whitespace; pull first 5 digits from each token. */
+function parseFiveDigitZipCandidates(raw: string): string[] {
+  const tokens = raw
+    .split(/[\s,;]+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  const out: string[] = [];
+  for (const token of tokens) {
+    const digits = token.replace(/\D/g, "").slice(0, 5);
+    if (digits.length === 5) out.push(digits);
+  }
+  return out;
+}
+
 function reviewsTimeClause(window: "1y" | "2y" | "3y" | "10y" | "all"): string | null {
   if (window === "all") return null;
   const years =
@@ -209,7 +226,7 @@ function reviewsTimeClause(window: "1y" | "2y" | "3y" | "10y" | "all"): string |
 }
 
 function buildPersonalizedAnalyticsHeading(opts: {
-  zip: string;
+  zipCodes: string[];
   minBedroomBand: ExplorerBedroomBand;
   maxBedroomBand: ExplorerBedroomBand;
   minRent: string;
@@ -220,7 +237,7 @@ function buildPersonalizedAnalyticsHeading(opts: {
 }): string {
   const prefix = "Personalized Market Analytics for ";
 
-  const zipFiltered = opts.zip !== "any";
+  const zipFiltered = opts.zipCodes.length > 0;
   const bedroomQ = bedroomQualifier(opts.minBedroomBand, opts.maxBedroomBand);
   const rentQ = rentFilterClause(opts.minRent, opts.maxRent);
   const bathQ = bathFilterClause(opts.minBathrooms);
@@ -244,7 +261,10 @@ function buildPersonalizedAnalyticsHeading(opts: {
   }
 
   const bedroomPart = bedroomQ ? `${bedroomQ} ` : "";
-  const zipPart = zipFiltered ? ` in ${opts.zip}` : "";
+  const sortedZips = [...opts.zipCodes].sort((a, b) => a.localeCompare(b));
+  const zipPart = zipFiltered
+    ? ` in ${sortedZips.length === 1 ? sortedZips[0]! : formatNaturalList(sortedZips)}`
+    : "";
   const core = `${bedroomPart}apartments${zipPart}`;
 
   const extras = [rentQ, bathQ, timeQ].filter(Boolean) as string[];
@@ -357,12 +377,18 @@ export function RentExplorer({
   userReviewCount,
   zipOptions,
 }: RentExplorerProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const { status: sessionStatus } = useSession();
   const explorerLocked = isAuthenticated && userReviewCount < 1;
   const guestPreview = !isAuthenticated;
   const canLoadExplorerData = guestPreview || (isAuthenticated && userReviewCount >= 1);
   const analyticsReturnTo = "/analytics";
-  const [zip, setZip] = useState<string>("any");
+  const [selectedZipCodes, setSelectedZipCodes] = useState<string[]>([]);
+  const [zipInputDraft, setZipInputDraft] = useState("");
+  const [zipInputError, setZipInputError] = useState<string | null>(null);
+  const selectedZipCodesRef = useRef<string[]>([]);
+  selectedZipCodesRef.current = selectedZipCodes;
   const [minBedroomBand, setMinBedroomBand] =
     useState<ExplorerBedroomBand>("Any");
   const [maxBedroomBand, setMaxBedroomBand] =
@@ -411,16 +437,48 @@ export function RentExplorer({
     return Array.from(new Set(cleaned)).sort();
   }, [zipOptions]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const raw = params.get("query")?.trim();
-    if (!raw) return;
-    const digits = raw.replace(/\D/g, "").slice(0, 5);
-    if (digits.length !== 5) return;
-    if (!zipSelectOptions.includes(digits)) return;
-    setZip(digits);
-  }, [zipSelectOptions]);
+  const validZipSet = useMemo(() => new Set(zipSelectOptions), [zipSelectOptions]);
+
+  function commitZipInput() {
+    setZipInputError(null);
+    const raw = zipInputDraft;
+    const candidates = parseFiveDigitZipCandidates(raw);
+    if (candidates.length === 0) {
+      if (raw.trim()) {
+        setZipInputError("Use 5-digit ZIP codes (separate with commas or spaces).");
+      }
+      return;
+    }
+    const allow = (z: string) => validZipSet.size === 0 || validZipSet.has(z);
+    const accepted = candidates.filter(allow);
+    const skipped = candidates.filter((z) => !allow(z));
+    if (accepted.length === 0) {
+      setZipInputError(
+        skipped[0]
+          ? `${skipped[0]} isn’t in the Boston ZIPs we have data for yet.`
+          : "No valid ZIPs to add.",
+      );
+      return;
+    }
+    const nextSet = new Set(selectedZipCodesRef.current);
+    for (const z of accepted) nextSet.add(z);
+    const next = Array.from(nextSet).sort((a, b) => a.localeCompare(b));
+    if (next.length > MAX_SELECTED_ZIP_CODES) {
+      setZipInputError(
+        `You can add up to ${MAX_SELECTED_ZIP_CODES} ZIP codes. Remove one to add more.`,
+      );
+      return;
+    }
+    setSelectedZipCodes(next);
+    setZipInputDraft("");
+    if (skipped.length > 0) {
+      setZipInputError(
+        skipped.length === 1
+          ? `${skipped[0]} skipped (not in database).`
+          : `${skipped.length} ZIP codes skipped (not in database).`,
+      );
+    }
+  }
 
   useEffect(() => {
     if (!guestPreview || guestMapAuthOpen) return;
@@ -447,7 +505,7 @@ export function RentExplorer({
 
   function buildPayload(nextPage: number) {
     return {
-      zipCodes: zip === "any" ? [] : [zip],
+      zipCodes: [...selectedZipCodes],
       minBedroomBand,
       maxBedroomBand,
       minMonthlyRent: minRent ? Number(minRent) : undefined,
@@ -459,10 +517,33 @@ export function RentExplorer({
     };
   }
 
+  /** Matches `handleClear` filter state — used when landing from home search with `?query=`. */
+  function clearedExplorerPayload(nextPage: number) {
+    return {
+      zipCodes: [] as string[],
+      minBedroomBand: "Any" as ExplorerBedroomBand,
+      maxBedroomBand: "Any" as ExplorerBedroomBand,
+      minMonthlyRent: undefined as number | undefined,
+      maxMonthlyRent: undefined as number | undefined,
+      minBathrooms: "Any" as const,
+      amenities: {
+        hasParking: false,
+        hasCentralHeatCooling: false,
+        hasInUnitLaundry: false,
+        hasStorageSpace: false,
+        hasOutdoorSpace: false,
+        petFriendly: false,
+      },
+      timeWindow: "all" as const,
+      page: nextPage,
+    };
+  }
+
   async function fetchPage(
     nextPage: number,
     append: boolean,
     scrollToReviewsTop = false,
+    bodyOverride?: ReturnType<typeof buildPayload>,
   ) {
     setIsLoading(true);
     setError(null);
@@ -473,7 +554,7 @@ export function RentExplorer({
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildPayload(nextPage)),
+        body: JSON.stringify(bodyOverride ?? buildPayload(nextPage)),
       });
       const data = (await response.json()) as ApiResponse;
       if (!data.ok || !data.snapshot || !data.items) {
@@ -508,7 +589,10 @@ export function RentExplorer({
     }
   }
 
-  async function fetchMarkers(boundsOverride?: ExplorerMapBounds | null) {
+  async function fetchMarkers(
+    boundsOverride?: ExplorerMapBounds | null,
+    listPayload?: ReturnType<typeof buildPayload>,
+  ) {
     if (!MAP_ENABLED || !canLoadExplorerData) return;
     const bounds = boundsOverride ?? mapBounds;
     if (!bounds) return;
@@ -523,11 +607,12 @@ export function RentExplorer({
       const endpoint = guestPreview
         ? "/api/analytics/rent-explorer/map/preview"
         : "/api/analytics/rent-explorer/map";
+      const basePayload = listPayload ?? buildPayload(0);
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...buildPayload(0),
+          ...basePayload,
           bounds,
         }),
         signal: controller.signal,
@@ -552,7 +637,9 @@ export function RentExplorer({
   }
 
   function handleClear() {
-    setZip("any");
+    setSelectedZipCodes([]);
+    setZipInputDraft("");
+    setZipInputError(null);
     setMinBedroomBand("Any");
     setMaxBedroomBand("Any");
     setMinRent("");
@@ -580,10 +667,27 @@ export function RentExplorer({
   useEffect(() => {
     if (sessionStatus === "loading") return;
     if (!canLoadExplorerData) return;
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const fromHomeSearch = Boolean(params.get("query")?.trim());
+
+    if (fromHomeSearch) {
+      const clearedList = clearedExplorerPayload(0);
+      handleClear();
+      params.delete("query");
+      const qs = params.toString();
+      const base = pathname || "/analytics";
+      router.replace(qs ? `${base}?${qs}` : base, { scroll: false });
+      void fetchPage(0, false, false, clearedList);
+      void fetchMarkers(undefined, clearedList);
+      return;
+    }
+
     void fetchPage(0, false);
     void fetchMarkers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canLoadExplorerData, sessionStatus]);
+  }, [canLoadExplorerData, sessionStatus, pathname, router]);
 
   useEffect(() => {
     if (!MAP_ENABLED || !canLoadExplorerData || !mapBounds) return;
@@ -595,7 +699,7 @@ export function RentExplorer({
   }, [
     canLoadExplorerData,
     mapBounds,
-    zip,
+    selectedZipCodes,
     minBedroomBand,
     maxBedroomBand,
     minRent,
@@ -656,7 +760,7 @@ export function RentExplorer({
   const personalizedAnalyticsHeading = useMemo(
     () =>
       buildPersonalizedAnalyticsHeading({
-        zip,
+        zipCodes: selectedZipCodes,
         minBedroomBand,
         maxBedroomBand,
         minRent,
@@ -666,7 +770,7 @@ export function RentExplorer({
         timeWindow,
       }),
     [
-      zip,
+      selectedZipCodes,
       minBedroomBand,
       maxBedroomBand,
       minRent,
@@ -733,11 +837,12 @@ export function RentExplorer({
   /** Edge bleed on phones only; from `sm` up sections use their own `sm:p-*` without `px-0` fighting it. */
   const mobileEdgeToEdgeClass = "max-sm:-mx-4 max-sm:px-4 sm:mx-0";
   const activeFilterChips: { id: string; label: string; onRemove: () => void }[] = [];
-  if (zip !== "any") {
+  for (const z of [...selectedZipCodes].sort((a, b) => a.localeCompare(b))) {
     activeFilterChips.push({
-      id: `zip:${zip}`,
-      label: `ZIP ${zip}`,
-      onRemove: () => setZip("any"),
+      id: `zip:${z}`,
+      label: `ZIP ${z}`,
+      onRemove: () =>
+        setSelectedZipCodes((prev) => prev.filter((code) => code !== z)),
     });
   }
 
@@ -825,32 +930,60 @@ export function RentExplorer({
           <p
             className={`hidden overflow-x-auto whitespace-nowrap sm:block ${explorerBodyLeadClass}`}
           >
-            Start with a Boston ZIP and rough budget. We&apos;ll show what renters reported, then you can narrow with optional filters.
+            Add Boston ZIP codes (you can use several), set a rough budget, then narrow with optional filters.
           </p>
         </div>
         <div className="space-y-5">
-          {/* Phones: ZIP + bedrooms on row 1; monthly rent on row 2 */}
+          {/* Phones: ZIP entry, then bedrooms + rent */}
           <div className="space-y-4 sm:hidden">
             <div className="rounded-2xl border border-muted-blue/25 bg-gradient-to-b from-muted-blue-tint/55 via-white to-muted-blue-tint/30 p-4 shadow-[0_8px_28px_-12px_rgb(92_107_127/0.18)] ring-1 ring-muted-blue/10">
               <div className="space-y-4">
-                <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
-                  <div className="grid shrink-0 gap-2">
-                    <label className={explorerMobileSearchFieldLabelClass}>
-                      ZIP code
-                    </label>
-                    <select
-                      value={zip}
-                      onChange={(e) => setZip(e.target.value)}
-                      className={`${selectClass} ${explorerMobileSearchControlClass} w-[7.25rem]`}
+                <div className="grid min-w-0 gap-2">
+                  <label className={explorerMobileSearchFieldLabelClass}>
+                    ZIP codes
+                  </label>
+                  <div className="flex min-w-0 flex-wrap items-stretch gap-2">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="postal-code"
+                      maxLength={64}
+                      value={zipInputDraft}
+                      onChange={(e) => {
+                        setZipInputDraft(e.target.value);
+                        setZipInputError(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          commitZipInput();
+                        }
+                      }}
+                      placeholder="e.g. 02127"
+                      aria-invalid={Boolean(zipInputError)}
+                      className={`${formInputCompactClass} ${explorerMobileSearchControlClass} min-w-0 flex-1`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => commitZipInput()}
+                      className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover transition active:bg-zinc-50 hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
                     >
-                      <option value="any">Any</option>
-                      {zipSelectOptions.map((z) => (
-                        <option key={z} value={z}>
-                          {z}
-                        </option>
-                      ))}
-                    </select>
+                      Add
+                    </button>
                   </div>
+                  {zipInputError ? (
+                    <p className="text-xs text-red-600" role="alert">
+                      {zipInputError}
+                    </p>
+                  ) : (
+                    <p className="text-xs leading-relaxed text-zinc-500">
+                      {validZipSet.size > 0
+                        ? "5-digit Boston ZIPs we have reviews for. Press Enter or tap Add; use commas or spaces for several at once."
+                        : "5-digit ZIPs. Press Enter or tap Add; use commas or spaces for several at once."}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
                   <div className="grid min-w-0 flex-1 gap-2">
                     <label className={explorerMobileSearchFieldLabelClass}>
                       Bedrooms · min / max
@@ -946,20 +1079,48 @@ export function RentExplorer({
 
           {/* Tablet/desktop: full filter row including bedrooms */}
           <div className="hidden flex-wrap items-end gap-x-6 gap-y-4 sm:flex">
-            <div className="grid gap-1.5">
-              <label className={explorerLabelClass}>ZIP</label>
-              <select
-                value={zip}
-                onChange={(e) => setZip(e.target.value)}
-                className={`${selectClass} w-32`}
-              >
-                <option value="any">Any</option>
-                {zipSelectOptions.map((z) => (
-                  <option key={z} value={z}>
-                    {z}
-                  </option>
-                ))}
-              </select>
+            <div className="grid min-w-[min(100%,14rem)] flex-1 gap-1.5 sm:max-w-md">
+              <label className={explorerLabelClass}>ZIP codes</label>
+              <div className="flex min-w-0 flex-wrap items-stretch gap-2">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="postal-code"
+                  maxLength={64}
+                  value={zipInputDraft}
+                  onChange={(e) => {
+                    setZipInputDraft(e.target.value);
+                    setZipInputError(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      commitZipInput();
+                    }
+                  }}
+                  placeholder="e.g. 02127"
+                  aria-invalid={Boolean(zipInputError)}
+                  className={`${formInputCompactClass} min-w-0 flex-1`}
+                />
+                <button
+                  type="button"
+                  onClick={() => commitZipInput()}
+                  className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-muted-blue-hover transition hover:border-muted-blue/30 hover:bg-muted-blue-tint/40"
+                >
+                  Add
+                </button>
+              </div>
+              {zipInputError ? (
+                <p className="text-xs text-red-600" role="alert">
+                  {zipInputError}
+                </p>
+              ) : (
+                <p className="text-xs leading-relaxed text-zinc-500">
+                  {validZipSet.size > 0
+                    ? "Known Boston ZIPs from our data. Enter or Add; commas or spaces for multiple."
+                    : "Enter or Add; commas or spaces for multiple."}
+                </p>
+              )}
             </div>
 
             <div className="grid min-w-0 gap-1.5">
@@ -1653,7 +1814,7 @@ export function RentExplorer({
                 <div
                   className={
                     guestPreview
-                      ? `${guestReviewsAuthOpen ? "blur-md" : "blur-[2px]"} transition-[filter]`
+                      ? `${guestReviewsAuthOpen ? "blur-xl" : "blur-md"} transition-[filter]`
                       : ""
                   }
                 >
