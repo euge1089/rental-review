@@ -7,7 +7,6 @@ import {
   AppPageShell,
   PageHeader,
 } from "@/app/_components/app-page-shell";
-import { GiveawayPromoStrip } from "@/app/_components/giveaway-promo-strip";
 import { formInputCompactClass, formSelectCompactClass, surfaceSubtleClass } from "@/lib/ui-classes";
 
 type PropertySummary = {
@@ -111,7 +110,6 @@ export default function PropertiesPage() {
     return parseSortParam(params.get("sort"));
   });
   const [reviewCount, setReviewCount] = useState<number | null>(null);
-  const [dismissedGiveaway, setDismissedGiveaway] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
 
   useEffect(() => {
@@ -232,14 +230,6 @@ export default function PropertiesPage() {
 
   return (
     <AppPageShell gapClass="gap-6">
-      {!dismissedGiveaway ? (
-        <GiveawayPromoStrip
-          variant="home"
-          placement="properties"
-          showDismiss
-          onDismiss={() => setDismissedGiveaway(true)}
-        />
-      ) : null}
       <div
         className={`${mobileSectionShell} flex flex-col gap-6 bg-white py-4 sm:rounded-2xl sm:border sm:border-zinc-200/80 sm:bg-transparent sm:px-5 sm:py-5 sm:flex-row sm:items-end sm:justify-between`}
       >

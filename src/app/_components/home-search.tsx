@@ -15,7 +15,10 @@ export function HomeSearch({ variant = "default" }: Props) {
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const query = value.trim();
-    if (!query) return;
+    if (!query) {
+      router.push("/analytics");
+      return;
+    }
     const params = new URLSearchParams({ query });
     router.push(`/analytics?${params.toString()}`);
   }
